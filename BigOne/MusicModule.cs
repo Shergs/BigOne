@@ -22,11 +22,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 {
     private readonly IAudioService _audioService;
 
-    //private readonly OpenAIService _openAIService;
-    private readonly ConversationService _conversationService;
-
-
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
     /// </summary>
@@ -34,13 +29,10 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ConversationService conversationService)//, OpenAIService openAIService)
+    public MusicModule(IAudioService audioService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
-
         _audioService = audioService;
-        _conversationService = conversationService;
-        //_openAIService = openAIService;
     }
 
     /// <summary>
@@ -108,10 +100,8 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
                             .WithFooter(footer => footer.Text = "Play some more songs.")
                             .WithCurrentTimestamp();
 
-            // Call Build() to create the Embed object
             var embed = embedBuilder.Build();
 
-            // Use RespondAsync to send the embed. No need for the second RespondAsync call that you have.
             await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
         }
@@ -126,7 +116,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             var embedBuilder = new EmbedBuilder()
                             .WithColor(Color.Blue)
                             .WithDescription($"🔈Added to Queue: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})" +
-                                $"Link: {currentTrack.Track!.Uri}") // Make the title a clickable link
+                                $"Link: {currentTrack.Track!.Uri}")
                             .AddField("Artist", currentTrack.Track!.Author, inline: true)
                             .AddField("Source", currentTrack.Track!.SourceName, inline: true)
                             .WithFooter(footer => footer.Text = "Play some more songs.")
@@ -301,108 +291,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync("Resumed.").ConfigureAwait(false);
     }
 
-    [SlashCommand("peter", description: "Insult Peter", runMode: RunMode.Async)]
-    public async Task Peter()
-    {
-        await RespondAsync("Peter functionality has been discontinued for the forseeable future out of my never ending love for Peter. Sorry Peter 💕💕💕").ConfigureAwait(false);
-    }
-
-    [SlashCommand("prompt", description: "Generate AI Response", runMode: RunMode.Async)]
-    public async Task Prompt(string query)
-    {
-        await DeferAsync().ConfigureAwait(false);
-
-        // API Key should be securely stored and retrieved, not hardcoded
-        var apiKey = "";
-        var api = new OpenAIAPI(apiKey);
-
-        try
-        {
-            var result = await api.Chat.CreateChatCompletionAsync(new ChatRequest()
-                {
-                    Model = Model.ChatGPTTurbo,
-                    Temperature = 0.1,
-                    MaxTokens = 50,
-                    Messages = new ChatMessage[] {
-                    new ChatMessage(ChatMessageRole.User, query)
-                }
-            });
-
-            var responseText = result.ToString();
-
-            if (!string.IsNullOrEmpty(responseText))
-            {
-                await FollowupAsync($"**Prompt:** {query}\n\n**Answer:** {responseText}").ConfigureAwait(false);
-            }
-            else
-            {
-                await FollowupAsync("Failed to get a response from OpenAI.").ConfigureAwait(false);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            await FollowupAsync("Error while fetching data from OpenAI: " + ex.Message).ConfigureAwait(false);
-        }
-    }
-
-
-    [SlashCommand("chat", description: "Create or continue conversation", runMode: RunMode.Async)]
-    public async Task Chat(string query)
-    {
-        try
-        {
-            await DeferAsync().ConfigureAwait(false);
-
-            var apiKey = "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";
-            var api = new OpenAIAPI(apiKey);
-
-            var userId = Context.User.Id;
-            if (!_conversationService.UserConversations.ContainsKey(userId))
-            {
-                var chat = api.Chat.CreateConversation();
-                chat.Model = Model.GPT4_Turbo;
-                chat.RequestParameters.Temperature = 0;
-                _conversationService.UserConversations.Add(userId, chat);
-                chat.AppendUserInput(query);
-                var response = await chat.GetResponseFromChatbotAsync();
-                var responseText = response.ToString();
-
-                if (!string.IsNullOrEmpty(responseText))
-                {
-                    await FollowupAsync($"**Prompt:** {query}\n\n**Answer:** {responseText}").ConfigureAwait(false);
-                }
-                else
-                {
-                    await FollowupAsync("Failed to get a response from OpenAI.").ConfigureAwait(false);
-                }
-                _conversationService.UserConversations[userId] = chat;
-            }
-            else
-            {
-                var chat = _conversationService.UserConversations[userId];
-                chat.AppendUserInput(query);
-                var response = await chat.GetResponseFromChatbotAsync();
-                var responseText = response.ToString();
-                if (!string.IsNullOrEmpty(responseText))
-                {
-                    await FollowupAsync($"**Prompt:** {query}\n\n**Answer:** {responseText}").ConfigureAwait(false);
-                }
-                else
-                {
-                    await FollowupAsync("Failed to get a response from OpenAI.").ConfigureAwait(false);
-                }
-                _conversationService.UserConversations[userId] = chat;
-            }
-            
-        }
-        catch (Exception ex) 
-        {
-            Console.WriteLine(ex.Message);
-            await FollowupAsync("Something went wrong managing conversations").ConfigureAwait(false);
-        }
-    }
-
     [SlashCommand("queue", description: "Get queue count.", runMode: RunMode.Async)]
     public async Task Queue()
     {
@@ -475,7 +363,3 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     }
 }
 
-public class ConversationService
-{
-    public Dictionary<ulong, Conversation> UserConversations { get; } = new Dictionary<ulong, Conversation>();
-}
