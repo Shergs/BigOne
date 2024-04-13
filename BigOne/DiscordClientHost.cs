@@ -8,6 +8,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
+using System.Configuration;
 
 internal sealed class DiscordClientHost : IHostedService
 {
@@ -37,7 +38,7 @@ internal sealed class DiscordClientHost : IHostedService
 
         // Put bot token here
         await _discordSocketClient
-            .LoginAsync(TokenType.Bot, "")
+            .LoginAsync(TokenType.Bot, ConfigurationManager.AppSettings["DiscordAPIKey"])
             .ConfigureAwait(false);
 
         await _discordSocketClient

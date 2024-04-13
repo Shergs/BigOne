@@ -1,14 +1,21 @@
 ﻿namespace BigOne;
 
 using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Audio;
 using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
+using Lavalink4NET.Rest;
 using Lavalink4NET.Rest.Entities.Tracks;
+using Lavalink4NET.Tracks;
+using Newtonsoft.Json;
 using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Models;
@@ -53,6 +60,74 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync("Disconnected.").ConfigureAwait(false);
     }
 
+    #region sound
+    [SlashCommand("sound", description: "Play soundboard sound", runMode: RunMode.Async)]
+    public async Task Sound(string soundName)
+    {
+        await DeferAsync().ConfigureAwait(false);
+        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+        var voiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
+        IAudioClient audioClient = null;
+        if (voiceChannel == null)
+        {
+            await ReplyAsync("You need to be in a voice channel.");
+            return;
+        }
+        Console.WriteLine("Attempting to connect to the voice channel...");
+        try
+        {
+            audioClient = await voiceChannel.ConnectAsync();
+            Console.WriteLine("Connected to the voice channel successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to connect to voice channel: " + ex.Message);
+            return;
+        }
+        try
+        {
+            string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{soundName}.mp3";
+            if (!File.Exists(path))
+            {
+                Console.WriteLine("Error: File does not exist at the specified path.");
+                return;
+            }
+            await FollowupAsync("SoundBoard: " + $"{path}").ConfigureAwait(false);
+            using (var ffmpeg = CreateProcess(path))
+            using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))
+            {
+                try { await ffmpeg.StandardOutput.BaseStream.CopyToAsync(stream); }
+                finally { await stream.FlushAsync(); }
+            }
+        }
+        finally
+        {
+            await audioClient.StopAsync();
+        }
+    }
+
+    public Process CreateProcess(string path)
+    {
+        Process process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -ar 48000 -f s16le -acodec pcm_s16le pipe:1",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        process.ErrorDataReceived += (sender, e) => Console.WriteLine("FFmpeg Error: " + e.Data);
+        process.BeginErrorReadLine();
+        return process;
+    }
+    #endregion
+
+    #region PlayService
     /// <summary>
     ///     Plays music asynchronously.
     /// </summary>
@@ -327,6 +402,122 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             await FollowupAsync(embed: embed).ConfigureAwait(false);
         }
     }
+    #endregion
+
+    //#region Sound
+
+    ////public async Task LoadTrackAsync(string trackIdentifier)
+    ////{
+    ////    var uri = new Uri($"{_lavalinkBaseUrl}/loadtracks?identifier={Uri.EscapeDataString(trackIdentifier)}");
+    ////    try
+    ////    {
+    ////        var response = await _httpClient.GetAsync(uri);
+    ////        response.EnsureSuccessStatusCode();
+    ////        var content = await response.Content.ReadAsStringAsync();
+
+    ////        // Assuming the response content is JSON
+    ////        var trackResponse = JsonSerializer.Deserialize<LavalinkTrackResponse>(content);
+    ////        // Process the trackResponse as needed
+    ////    }
+    ////    catch (HttpRequestException e)
+    ////    {
+    ////        Console.WriteLine($"Error fetching data from Lavalink: {e.Message}");
+    ////    }
+    ////}
+    //[SlashCommand("sound", description: "Play sound from soundboard", runMode: RunMode.Async)]
+    //public async Task Sound(string soundName)
+    //{
+    //    await DeferAsync().ConfigureAwait(false);
+
+    //    var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
+    //    if (player is null)
+    //    {
+    //        await FollowupAsync("Unable to connect to voice channel.").ConfigureAwait(false);
+    //        return;
+    //    }
+
+    //    //LavalinkTrack track = null;
+    //    //var trackPath = $"file:///C:/Workspace_Git/BigOne/BigOne/Sounds/{soundName}.mp3";
+    //    //try
+    //    //{
+    //    //    track = await _audioService.Tracks.LoadTrackAsync(
+    //    //        identifier: trackPath,
+    //    //        loadOptions: new TrackLoadOptions(), // No special load options
+    //    //        resolutionScope: new LavalinkApiResolutionScope(null), // Default client
+    //    //        cancellationToken: CancellationToken.None
+    //    //    ).ConfigureAwait(false);
+    //    //}
+    //    //catch (Exception e)
+    //    //{
+    //    //    Console.WriteLine($"Error loading track: {e.Message}");
+    //    //    await FollowupAsync("Error loading track.").ConfigureAwait(false);
+    //    //    return;
+    //    //}
+
+    //    var lavalinkClient = new LavalinkClient("http://127.0.0.2:2333", "youshallnotpass");
+    //    await lavalinkClient.LoadTrackAsync($"file:///C:/Workspace_Git/BigOne/BigOne/Sounds/{soundName}.mp3");
+
+
+    //    //if (track is null)
+    //    //{
+    //    //    await FollowupAsync("😖 No results.").ConfigureAwait(false);
+    //    //    return;
+    //    //}
+
+    //    //var position = await player.PlayAsync(track).ConfigureAwait(false);
+
+    //    //if (position is 0)
+    //    //{
+    //    //    var currentTrack = player.CurrentItem;
+    //    //    if (currentTrack is null)
+    //    //    {
+    //    //        await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
+    //    //        return;
+    //    //    }
+    //    //    var embedBuilder = new EmbedBuilder()
+    //    //                    .WithColor(Color.Blue)
+    //    //                    .WithDescription($"🔈Now playing: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})\n" +
+    //    //                        $"Link: {currentTrack.Track!.Uri}") // Make the title a clickable link
+    //    //                    .AddField("Artist", currentTrack.Track!.Author, inline: true)
+    //    //                    .AddField("Source", currentTrack.Track!.SourceName, inline: true)
+    //    //                    .WithFooter(footer => footer.Text = "Play some more songs.")
+    //    //                    .WithCurrentTimestamp();
+
+    //    //    var embed = embedBuilder.Build();
+
+    //    //    await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+    //    //    await FollowupAsync(embed: embed).ConfigureAwait(false);
+    //    //}
+    //    //else
+    //    //{
+    //    //    var currentTrack = player.CurrentItem;
+    //    //    if (currentTrack is null)
+    //    //    {
+    //    //        await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
+    //    //        return;
+    //    //    }
+    //    //    var embedBuilder = new EmbedBuilder()
+    //    //                    .WithColor(Color.Blue)
+    //    //                    .WithDescription($"🔈Added to Queue: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})" +
+    //    //                        $"Link: {currentTrack.Track!.Uri}")
+    //    //                    .AddField("Artist", currentTrack.Track!.Author, inline: true)
+    //    //                    .AddField("Source", currentTrack.Track!.SourceName, inline: true)
+    //    //                    .WithFooter(footer => footer.Text = "Play some more songs.")
+    //    //                    .WithCurrentTimestamp();
+
+    //    //    var embed = embedBuilder.Build();
+
+    //    //    await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+    //    //    await FollowupAsync(embed: embed).ConfigureAwait(false);
+    //    //}
+    //}
+
+    //[SlashCommand("soundboard", description: "Show list of current soundboard sounds", runMode: RunMode.Async)]
+    //public async Task SoundBoard()
+    //{
+    //    // get from the database and list the soundboard
+    //}
+    //#endregion
 
     /// <summary>
     ///     Gets the guild player asynchronously.
@@ -361,5 +552,11 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
         return result.Player;
     }
+
+    public class LavalinkTrackResponse
+    {
+        // Define properties based on Lavalink's response structure
+    }
+
 }
 

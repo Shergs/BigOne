@@ -13,6 +13,7 @@ using OpenAI_API;
 using OpenAI_API.Chat;
 using OpenAI_API.Models;
 using OpenAI_API.Moderation;
+using System.Configuration;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.
@@ -75,7 +76,7 @@ public sealed class ChatModule : InteractionModuleBase<SocketInteractionContext>
         {
             await DeferAsync().ConfigureAwait(false);
 
-            var apiKey = ConfigurationManager.AppSettings[];
+            var apiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"];
             var api = new OpenAIAPI(apiKey);
 
             var userId = Context.User.Id;
