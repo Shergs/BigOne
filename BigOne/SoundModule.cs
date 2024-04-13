@@ -29,6 +29,4 @@ public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext
 {
     public SoundModule()
     { }
-
-    
 }
