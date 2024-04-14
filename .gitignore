@@ -364,4 +364,7 @@ FodyWeavers.xsd
 
 #CONFIGS
 BigOne/Override.config
+#sound files
 BigOne/Sounds
+#appsettings
+BigOneData/appsettings.json
