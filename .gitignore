@@ -368,3 +368,7 @@ BigOne/Override.config
 BigOne/Sounds
 #appsettings
 BigOneData/appsettings.json
+BigOneDashboard/appsettings.json
+BigOneDashboard/appsettings.development.json
+BigOne/appsettings.json
+BigOne/appsettings.development.json
