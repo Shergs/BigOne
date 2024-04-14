@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigOne", "BigOne\BigOne.csproj", "{F89E1534-A9A2-4966-BF86-D991C8FFBB67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigOneDashboard", "BigOneDashboard\BigOneDashboard.csproj", "{91F330EE-B87D-46D4-9B68-51A3698D7AA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigOneDashboard", "..\BigOneDashboard\BigOneDashboard\BigOneDashboard.csproj", "{98A4EBBD-5CA6-41A3-8D17-96118ABCE111}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{F89E1534-A9A2-4966-BF86-D991C8FFBB67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F89E1534-A9A2-4966-BF86-D991C8FFBB67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F89E1534-A9A2-4966-BF86-D991C8FFBB67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91F330EE-B87D-46D4-9B68-51A3698D7AA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91F330EE-B87D-46D4-9B68-51A3698D7AA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91F330EE-B87D-46D4-9B68-51A3698D7AA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91F330EE-B87D-46D4-9B68-51A3698D7AA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98A4EBBD-5CA6-41A3-8D17-96118ABCE111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A4EBBD-5CA6-41A3-8D17-96118ABCE111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A4EBBD-5CA6-41A3-8D17-96118ABCE111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A4EBBD-5CA6-41A3-8D17-96118ABCE111}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
