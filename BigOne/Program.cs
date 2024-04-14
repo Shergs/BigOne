@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenAI_API;
-
+using Microsoft.EntityFrameworkCore;
 
 var builder = new HostApplicationBuilder(args);
 
@@ -19,6 +19,10 @@ builder.Services.AddHostedService<DiscordClientHost>();
 // Lavalink
 builder.Services.AddLavalink();
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
+
+//Database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Build().Run();
 
