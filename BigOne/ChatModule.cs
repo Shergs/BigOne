@@ -35,7 +35,7 @@ public sealed class ChatModule : InteractionModuleBase<SocketInteractionContext>
         await DeferAsync().ConfigureAwait(false);
 
         // API Key should be securely stored and retrieved, not hardcoded
-        var apiKey = "";
+        var apiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"];
         var api = new OpenAIAPI(apiKey);
 
         try

@@ -15,6 +15,7 @@ using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Lavalink4NET.Tracks;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using OpenAI_API;
 using OpenAI_API.Chat;
@@ -28,6 +29,7 @@ using OpenAI_API.Moderation;
 public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IAudioService _audioService;
+    private ApplicationDbContext _applicationDbContext;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -36,10 +38,11 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService)
+    public MusicModule(IAudioService audioService, ApplicationDbContext applicationDbContext)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
+        _applicationDbContext = applicationDbContext;
     }
 
     /// <summary>
@@ -104,6 +107,25 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         {
             await audioClient.StopAsync();
         }
+    }
+
+    [SlashCommand("soundboard", description:"List out all of the sounds on this server's soundboard", runMode: RunMode.Async)]
+    public async Task SoundBoard()
+    {
+        await DeferAsync().ConfigureAwait(false);
+
+        List<Sound> sounds = await _applicationDbContext.Sounds.ToListAsync();
+        if (sounds.Count == 0)
+        { 
+            await FollowupAsync("No sounds found for server").ConfigureAwait(false);
+            return;
+        }
+        string result = "";
+        for (int i = 0; i< sounds.Count; i++) 
+        {
+            result += $"{i}. {sounds[i].Emote}{sounds[i].Name}\n";
+        }
+        await FollowupAsync(result).ConfigureAwait(false);
     }
 
     public Process CreateProcess(string path)
@@ -404,130 +426,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     }
     #endregion
 
-    //#region Sound
-
-    ////public async Task LoadTrackAsync(string trackIdentifier)
-    ////{
-    ////    var uri = new Uri($"{_lavalinkBaseUrl}/loadtracks?identifier={Uri.EscapeDataString(trackIdentifier)}");
-    ////    try
-    ////    {
-    ////        var response = await _httpClient.GetAsync(uri);
-    ////        response.EnsureSuccessStatusCode();
-    ////        var content = await response.Content.ReadAsStringAsync();
-
-    ////        // Assuming the response content is JSON
-    ////        var trackResponse = JsonSerializer.Deserialize<LavalinkTrackResponse>(content);
-    ////        // Process the trackResponse as needed
-    ////    }
-    ////    catch (HttpRequestException e)
-    ////    {
-    ////        Console.WriteLine($"Error fetching data from Lavalink: {e.Message}");
-    ////    }
-    ////}
-    //[SlashCommand("sound", description: "Play sound from soundboard", runMode: RunMode.Async)]
-    //public async Task Sound(string soundName)
-    //{
-    //    await DeferAsync().ConfigureAwait(false);
-
-    //    var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
-    //    if (player is null)
-    //    {
-    //        await FollowupAsync("Unable to connect to voice channel.").ConfigureAwait(false);
-    //        return;
-    //    }
-
-    //    //LavalinkTrack track = null;
-    //    //var trackPath = $"file:///C:/Workspace_Git/BigOne/BigOne/Sounds/{soundName}.mp3";
-    //    //try
-    //    //{
-    //    //    track = await _audioService.Tracks.LoadTrackAsync(
-    //    //        identifier: trackPath,
-    //    //        loadOptions: new TrackLoadOptions(), // No special load options
-    //    //        resolutionScope: new LavalinkApiResolutionScope(null), // Default client
-    //    //        cancellationToken: CancellationToken.None
-    //    //    ).ConfigureAwait(false);
-    //    //}
-    //    //catch (Exception e)
-    //    //{
-    //    //    Console.WriteLine($"Error loading track: {e.Message}");
-    //    //    await FollowupAsync("Error loading track.").ConfigureAwait(false);
-    //    //    return;
-    //    //}
-
-    //    var lavalinkClient = new LavalinkClient("http://127.0.0.2:2333", "youshallnotpass");
-    //    await lavalinkClient.LoadTrackAsync($"file:///C:/Workspace_Git/BigOne/BigOne/Sounds/{soundName}.mp3");
-
-
-    //    //if (track is null)
-    //    //{
-    //    //    await FollowupAsync("😖 No results.").ConfigureAwait(false);
-    //    //    return;
-    //    //}
-
-    //    //var position = await player.PlayAsync(track).ConfigureAwait(false);
-
-    //    //if (position is 0)
-    //    //{
-    //    //    var currentTrack = player.CurrentItem;
-    //    //    if (currentTrack is null)
-    //    //    {
-    //    //        await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-    //    //        return;
-    //    //    }
-    //    //    var embedBuilder = new EmbedBuilder()
-    //    //                    .WithColor(Color.Blue)
-    //    //                    .WithDescription($"🔈Now playing: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})\n" +
-    //    //                        $"Link: {currentTrack.Track!.Uri}") // Make the title a clickable link
-    //    //                    .AddField("Artist", currentTrack.Track!.Author, inline: true)
-    //    //                    .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-    //    //                    .WithFooter(footer => footer.Text = "Play some more songs.")
-    //    //                    .WithCurrentTimestamp();
-
-    //    //    var embed = embedBuilder.Build();
-
-    //    //    await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
-    //    //    await FollowupAsync(embed: embed).ConfigureAwait(false);
-    //    //}
-    //    //else
-    //    //{
-    //    //    var currentTrack = player.CurrentItem;
-    //    //    if (currentTrack is null)
-    //    //    {
-    //    //        await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-    //    //        return;
-    //    //    }
-    //    //    var embedBuilder = new EmbedBuilder()
-    //    //                    .WithColor(Color.Blue)
-    //    //                    .WithDescription($"🔈Added to Queue: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})" +
-    //    //                        $"Link: {currentTrack.Track!.Uri}")
-    //    //                    .AddField("Artist", currentTrack.Track!.Author, inline: true)
-    //    //                    .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-    //    //                    .WithFooter(footer => footer.Text = "Play some more songs.")
-    //    //                    .WithCurrentTimestamp();
-
-    //    //    var embed = embedBuilder.Build();
-
-    //    //    await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
-    //    //    await FollowupAsync(embed: embed).ConfigureAwait(false);
-    //    //}
-    //}
-
-    //[SlashCommand("soundboard", description: "Show list of current soundboard sounds", runMode: RunMode.Async)]
-    //public async Task SoundBoard()
-    //{
-    //    // get from the database and list the soundboard
-    //}
-    //#endregion
-
-    /// <summary>
-    ///     Gets the guild player asynchronously.
-    /// </summary>
-    /// <param name="connectToVoiceChannel">
-    ///     a value indicating whether to connect to a voice channel
-    /// </param>
-    /// <returns>
-    ///     a task that represents the asynchronous operation. The task result is the lavalink player.
-    /// </returns>
     private async ValueTask<VoteLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
     {
         var retrieveOptions = new PlayerRetrieveOptions(
