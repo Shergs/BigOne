@@ -362,14 +362,13 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-#CONFIGS
+# CONFIGS
 BigOne/Override.config
-#sound files
-BigOne/Sounds
-#appsettings
-BigOneData/appsettings.json
-BigOneDashboard/appsettings.json
-BigOneDashboard/appsettings.development.json
-BigOne/appsettings.json
-BigOne/appsettings.development.json
-/BigOne/appsettings.json
+
+# Ignore specific sound files directory
+BigOne/Sounds/
+
+# Ignore specific appsettings files
+BigOneData/appsettings*.json
+BigOneDashboard/appsettings*.json
+BigOne/appsettings*.json
