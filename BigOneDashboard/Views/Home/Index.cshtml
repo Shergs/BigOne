@@ -1,8 +1,312 @@
-﻿@{
+﻿@model DashboardViewModel
+@{
     ViewData["Title"] = "Home Page";
+    var message = TempData["Message"] as string;
+    var messageType = TempData["MessageType"] as string;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.css" />
+<!-- Toast Message -->
+@if (!string.IsNullOrEmpty(message))
+{
+    <div id="toast-message" class="fixed top-[77px] right-4 @(messageType == "Success" ? "bg-green-500" : "bg-red-500") text-white px-4 py-2 rounded">
+        @message
+    </div>
+}
+
+@* <div class="pt-16 pb-20">*@
+<div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
+        
+    @*Save new sound*@
+    <div id="SaveNewSoundCard" class="border border-gray-400 rounded-[16px] shadow-lg" style="grid-column: span 4/span 4; grid-row: span 7/span 7;">
+        <div class="w-full h-full mx-auto my-8">
+            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
+                <p><strong>Server:</strong> @Model.Server</p>
+                <p><strong>Discord User:</strong> @Model.DiscordName</p>
+                @*<p><strong>Address:</strong> @(Model.Merchant.StreetAddress), @(Model.Merchant.City), @(Model.Merchant.State), @(Model.Merchant.Zip), @(Model.Merchant.Country)</p>*@                    
+                @using (Html.BeginForm("SaveNewSound", "Home", FormMethod.Post, new { id = "SaveNewSound", enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @* @Html.HiddenFor(model => model.SaveNewSoundViewModel) *@
+
+                    <div class="mt-4">
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
+                        @Html.TextBoxFor(m => m.SaveNewSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "Name" })
+                        @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
+                    </div>
+
+                    <div class="mt-4">
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
+                        <input id="EmoteSelector" name="@Html.NameFor(m => m.SaveNewSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                        @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
+                    </div>
+
+                    <div class="mt-4">
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.File, new { @class = "block text-sm font-medium text-gray-700" })
+                        <input type="file" id="File" name="@Html.NameFor(m => m.SaveNewSoundViewModel.File)" class="mt-1 block w-full px-3 py-2 border rounded-md" />
+                        @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.File, "", new { @class = "text-red-600 text-sm" })
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save New Sound</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @*Soundboard display*@
+    <div id="SoundboardCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 8/span 8; grid-row: span 7/span 7;">
+        <div class="w-full h-full mx-auto my-8">
+            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <h2 class="text-2xl mb-2 font-bold">Soundboard</h2>
+                <p class="mb-4"><strong>Server:</strong> @Model.Server</p>
+                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                    @foreach (Sound sound in Model.Sounds)
+                    {
+                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm bg-gray-100 mb-4 justify-between">
+                            <div class="flex items-center space-x-4" style="align-items:center;">
+                                <div>@sound.Emote</div>
+                                <div>@sound.Name</div>
+                            </div>
+                            <!-- Audio Player -->
+                            <div class="flex-grow px-4" style="margin-left:auto;">
+                                <audio controls preload="none">
+                                    <source src="@Url.Action("GetSound", "Home", new { filePath = sound.FilePath })" type="audio/mp3">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            <!-- Buttons -->
+                            <div class="ml-auto flex items-center space-x-2" style="margin-left:auto;">
+                                <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 mr-[16px]" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">Edit</button>
+                                <button type="button" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">Delete</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Edit Modal *@
+    <!-- Modal Background -->
+    <div class="modal fade" id="editSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-md shadow-lg">
+                <div class="modal-header border-b">
+                    <h5 class="modal-title" id="editSoundModalLabel">Edit Sound</h5>
+                    <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body bg-white p-5">
+                    <!-- Form Start -->
+                    @using (Html.BeginForm("EditSound", "Home", FormMethod.Post, new { id = "EditSound", enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("EditSoundViewModel.Id", null, new { id = "SoundId" })
+
+                        <div class="mt-4">
+                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
+                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "EditName" })
+                            @Html.ValidationMessageFor(m => m.EditSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
+                        </div>
+
+                        <div class="mt-4">
+                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
+                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                            @Html.ValidationMessageFor(m => m.EditSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
+                        </div>
+
+                        @* <div class="mt-4">
+                            @Html.LabelFor(m => m.EditSoundViewModel.File, new { @class = "block text-sm font-medium text-gray-700" })
+                            <input type="file" id="File" name="@Html.NameFor(m => m.EditSoundViewModel.File)" class="mt-1 block w-full px-3 py-2 border rounded-md" />
+                            @Html.ValidationMessageFor(m => m.EditSoundViewModel.File, "", new { @class = "text-red-600 text-sm" })
+                        </div> *@
+
+                        <div class="mt-4">
+                            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save Sound</button>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-t">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    @*<button type="submit" class="btn btn-primary">Save Changes</button>*@
+                </div>
+            </div>
+        </div>
+    </div>
+    @* Delete Modal *@
+    <div class="modal fade" id="deleteSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-md shadow-lg">
+                <div class="modal-header border-b">
+                    <h5 class="modal-title" id="editSoundModalLabel">Edit Sound</h5>
+                    <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body bg-white p-5">
+                    @using (Html.BeginForm("DeleteSound", "Home", FormMethod.Post, new { id = "DeleteSound", enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("DeleteSoundViewModel.Id", null, new { id = "SoundId" })
+                        <p class="mb-4"><strong>Name:</strong><span id="deleteSoundName"></span> </p>
+                        <span>Are you sure you would like to delete this sound?</span>
+                    }
+                </div>
+                <div class="modal-footer border-t">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+@*</div>*@
+
+@section Scripts {
+    <script>
+        // Remove the toast message after 5 seconds
+        setTimeout(() => {
+            document.getElementById('toast-message').remove();
+        }, 5000);
+    </script>
+    <script>
+        $(document).ready(function () {
+            // initialize emoji selector
+            try {
+                $("#EmoteSelector").emojioneArea({
+                    pickerPosition: "bottom",
+                    filtersPosition: "bottom",
+                    tones: false,
+                    autocomplete: false,
+                    inline: true,
+                    events: {
+                        keyup: function (editor, event) {
+                            let content = this.getText();
+                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                            if (matches && matches.length > 0) {
+                                this.setText(matches[0]); // Set only the first found emoji
+                            } else {
+                                this.setText(''); // Clear if no valid emojis
+                            }
+                        },
+                        paste: function (editor, event) {
+                            setTimeout(() => { // Timeout to let paste complete and then process
+                                let content = this.getText();
+                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                                if (matches && matches.length > 0) {
+                                    this.setText(matches[0]); // Set only the first found emoji
+                                } else {
+                                    this.setText(''); // Clear if no valid emojis
+                                }
+                            }, 100);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing EmojiOne Area:", error);
+            }
+            try {
+                $("#EditEmoteSelector").emojioneArea({
+                    pickerPosition: "bottom",
+                    filtersPosition: "bottom",
+                    tones: false,
+                    autocomplete: false,
+                    inline: true,
+                    events: {
+                        keyup: function (editor, event) {
+                            let content = this.getText();
+                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                            if (matches && matches.length > 0) {
+                                this.setText(matches[0]); // Set only the first found emoji
+                            } else {
+                                this.setText(''); // Clear if no valid emojis
+                            }
+                        },
+                        paste: function (editor, event) {
+                            setTimeout(() => { // Timeout to let paste complete and then process
+                                let content = this.getText();
+                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                                if (matches && matches.length > 0) {
+                                    this.setText(matches[0]); // Set only the first found emoji
+                                } else {
+                                    this.setText(''); // Clear if no valid emojis
+                                }
+                            }, 100);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing EmojiOne Area:", error);
+            }
+
+            // Validate submission
+            document.getElementById('SaveNewSound').onsubmit = function () {
+                const emoteInput = $("#EmoteSelector").data("emojioneArea").getText();
+                const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
+
+                if (!isValidEmoji) {
+                    alert('Please select exactly one emoji.');
+                    return false; // Prevent form submission
+                }
+
+                return true; // Allow form submission
+            };
+
+            // Validate submission
+            document.getElementById('EditSound').onsubmit = function () {
+                const emoteInput = $("#EditEmoteSelector").data("emojioneArea").getText();
+                const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
+
+                if (!isValidEmoji) {
+                    alert('Please select exactly one emoji.');
+                    return false; // Prevent form submission
+                }
+
+                return true; // Allow form submission
+            };
+        });
+    </script>
+    <script>
+        function setModalSoundId(modalId, soundId) {
+            fetch(`/Home/GetSoundDetails?id=${soundId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.name); 
+                    console.log(data.emote);
+
+                    var modal = document.getElementById(modalId);
+                    var hidSoundId = modal.querySelector('#SoundId');
+
+                    if (hidSoundId) {
+                        hidSoundId.value = soundId; 
+                    }
+
+                    if (modalId == "editSoundModal") {
+                        var nameInput = document.getElementById('EditName');
+                        if (nameInput) {
+                            nameInput.value = data.name;
+                        }
+
+                        var emoteInput = $('#EditEmoteSelector'); // Your original input selector
+                        if (emoteInput.data("emojioneArea")) {
+                            emoteInput.data("emojioneArea").setText(data.emote);
+                        }
+                    }
+                    else if (modalId == "deleteSoundModal") {
+                        var soundName = document.getElementById('deleteSoundName');
+                        if (soundName) {
+                            soundName.innerText = data.emote + data.name;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching sound details:', error));
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
+}
+

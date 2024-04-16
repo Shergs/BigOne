@@ -4,6 +4,26 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-BigOneDashboard-e01d47c0-57ce-454f-a2da-bd70581d8bda</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BigOne\BigOneData\BigOneData.csproj" />
+  </ItemGroup>
+
+    <Target Name="InstallNpmPackages" BeforeTargets="Build">
+	    <Exec Command="npm install" />
+    </Target>
+    <Target Name="BuildTailwindCSS" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages">
+	    <Exec Command="npm run build:css" />
+    </Target>
 
 </Project>
