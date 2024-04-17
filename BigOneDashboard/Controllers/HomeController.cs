@@ -92,7 +92,7 @@ namespace BigOneDashboard.Controllers
                     return RedirectToAction("Index", dashboardViewModel);
                 }
 
-                var uploadsDirectory = Path.Combine("C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\");
+                var uploadsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Sounds");
 
                 // Ensure the directory exists
                 if (!Directory.Exists(uploadsDirectory))
@@ -237,6 +237,30 @@ namespace BigOneDashboard.Controllers
                 emote = sound.Emote,
                 filePath = sound.FilePath
             });
+        }
+
+        [HttpGet("get-sound/{soundName}")]
+        public IActionResult GetServeSound(string soundName)
+        {
+            Sound? sound = await _context.Sounds.Where(x => x.Name == soundName).FirstOrDefaultAsync();
+
+            if (sound == null)
+            {
+                return NotFound("soundName doesn't exist in DB.");
+            }
+
+            var filePath = $"wwwroot/sounds/{soundName}.mp3";
+            if (!System.IO.File.Exists(filePath))
+                return NotFound("Sound not found.");
+
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(filePath, FileMode.Open))
+            {
+                stream.CopyTo(memory);
+            }
+            memory.Position = 0;
+
+            return File(memory, "audio/mpeg", $"{sound.FilePath.Replace(" ","_")}");
         }
 
         public IActionResult Privacy()

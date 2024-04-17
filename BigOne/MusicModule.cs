@@ -89,17 +89,27 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         }
         try
         {
-            Sound sound = await _applicationDbContext.Sounds.Where(x => x.Name.ToLower() == soundName.ToLower()).FirstOrDefaultAsync();
+            Sound? sound = await _applicationDbContext.Sounds.Where(x => x.Name.ToLower() == soundName.ToLower()).FirstOrDefaultAsync();
             if (sound == null)
             {
                 Console.WriteLine("Error: Cannot find sound file.");
-                await FollowupAsync("Can't find sound");
+                await FollowupAsync("Can't find sound in database");
+                return;
             }
             string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{sound.FilePath.Replace(" ","_")}";
             if (!File.Exists(path))
             {
-                Console.WriteLine("Error: File does not exist at the specified path.");
-                return;
+                // Going to just do the thing here
+                bool soundDownloaded = await API.TryGetSound(soundName, path);
+                if (!soundDownloaded)
+                {
+                    Console.WriteLine("Error: File does not exist at the specified path.");
+                    return;
+                }
+                else
+                {
+                    await FollowupAsync($"Sound Downloaded!");
+                }
             }
             await FollowupAsync("SoundBoard: " + $"{path}").ConfigureAwait(false);
             using (var ffmpeg = CreateProcess(path))
