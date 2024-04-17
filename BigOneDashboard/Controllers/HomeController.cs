@@ -240,7 +240,7 @@ namespace BigOneDashboard.Controllers
         }
 
         [HttpGet("get-sound/{soundName}")]
-        public IActionResult GetServeSound(string soundName)
+        public async Task<IActionResult> GetServeSound(string soundName)
         {
             Sound? sound = await _context.Sounds.Where(x => x.Name == soundName).FirstOrDefaultAsync();
 
