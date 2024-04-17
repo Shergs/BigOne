@@ -89,7 +89,13 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         }
         try
         {
-            string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{soundName}.mp3";
+            Sound sound = await _applicationDbContext.Sounds.Where(x => x.Name.ToLower() == soundName.ToLower()).FirstOrDefaultAsync();
+            if (sound == null)
+            {
+                Console.WriteLine("Error: Cannot find sound file.");
+                await FollowupAsync("Can't find sound");
+            }
+            string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{sound.FilePath.Replace(" ","_")}";
             if (!File.Exists(path))
             {
                 Console.WriteLine("Error: File does not exist at the specified path.");

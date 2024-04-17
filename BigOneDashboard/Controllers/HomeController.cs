@@ -24,75 +24,6 @@ namespace BigOneDashboard.Controllers
             TempData["MessageType"] = "Success";
 
             List<Sound> sounds = await _context.Sounds.ToListAsync();
-            //List<Sound> sounds = new List<Sound>()
-            //{
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //    new Sound()
-            //    {
-            //        Name = "testName",
-            //        FilePath = "testPath",
-            //        Emote = "testEmote"
-            //    },
-            //};
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
             dashboardViewModel.Sounds = sounds;
             dashboardViewModel.SaveNewSoundViewModel = new SaveNewSoundViewModel();
@@ -170,7 +101,7 @@ namespace BigOneDashboard.Controllers
                 }
 
                 // Construct a file path
-                var filePath = Path.Combine(uploadsDirectory, model.File.FileName);
+                var filePath = Path.Combine(uploadsDirectory, model.File.FileName.Replace(" ","_"));
 
                 // Save the file
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
