@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using AspNet.Security.OAuth.Discord;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +16,35 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set a long timeout for session
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = "Discord";
+})
+.AddCookie()
+.AddDiscord(discordOptions =>
+{
+    discordOptions.ClientId = builder.Configuration["Discord:ClientId"];  
+    discordOptions.ClientSecret = builder.Configuration["Discord:ClientSecret"];
+    discordOptions.CallbackPath = new PathString("/signin-discord"); // Ensure this matches the redirect URI in Discord
+    discordOptions.Scope.Add("identify"); // Minimum scope for login
+    discordOptions.Scope.Add("email"); // If you need the user's email
+    discordOptions.Scope.Add("guilds"); // If you need to access the user's guilds
+    discordOptions.SaveTokens = true;
+});
+
+
 var app = builder.Build();
+
+// Create a session
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -33,6 +64,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

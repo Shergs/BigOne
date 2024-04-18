@@ -4,6 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using BigOneDashboard.Data;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using AspNet.Security.OAuth.Discord;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 
 namespace BigOneDashboard.Controllers
 {
@@ -11,15 +18,28 @@ namespace BigOneDashboard.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
+        private const string DiscordAuthenticationScheme = "Discord";
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IConfiguration configuration)
         {
             _logger = logger;
             _context = context;
+            _configuration = configuration;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string userId = "")
         {
+
+            // redirect to a please login at this link page
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("DiscordSignIn", "Home");
+            }
+
+            await GetUserGuilds();
+            await GetBotGuilds();
+
             TempData["Message"] = "Upload Successful!";
             TempData["MessageType"] = "Success";
 
@@ -32,6 +52,84 @@ namespace BigOneDashboard.Controllers
 
             return View(dashboardViewModel);
         }
+
+        #region DiscordAuth
+        [HttpGet("signin-with-discord")]
+        public async Task<IActionResult> DiscordSignIn()
+        {
+            return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(HandleDiscordCallback)) }, "Discord");
+        }
+
+        [HttpGet("signin-discord-callback")]
+        public async Task<IActionResult> HandleDiscordCallback()
+        {
+            var authenticateResult = await HttpContext.AuthenticateAsync("Discord");
+
+            if (!authenticateResult.Succeeded)
+                return BadRequest(); // or handle the error differently
+
+            // Assuming you have a method to sign in the user with your application
+            var claims = authenticateResult.Principal.Identities.FirstOrDefault().Claims;
+            string userId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            // Store tokens in session
+            HttpContext.Session.SetString("access_token", authenticateResult.Properties.Items[".Token.access_token"]);
+            HttpContext.Session.SetString("refresh_token", authenticateResult.Properties.Items[".Token.refresh_token"]);
+
+            // store tokens with identity
+            var tokens = new List<AuthenticationToken>
+            {
+                new AuthenticationToken { Name = "access_token", Value = authenticateResult.Properties.Items[".Token.access_token"] },
+                new AuthenticationToken { Name = "refresh_token", Value = authenticateResult.Properties.Items[".Token.refresh_token"] }
+            };
+
+            var authProperties = new AuthenticationProperties() { IsPersistent = true };
+            authProperties.StoreTokens(tokens);
+
+            // Sign in the user with your system
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal, authProperties);
+
+            // Redirect to your intended destination
+            return RedirectToAction("Index");
+        }
+        #endregion
+
+        #region DiscordUserData
+        public async Task<IActionResult> GetUserGuilds()
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                var result = await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
+                var guilds = JsonConvert.DeserializeObject<List<Guild>>(result);
+                return View(guilds);
+            }
+        }
+
+        public async Task<IActionResult> GetBotGuilds()
+        {
+            var accessToken = _configuration["Discord:BotKey"];
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("BOT", accessToken);
+                var result = await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
+                var guilds = JsonConvert.DeserializeObject<List<Guild>>(result);
+                return View(guilds);
+            }
+        }
+
+        public class Guild
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string Icon { get; set; }
+            public bool Owner { get; set; }
+            public string Permissions { get; set; }
+        }
+        #endregion
 
         /// <summary>
         /// Save sales settings
