@@ -10,4 +10,5 @@
     public string Name { get; set; }
     public string FilePath { get; set; }
     public string Emote { get; set; }
+    public string ServerId { get; set; }
 }

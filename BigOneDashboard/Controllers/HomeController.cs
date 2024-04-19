@@ -28,27 +28,54 @@ namespace BigOneDashboard.Controllers
             _configuration = configuration;
         }
 
-        public async Task<IActionResult> Index(string userId = "")
+        public async Task<IActionResult> Index(string? serverId)
         {
-
             // redirect to a please login at this link page
+            List<Guild> currentAvailableGuilds = new List<Guild>();
+            if (HttpContext.Session.GetString("AvailableGuilds") != null)
+            { 
+                currentAvailableGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("AvailableGuilds"));
+            }
+            Guild? guild = null;
+            if (serverId != null)
+            {
+                guild = currentAvailableGuilds.Where(x => x.Id == serverId).FirstOrDefault();
+                string guildString = JsonConvert.SerializeObject(guild);
+                HttpContext.Session.SetString("CurrentGuild", guildString);
+            }
+
+            if (HttpContext.Session.GetString("CurrentGuild") != null)
+            { 
+                guild = currentAvailableGuilds.Where(x => x.Id == JsonConvert.DeserializeObject<Guild>(HttpContext.Session.GetString("CurrentGuild")).Id).FirstOrDefault();
+            }
+
             if (!User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("DiscordSignIn", "Home");
             }
 
-            await GetUserGuilds();
-            await GetBotGuilds();
-
             TempData["Message"] = "Upload Successful!";
             TempData["MessageType"] = "Success";
 
-            List<Sound> sounds = await _context.Sounds.ToListAsync();
+            string? guilds = HttpContext.Session.GetString("AvailableGuilds");
+            List<Guild>? availableGuilds = null;
+            if (guilds != null)
+            {
+                availableGuilds = JsonConvert.DeserializeObject<List<Guild>>(guilds);
+            }
+
+            List<Sound> sounds = await _context.Sounds.Where(x => x.ServerId == serverId).ToListAsync();
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
             dashboardViewModel.Sounds = sounds;
-            dashboardViewModel.SaveNewSoundViewModel = new SaveNewSoundViewModel();
+            dashboardViewModel.SaveNewSoundViewModel = guild != null ? new SaveNewSoundViewModel(guild.Id) : new SaveNewSoundViewModel();
             dashboardViewModel.Server = "BigOne";
             dashboardViewModel.DiscordName = "Dicretes";
+            dashboardViewModel.AvailableGuilds = availableGuilds ?? new List<Guild>();
+            if (guild != null)
+            {
+                dashboardViewModel.Guild = guild;
+                dashboardViewModel.serverId = guild.Id;
+            }
 
             return View(dashboardViewModel);
         }
@@ -89,13 +116,21 @@ namespace BigOneDashboard.Controllers
             // Sign in the user with your system
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal, authProperties);
 
+            await GetUserGuilds();
+            await GetBotGuilds();
+
+            List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
+            List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds"));
+            List<Guild> availableGuilds = userGuilds.Where(x => botGuilds.Any(y => x.Id == y.Id)).ToList();
+            HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
+
             // Redirect to your intended destination
             return RedirectToAction("Index");
         }
         #endregion
 
         #region DiscordUserData
-        public async Task<IActionResult> GetUserGuilds()
+        public async Task GetUserGuilds()
         {
             var accessToken = HttpContext.Session.GetString("access_token");
 
@@ -103,31 +138,20 @@ namespace BigOneDashboard.Controllers
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 var result = await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
-                var guilds = JsonConvert.DeserializeObject<List<Guild>>(result);
-                return View(guilds);
+                HttpContext.Session.SetString("UserGuilds",result);
             }
         }
 
-        public async Task<IActionResult> GetBotGuilds()
+        public async Task GetBotGuilds()
         {
             var accessToken = _configuration["Discord:BotKey"];
 
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("BOT", accessToken);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", accessToken);
                 var result = await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
-                var guilds = JsonConvert.DeserializeObject<List<Guild>>(result);
-                return View(guilds);
+                HttpContext.Session.SetString("BotGuilds", result);
             }
-        }
-
-        public class Guild
-        {
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public string Icon { get; set; }
-            public bool Owner { get; set; }
-            public string Permissions { get; set; }
         }
         #endregion
 
@@ -211,6 +235,7 @@ namespace BigOneDashboard.Controllers
                 sound.Name = model.Name;
                 sound.Emote = model.Emote;
                 sound.FilePath = model.File.FileName;
+                sound.ServerId = model.serverId;
 
                 _context.Sounds.Add(sound);
                 await _context.SaveChangesAsync();  

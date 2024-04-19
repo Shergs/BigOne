@@ -2,24 +2,32 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Collections.Generic;
-
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration.Json;
 public class ApplicationDbContext : IdentityDbContext
 {
-    private readonly IConfiguration _configuration;
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration configuration) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        _configuration = configuration;
-    }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
     }
-
 
     public DbSet<Sound> Sounds { get; set; }
+}
+
+public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+{
+    public ApplicationDbContext CreateDbContext(string[] args)
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())  
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
+
+        var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        builder.UseSqlServer(connectionString);
+
+        return new ApplicationDbContext(builder.Options);
+    }
 }

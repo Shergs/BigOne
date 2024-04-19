@@ -1,4 +1,6 @@
-﻿namespace BigOneDashboard.Models
+﻿
+
+namespace BigOneDashboard.Models
 {
     public class DashboardViewModel
     {
@@ -18,5 +20,9 @@
 
         public string Server { get; set; }
         public string DiscordName { get; set; }
+
+        public List<Guild> AvailableGuilds { get; set; }
+        public Guild Guild { get; set; }
+        public string serverId { get; set; }
     }
 }

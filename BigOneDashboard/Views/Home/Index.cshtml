@@ -1,8 +1,16 @@
-﻿@model DashboardViewModel
+﻿@using Newtonsoft.Json;
+
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Home Page";
     var message = TempData["Message"] as string;
     var messageType = TempData["MessageType"] as string;
+    Guild? currentGuild = null;
+    string? guild = Context.Session.GetString("CurrentGuild");
+    if (guild != null)
+    {
+        currentGuild = JsonConvert.DeserializeObject<Guild>(guild);
+    }
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.css" />
@@ -15,6 +23,8 @@
 }
 
 @* <div class="pt-16 pb-20">*@
+@if (currentGuild != null)
+{
 <div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
         
     @*Save new sound*@
@@ -22,12 +32,13 @@
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 bg-white rounded-lg">
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
-                <p><strong>Server:</strong> @Model.Server</p>
+                <p><strong>Server:</strong> @Model.Guild.Name</p>
                 <p><strong>Discord User:</strong> @Model.DiscordName</p>
                 @*<p><strong>Address:</strong> @(Model.Merchant.StreetAddress), @(Model.Merchant.City), @(Model.Merchant.State), @(Model.Merchant.Zip), @(Model.Merchant.Country)</p>*@                    
                 @using (Html.BeginForm("SaveNewSound", "Home", FormMethod.Post, new { id = "SaveNewSound", enctype = "multipart/form-data" }))
                 {
                     @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model => model.SaveNewSoundViewModel.serverId)
                     @* @Html.HiddenFor(model => model.SaveNewSoundViewModel) *@
 
                     <div class="mt-4">
@@ -61,7 +72,7 @@
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 bg-white rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Soundboard</h2>
-                <p class="mb-4"><strong>Server:</strong> @Model.Server</p>
+                <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
                 <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
                     @foreach (Sound sound in Model.Sounds)
                     {
@@ -165,6 +176,14 @@
     </div>
 
 </div>
+}
+else
+{
+    <div id="select-a-merchant" class="tw-font-bold tw-text-center tw-justify-center tw-w-full tw-height-full tw-h-[590px] tw-flex tw-flex-col">
+        <span class="tw-text-2xl tw-pb-4">Select a Server</span>
+        <svg xmlns="http://www.w3.org/2000/svg" height="5em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h82.7L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3V192c0 17.7 14.3 32 32 32s32-14.3 32-32V32c0-17.7-14.3-32-32-32H320zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z" /></svg>
+    </div>
+}
 @*</div>*@
 
 @section Scripts {
