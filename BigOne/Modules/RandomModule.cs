@@ -1,4 +1,4 @@
-﻿namespace BigOne;
+﻿namespace BigOne.Modules;
 
 using System;
 using System.Threading.Tasks;
@@ -21,8 +21,8 @@ using OpenAI_API.Moderation;
 public sealed class RandomModule : InteractionModuleBase<SocketInteractionContext>
 {
     public RandomModule()
-    { 
-    
+    {
+
     }
 
     [SlashCommand("peter", description: "Insult Peter", runMode: RunMode.Async)]

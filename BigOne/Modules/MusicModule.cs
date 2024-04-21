@@ -1,26 +1,14 @@
-﻿namespace BigOne;
+﻿namespace BigOne.Modules;
 
 using System;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Audio;
 using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
-using Lavalink4NET.Rest;
 using Lavalink4NET.Rest.Entities.Tracks;
-using Lavalink4NET.Tracks;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using OpenAI_API;
-using OpenAI_API.Chat;
-using OpenAI_API.Models;
-using OpenAI_API.Moderation;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.
@@ -29,7 +17,6 @@ using OpenAI_API.Moderation;
 public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IAudioService _audioService;
-    private ApplicationDbContext _applicationDbContext;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -38,11 +25,10 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ApplicationDbContext applicationDbContext)
+    public MusicModule(IAudioService audioService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
-        _applicationDbContext = applicationDbContext;
     }
 
     /// <summary>
@@ -64,105 +50,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     }
 
     #region sound
-    [SlashCommand("sound", description: "Play soundboard sound", runMode: RunMode.Async)]
-    public async Task Sound(string soundName)
-    {
-        await DeferAsync().ConfigureAwait(false);
-        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
-        var voiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
-        IAudioClient audioClient = null;
-        if (voiceChannel == null)
-        {
-            await ReplyAsync("You need to be in a voice channel.");
-            return;
-        }
-        Console.WriteLine("Attempting to connect to the voice channel...");
-        try
-        {
-            audioClient = await voiceChannel.ConnectAsync();
-            Console.WriteLine("Connected to the voice channel successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Failed to connect to voice channel: " + ex.Message);
-            return;
-        }
-        try
-        {
-            Sound? sound = await _applicationDbContext.Sounds.Where(x => x.Name.ToLower() == soundName.ToLower()).FirstOrDefaultAsync();
-            if (sound == null)
-            {
-                Console.WriteLine("Error: Cannot find sound file.");
-                await FollowupAsync("Can't find sound in database");
-                return;
-            }
-            string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{sound.FilePath.Replace(" ","_")}";
-            if (!File.Exists(path))
-            {
-                // Going to just do the thing here
-                bool soundDownloaded = await API.TryGetSound(soundName, path);
-                if (!soundDownloaded)
-                {
-                    Console.WriteLine("Error: File does not exist at the specified path.");
-                    return;
-                }
-                else
-                {
-                    await FollowupAsync($"Sound Downloaded!");
-                }
-            }
-            await FollowupAsync("SoundBoard: " + $"{path}").ConfigureAwait(false);
-            using (var ffmpeg = CreateProcess(path))
-            using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))
-            {
-                try { await ffmpeg.StandardOutput.BaseStream.CopyToAsync(stream); }
-                finally { await stream.FlushAsync(); }
-            }
-        }
-        finally
-        {
-            await audioClient.StopAsync();
-        }
-    }
 
-    [SlashCommand("soundboard", description:"List out all of the sounds on this server's soundboard", runMode: RunMode.Async)]
-    public async Task SoundBoard()
-    {
-        await DeferAsync().ConfigureAwait(false);
-
-        List<Sound> sounds = await _applicationDbContext.Sounds.Where(x => x.ServerId == Context.Guild.Id.ToString()).ToListAsync();
-        if (sounds.Count == 0)
-        { 
-            await FollowupAsync("No sounds found for server").ConfigureAwait(false);
-            return;
-        }
-        string result = "";
-        for (int i = 0; i< sounds.Count; i++) 
-        {
-            result += $"{i}. {sounds[i].Emote}{sounds[i].Name}\n";
-        }
-        await FollowupAsync(result).ConfigureAwait(false);
-    }
-
-    public Process CreateProcess(string path)
-    {
-        Process process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "ffmpeg",
-                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -ar 48000 -f s16le -acodec pcm_s16le pipe:1",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        process.ErrorDataReceived += (sender, e) => Console.WriteLine("FFmpeg Error: " + e.Data);
-        process.BeginErrorReadLine();
-        return process;
-    }
     #endregion
 
     #region PlayService
@@ -200,7 +88,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         {
             var currentTrack = player.CurrentItem;
             if (currentTrack is null)
-            { 
+            {
                 await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
                 return;
             }
@@ -351,10 +239,8 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
                             .WithFooter(footer => footer.Text = "Play some more songs.")
                             .WithCurrentTimestamp();
 
-            // Call Build() to create the Embed object
             var embed = embedBuilder.Build();
 
-            // Use RespondAsync to send the embed. No need for the second RespondAsync call that you have.
             await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
         }
@@ -415,8 +301,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             return;
         }
 
-        //Lavalink4NET.Players.Queued.ITrackQueue
-
         if (player.Queue.HasHistory)
         {
             var embedBuilder = new EmbedBuilder()
@@ -428,7 +312,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             await player.ResumeAsync().ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
         }
-        else 
+        else
         {
             var embedBuilder = new EmbedBuilder()
                             .WithColor(Color.Blue)
@@ -466,11 +350,5 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
         return result.Player;
     }
-
-    public class LavalinkTrackResponse
-    {
-        // Define properties based on Lavalink's response structure
-    }
-
 }
 

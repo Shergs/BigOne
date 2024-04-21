@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenAI_API;
 using Microsoft.EntityFrameworkCore;
+using BigOne.Modules;
 
 var builder = new HostApplicationBuilder(args);
 
