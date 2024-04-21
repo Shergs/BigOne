@@ -286,7 +286,7 @@ namespace BigOneDashboard.Controllers
         #region SoundAPI
         public IActionResult GetSound(string filePath)
         {
-            var fullPath = Path.Combine("C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\", filePath);
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", filePath);
             var contentType = "audio/mp3";
             var fileName = Path.GetFileName(fullPath);
             return PhysicalFile(fullPath, contentType, fileName);
@@ -318,7 +318,8 @@ namespace BigOneDashboard.Controllers
                 return NotFound("soundName doesn't exist in DB.");
             }
 
-            var filePath = $"wwwroot/sounds/{soundName}.mp3";
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", sound.FilePath.Replace(" ","_"));
+
             if (!System.IO.File.Exists(filePath))
                 return NotFound("Sound not found.");
 
