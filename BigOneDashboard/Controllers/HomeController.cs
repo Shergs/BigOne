@@ -216,7 +216,7 @@ namespace BigOneDashboard.Controllers
             {
                 TempData["Message"] = "Sound failed to be saved. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("Index", new DashboardViewModel { Sounds=new List<Sound>()});
+                return View("Index", model);
             }
         }
 
@@ -229,7 +229,7 @@ namespace BigOneDashboard.Controllers
             if (ModelState.IsValid)
             {
                 // Retrieve the existing sound from the database
-                var sound = await _context.Sounds.FindAsync(model.Id);
+                var sound = await _context.Sounds.FindAsync(editModel.Id);
                 if (sound == null)
                 {
                     TempData["Message"] = "Sound Settings Failed To Save.";
