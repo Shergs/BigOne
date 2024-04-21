@@ -305,6 +305,7 @@ namespace BigOneDashboard.Controllers
                 emote = sound.Emote,
                 filePath = sound.FilePath
             });
+            //return SoundAPI.GetSoundDetails(id);
         }
 
         [HttpGet("get-sound/{soundName}")]
