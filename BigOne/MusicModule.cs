@@ -130,7 +130,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     {
         await DeferAsync().ConfigureAwait(false);
 
-        List<Sound> sounds = await _applicationDbContext.Sounds.ToListAsync();
+        List<Sound> sounds = await _applicationDbContext.Sounds.Where(x => x.ServerId == Context.Guild.Id.ToString()).ToListAsync();
         if (sounds.Count == 0)
         { 
             await FollowupAsync("No sounds found for server").ConfigureAwait(false);

@@ -11,6 +11,7 @@ using AspNet.Security.OAuth.Discord;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
+using BigOneData.Migrations;
 
 namespace BigOneDashboard.Controllers
 {
@@ -64,7 +65,7 @@ namespace BigOneDashboard.Controllers
                 availableGuilds = JsonConvert.DeserializeObject<List<Guild>>(guilds);
             }
 
-            List<Sound> sounds = await _context.Sounds.Where(x => x.ServerId == serverId).ToListAsync();
+            List<Sound> sounds = guild != null ? await _context.Sounds.Where(x => x.ServerId == guild.Id).ToListAsync() : new List<Sound>();
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
             dashboardViewModel.Sounds = sounds;
             dashboardViewModel.SaveNewSoundViewModel = guild != null ? new SaveNewSoundViewModel(guild.Id) : new SaveNewSoundViewModel();
