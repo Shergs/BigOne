@@ -26,7 +26,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = "Discord";
+    options.DefaultChallengeScheme = builder.Configuration["Discord:AuthScheme"];
 })
 .AddCookie()
 .AddDiscord(discordOptions =>

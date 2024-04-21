@@ -22,7 +22,6 @@
     </div>
 }
 
-@* <div class="pt-16 pb-20">*@
 @if (currentGuild != null)
 {
 <div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
@@ -34,12 +33,10 @@
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
                 <p><strong>Server:</strong> @Model.Guild.Name</p>
                 <p><strong>Discord User:</strong> @Model.DiscordName</p>
-                @*<p><strong>Address:</strong> @(Model.Merchant.StreetAddress), @(Model.Merchant.City), @(Model.Merchant.State), @(Model.Merchant.Zip), @(Model.Merchant.Country)</p>*@                    
                 @using (Html.BeginForm("SaveNewSound", "Home", FormMethod.Post, new { id = "SaveNewSound", enctype = "multipart/form-data" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(model => model.SaveNewSoundViewModel.serverId)
-                    @* @Html.HiddenFor(model => model.SaveNewSoundViewModel) *@
 
                     <div class="mt-4">
                         @Html.LabelFor(m => m.SaveNewSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
@@ -116,7 +113,7 @@
                     @using (Html.BeginForm("EditSound", "Home", FormMethod.Post, new { id = "EditSound", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
-                        @Html.Hidden("EditSoundViewModel.Id", null, new { id = "SoundId" })
+                        @Html.HiddenFor(model => model.EditSoundViewModel.Id, new { id = "SoundId" })
 
                         <div class="mt-4">
                             @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
@@ -137,7 +134,6 @@
                 </div>
                 <div class="modal-footer border-t">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    @*<button type="submit" class="btn btn-primary">Save Changes</button>*@
                 </div>
             </div>
         </div>
@@ -156,7 +152,7 @@
                     @using (Html.BeginForm("DeleteSound", "Home", FormMethod.Post, new { id = "DeleteSound", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
-                        @Html.Hidden("DeleteSoundViewModel.Id", null, new { id = "SoundId" })
+                        @Html.HiddenFor(model => model.DeleteSoundViewModel.Id, new { id = "SoundId" })
                         <p class="mb-4"><strong>Name:</strong><span id="deleteSoundName"></span> </p>
                         <span>Are you sure you would like to delete this sound?</span>
                     }
@@ -180,7 +176,6 @@ else
         </div>
     </div>
 }
-@*</div>*@
 
 @section Scripts {
     <script>
