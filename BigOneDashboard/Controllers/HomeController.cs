@@ -32,6 +32,7 @@ namespace BigOneDashboard.Controllers
         public async Task<IActionResult> Index(string? serverId)
         {
             // redirect to a please login at this link page
+
             List<Guild> currentAvailableGuilds = new List<Guild>();
             if (HttpContext.Session.GetString("AvailableGuilds") != null)
             { 
@@ -52,11 +53,9 @@ namespace BigOneDashboard.Controllers
 
             if (!User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("DiscordSignIn", "Home");
+                return RedirectToAction("LoginPage", "Home");
+                //return RedirectToAction("DiscordSignIn", "Home");
             }
-
-            TempData["Message"] = "Upload Successful!";
-            TempData["MessageType"] = "Success";
 
             string? guilds = HttpContext.Session.GetString("AvailableGuilds");
             List<Guild>? availableGuilds = null;
@@ -82,6 +81,11 @@ namespace BigOneDashboard.Controllers
         }
 
         #region DiscordAuth
+        public async Task<IActionResult> LoginPage()
+        {
+            return View();
+        }
+
         [HttpGet("signin-with-discord")]
         public async Task<IActionResult> DiscordSignIn()
         {
@@ -241,7 +245,7 @@ namespace BigOneDashboard.Controllers
                 _context.Sounds.Add(sound);
                 await _context.SaveChangesAsync();  
 
-                TempData["Message"] = "Settings Saved Successfully!";
+                TempData["Message"] = "Sound Saved Successfully!";
                 TempData["MessageType"] = "Success";
                 return RedirectToAction("Index", new DashboardViewModel());
             }
