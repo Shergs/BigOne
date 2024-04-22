@@ -315,7 +315,7 @@ namespace BigOneDashboard.Controllers
         [HttpGet("get-sound/{soundName}")]
         public async Task<IActionResult> GetServeSound(string soundName)
         {
-            Sound? sound = await _context.Sounds.Where(x => x.Name == soundName).FirstOrDefaultAsync();
+            Sound? sound = await _context.Sounds.Where(x => x.Name == soundName.Replace("_", " ")).FirstOrDefaultAsync();
 
             if (sound == null)
             {
