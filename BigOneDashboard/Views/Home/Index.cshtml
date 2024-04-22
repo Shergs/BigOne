@@ -36,7 +36,7 @@
                 @using (Html.BeginForm("SaveNewSound", "Home", FormMethod.Post, new { id = "SaveNewSound", enctype = "multipart/form-data" }))
                 {
                     @Html.AntiForgeryToken()
-                    @Html.HiddenFor(model => model.SaveNewSoundViewModel.serverId)
+                    @Html.HiddenFor(m => m.SaveNewSoundViewModel.serverId)
 
                     <div class="mt-4">
                         @Html.LabelFor(m => m.SaveNewSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
@@ -114,6 +114,7 @@
                     {
                         @Html.AntiForgeryToken()
                         @Html.HiddenFor(model => model.EditSoundViewModel.Id, new { id = "SoundId" })
+                        @Html.HiddenFor(model => model.EditSoundViewModel.serverId)
 
                         <div class="mt-4">
                             @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
@@ -153,6 +154,7 @@
                     {
                         @Html.AntiForgeryToken()
                         @Html.HiddenFor(model => model.DeleteSoundViewModel.Id, new { id = "SoundId" })
+                        @Html.HiddenFor(model => model.DeleteSoundViewModel.serverId)
                         <p class="mb-4"><strong>Name:</strong><span id="deleteSoundName"></span> </p>
                         <span>Are you sure you would like to delete this sound?</span>
                     }

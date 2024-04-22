@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using BigOneData.Migrations;
 using System.Text.Json;
 using BigOneDashboard.SharedAPI;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BigOneDashboard.Controllers
 {
@@ -32,11 +33,19 @@ namespace BigOneDashboard.Controllers
 
         public async Task<IActionResult> Index(string? serverId)
         {
-            // redirect to a please login at this link page
+            if (!User.Identity.IsAuthenticated)
+            {
+                return View("LoginPage");
+            }
 
+            return View(await HydrateDashboardViewModel(serverId));
+        }
+
+        public async Task<DashboardViewModel> HydrateDashboardViewModel(string? serverId)
+        {
             List<Guild> currentAvailableGuilds = new List<Guild>();
             if (HttpContext.Session.GetString("AvailableGuilds") != null)
-            { 
+            {
                 currentAvailableGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("AvailableGuilds"));
             }
             Guild? guild = null;
@@ -48,13 +57,8 @@ namespace BigOneDashboard.Controllers
             }
 
             if (HttpContext.Session.GetString("CurrentGuild") != null)
-            { 
-                guild = currentAvailableGuilds.Where(x => x.Id == JsonConvert.DeserializeObject<Guild>(HttpContext.Session.GetString("CurrentGuild")).Id).FirstOrDefault();
-            }
-
-            if (!User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("LoginPage", "Home");
+                guild = currentAvailableGuilds.Where(x => x.Id == JsonConvert.DeserializeObject<Guild>(HttpContext.Session.GetString("CurrentGuild")).Id).FirstOrDefault();
             }
 
             string? guilds = HttpContext.Session.GetString("AvailableGuilds");
@@ -68,6 +72,8 @@ namespace BigOneDashboard.Controllers
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
             dashboardViewModel.Sounds = sounds;
             dashboardViewModel.SaveNewSoundViewModel = guild != null ? new SaveNewSoundViewModel(guild.Id) : new SaveNewSoundViewModel();
+            dashboardViewModel.EditSoundViewModel = guild != null ? new EditSoundViewModel(guild.Id) : new EditSoundViewModel();
+            dashboardViewModel.DeleteSoundViewModel = guild != null ? new DeleteSoundViewModel(guild.Id) : new DeleteSoundViewModel();
             dashboardViewModel.DiscordName = HttpContext.Session.GetString("Username") ?? "";
             dashboardViewModel.AvailableGuilds = availableGuilds ?? new List<Guild>();
             if (guild != null)
@@ -76,7 +82,7 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.serverId = guild.Id;
             }
 
-            return View(dashboardViewModel);
+            return dashboardViewModel;
         }
 
         #region DiscordAuth
@@ -146,10 +152,8 @@ namespace BigOneDashboard.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveNewSound(DashboardViewModel model)
+        public async Task<IActionResult> SaveNewSound([Bind(Prefix = "SaveNewSoundViewModel")] SaveNewSoundViewModel saveModel)
         {
-            SaveNewSoundViewModel saveModel = model.SaveNewSoundViewModel;
-            TryValidateModel(saveModel, nameof(model.SaveNewSoundViewModel));
             // Regex to validate single emoji
             var regex = new Regex(@"^([\uD800-\uDBFF][\uDC00-\uDFFF])$");
 
@@ -158,15 +162,15 @@ namespace BigOneDashboard.Controllers
                 TempData["Message"] = "Please enter exactly one emoji.";
                 TempData["MessageType"] = "Error";
                 ModelState.AddModelError("Emote", "Please enter exactly one emoji.");
-                return RedirectToAction("Index", model);
+                return View("Index", await HydrateDashboardViewModel(saveModel.serverId));
             }
 
-            if (_context.Sounds.Any(x => x.Name == saveModel.Name))
+            if (_context.Sounds.Any(x => x.Name == saveModel.Name && x.ServerId == saveModel.serverId))
             {
-                TempData["Message"] = "Sound name already exists.";
+                TempData["Message"] = "Sound name already exists for this server";
                 TempData["MessageType"] = "Error";
                 ModelState.AddModelError("Emote", "Sound name already exists.");
-                return RedirectToAction("Index", model);
+                return View("Index", await HydrateDashboardViewModel(saveModel.serverId));
             }
 
             if (ModelState.IsValid && saveModel.File != null && saveModel.File.Length > 0)
@@ -179,7 +183,7 @@ namespace BigOneDashboard.Controllers
                 if (extension != ".mp3")
                 {
                     ModelState.AddModelError("File", "Only MP3 files are allowed.");
-                    return RedirectToAction("Index", model);
+                    return View("Index", await HydrateDashboardViewModel(saveModel.serverId));
                 }
 
                 var uploadsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Sounds");
@@ -202,7 +206,7 @@ namespace BigOneDashboard.Controllers
                 Sound sound = new Sound();
                 sound.Name = saveModel.Name;
                 sound.Emote = saveModel.Emote;
-                sound.FilePath = saveModel.File.FileName;
+                sound.FilePath = saveModel.File.FileName.Replace(" ", "_");
                 sound.ServerId = saveModel.serverId;
 
                 _context.Sounds.Add(sound);
@@ -210,54 +214,54 @@ namespace BigOneDashboard.Controllers
 
                 TempData["Message"] = "Sound Saved Successfully!";
                 TempData["MessageType"] = "Success";
-                return RedirectToAction("Index", new DashboardViewModel());
+                return View("Index", await HydrateDashboardViewModel(saveModel.serverId));
             }
             else
             {
                 TempData["Message"] = "Sound failed to be saved. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("Index", model);
+                return View("Index", await HydrateDashboardViewModel(saveModel.serverId));
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditSound(DashboardViewModel model)
+        public async Task<IActionResult> EditSound([Bind(Prefix = "EditSoundViewModel")] EditSoundViewModel editModel)
         {
-            EditSoundViewModel editModel = model.EditSoundViewModel;
-            TryValidateModel(editModel, nameof(model.EditSoundViewModel));
             if (ModelState.IsValid)
             {
-                // Retrieve the existing sound from the database
                 var sound = await _context.Sounds.FindAsync(editModel.Id);
                 if (sound == null)
                 {
                     TempData["Message"] = "Sound Settings Failed To Save.";
                     TempData["MessageType"] = "Error";
-                    return RedirectToAction("Index", model);
+                    return View("Index", await HydrateDashboardViewModel(editModel.serverId));
                 }
 
-                // Update the sound properties
+                if (_context.Sounds.Any(x => x.Name == editModel.Name && x.ServerId == editModel.serverId))
+                {
+                    TempData["Message"] = "Sound Settings Failed To Save. Another sound exists with the same name on the selected server.";
+                    TempData["MessageType"] = "Error";
+                    return View("Index", await HydrateDashboardViewModel(editModel.serverId));
+                }
                 sound.Name = editModel.Name;
                 sound.Emote = editModel.Emote;
                 await _context.SaveChangesAsync();
 
                 TempData["Message"] = "Settings Saved Successfully!";
                 TempData["MessageType"] = "Success";
-                return RedirectToAction("Index", model);
+                return View("Index", await HydrateDashboardViewModel(editModel.serverId));
             }
 
             TempData["Message"] = "Sound Settings Failed To Save.";
             TempData["MessageType"] = "Error";
-            return RedirectToAction("Index", model);
+            return View("Index", await HydrateDashboardViewModel(editModel.serverId));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteSound(DashboardViewModel model)
+        public async Task<IActionResult> DeleteSound([Bind(Prefix = "DeleteSoundViewModel")] DeleteSoundViewModel deleteModel)
         {
-            DeleteSoundViewModel deleteModel = model.DeleteSoundViewModel;
-            TryValidateModel(deleteModel, nameof(model.DeleteSoundViewModel));
             if (ModelState.IsValid)
             {
                 var sound = await _context.Sounds.FindAsync(deleteModel.Id);
@@ -265,21 +269,21 @@ namespace BigOneDashboard.Controllers
                 {
                     _context.Sounds.Remove(sound);
                     await _context.SaveChangesAsync();
-                    TempData["Message"] = "Sound Saved Successfully!";
+                    TempData["Message"] = "Sound Deleted Successfully!";
                     TempData["MessageType"] = "Success";
                 }
                 else
                 {
-                    TempData["Message"] = "Sound not found.";
+                    TempData["Message"] = "Failed To Delete Sound. Sound not found.";
                     TempData["MessageType"] = "Error";
                 }
-                return RedirectToAction("Index", model);
+                return View("Index", await HydrateDashboardViewModel(deleteModel.serverId));
             }
             else
             {
                 TempData["Message"] = "Failed To Delete Sound.";
                 TempData["MessageType"] = "Error";
-                return RedirectToAction("Index", model);
+                return View("Index", await HydrateDashboardViewModel(deleteModel.serverId));
             }
         }
 

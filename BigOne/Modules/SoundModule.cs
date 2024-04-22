@@ -64,7 +64,7 @@ public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext
                     await FollowupAsync($"Sound Downloaded!");
                 }
             }
-            await FollowupAsync("SoundBoard: " + $"{path}").ConfigureAwait(false);
+            await FollowupAsync("SoundBoard: " + $"{soundName}").ConfigureAwait(false);
             using (var ffmpeg = CreateProcess(path))
             using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))
             {
