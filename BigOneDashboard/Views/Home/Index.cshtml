@@ -81,7 +81,7 @@
                             <!-- Audio Player -->
                             <div class="flex-grow px-4" style="margin-left:auto;">
                                 <audio controls preload="none">
-                                    <source src="@Url.Action("GetSound", "Home", new { filePath = sound.FilePath })" type="audio/mp3">
+                                    <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
                                     Your browser does not support the audio element.
                                 </audio>
                             </div>
@@ -167,6 +167,35 @@
         </div>
     </div>
 
+    @* Text to speech *@
+    <div id="TTSCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 12/span 12; grid-row: span 4/span 4;">
+        <div class="w-full h-full mx-auto my-8">
+            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <h2 class="text-2xl mb-2 font-bold">Text to Speech</h2>
+                <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
+                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                    @using (Html.BeginForm("TTSSubmit", "Home", FormMethod.Post, new { id = "textToSpeechForm", @class = "w-full" }))
+                    {
+                        <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                            <textarea name="query" class="w-full h-full"></textarea>
+                        </div>
+                        <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
+                        <button type="submit" name="action" value="save" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
+                        <button type="submit" name="action" value="playToServer" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Play to Server</button>
+                        <input type="hidden" name="ttsServerId" value="@Model.serverId"/>
+                        <!-- Audio Player -->
+                        <div style="display:none;">
+                            <audio id="audioPlayer" controls preload="none">
+                                <source src="" type="audio/mp3">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 }
 else
@@ -183,7 +212,10 @@ else
     <script>
         // Remove the toast message after 5 seconds
         setTimeout(() => {
-            document.getElementById('toast-message').remove();
+            const toast = document.getElementById('toast-message');
+            if (toast) { 
+                toast.remove();
+            }
         }, 5000);
     </script>
     <script>
@@ -318,6 +350,28 @@ else
                 })
                 .catch(error => console.error('Error fetching sound details:', error));
         }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#TTSPlayButton').click(function () {
+                var textToSpeech = $('textarea[name="query"]').val();
+                $.ajax({
+                    url: '@Url.Action("PlayTTS", "Home")',
+                    type: 'POST',
+                    data: { query: textToSpeech },
+                    success: function (response) {
+                        // Assuming the response is the URL to the audio file
+                        console.log(response.audioUrl);
+                        $('#audioPlayer source').attr('src', response.audioUrl);
+                        $('#audioPlayer')[0].load(); // Reload the source
+                        $('#audioPlayer')[0].play(); // Play the audio
+                    },
+                    error: function () {
+                        alert('Error generating speech.');
+                    }
+                });
+            });
+        });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
 }

@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 using OpenAI_API;
 using Microsoft.EntityFrameworkCore;
 using BigOne.Modules;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-var builder = new HostApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 // Discord
 builder.Services.AddSingleton<DiscordSocketClient>();
@@ -26,7 +28,31 @@ var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? th
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Build().Run();
+// Add controllers for API
+builder.Services.AddControllers();
+
+// Logging
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
+
+// Build the application
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+//if (!app.Environment.IsDevelopment())
+//{
+//    app.UseExceptionHandler("/Error");
+//    app.UseHsts();
+//}
+
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
+
+// Map controllers
+app.MapControllers();
+
+// Run the application
+app.Run();
 
 
 

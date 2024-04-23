@@ -15,6 +15,7 @@ using BigOneData.Migrations;
 using System.Text.Json;
 using BigOneDashboard.SharedAPI;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text;
 
 namespace BigOneDashboard.Controllers
 {
@@ -288,12 +289,58 @@ namespace BigOneDashboard.Controllers
         }
 
         #region SoundAPI
-        public IActionResult GetSound(string filePath)
+        public async Task<IActionResult> GetSound(string soundName, string filePath)
         {
+            if (soundName == "")
+            {
+                return Json(new { audioUrl = $"/Sounds/{filePath}" });
+            }
             var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", filePath);
+            if (!System.IO.File.Exists(fullPath))
+            {
+                // Download file from the bot first
+                // Will implement a service to do this every certain amount of time at some point
+                bool soundDownloaded = await TryGetSound(soundName, fullPath);
+                if (!soundDownloaded)
+                {
+                    return null;
+                }
+            }
             var contentType = "audio/mp3";
             var fileName = Path.GetFileName(fullPath);
             return PhysicalFile(fullPath, contentType, fileName);
+        }
+
+        public async Task<bool> TryGetSound(string soundName, string path)
+        {
+            try
+            {
+                Console.WriteLine("Downloading file from API...");
+                using (var client = new HttpClient())
+                {
+                    string endpoint = $"{_configuration["Bot:BaseUrl"]}/get-sound/{soundName.Replace(" ", "_")}";
+                    var response = await client.GetAsync(endpoint);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        using (var fs = new FileStream(path, FileMode.CreateNew))
+                        {
+                            await response.Content.CopyToAsync(fs);
+                        }
+                        Console.WriteLine("File downloaded successfully.");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to download file.");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("TryGetSound Failed");
+                return false;
+            }
         }
 
         [HttpGet]
@@ -335,6 +382,84 @@ namespace BigOneDashboard.Controllers
             memory.Position = 0;
 
             return File(memory, "audio/mpeg", $"{sound.FilePath.Replace(" ","_")}");
+        }
+        #endregion
+
+        #region TTS
+        public async Task<IActionResult> TTSSubmit(string query, string action, string ttsServerId)
+        {
+            switch (action)
+            {
+                case "play":
+                    // Handle play logic
+                    //string outputFileName = await PlayTTS(query);
+                    //return await GetSound("", outputFileName);
+                    break;
+                case "save":
+                    // Handle save logic
+                    // Just open a save modal to save the output{username}.mp3 with a different name and add to the DB as a sound
+                    break;
+                case "playToServer":
+                    // Send a request to the discord bot to play this sound.
+                    // Should actually just add playToServer functionality on the soundboard instead.
+                    // Handle play to server logic
+                    break;
+            }
+            return View("Index", await HydrateDashboardViewModel(ttsServerId));
+        }
+
+        public async Task<IActionResult> PlayTTS(string query)
+        {
+            // API key
+            string apiKey = _configuration["Google:APIKey"];
+
+            // Your Google Cloud Text-to-Speech API key
+            string apiUrl = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={apiKey}";
+
+            // Create an HttpClient
+            using (HttpClient client = new HttpClient())
+            {
+                // Setup HTTP request data
+                var requestData = new
+                {
+                    input = new { text = query },
+                    voice = new { languageCode = "en-US", ssmlGender = "FEMALE" },
+                    audioConfig = new { audioEncoding = "MP3" }
+                };
+
+                // Serialize request data to JSON
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
+                HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Send a POST request
+                HttpResponseMessage response = await client.PostAsync(apiUrl, content);
+
+                // Handle response
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    using (JsonDocument doc = JsonDocument.Parse(responseContent))
+                    {
+                        // Extract the audio content from JSON response
+                        string audioContent = doc.RootElement.GetProperty("audioContent").GetString();
+                        byte[] audioBytes = Convert.FromBase64String(audioContent);
+
+                        // Write the bytes to an MP3 file
+                        string outputFileName = $"output{HttpContext.Session.GetString("Username") ?? ""}.mp3";
+                        string path = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", outputFileName);
+                        System.IO.File.WriteAllBytes(path, audioBytes);
+                        Console.WriteLine("Audio content written to file 'output.mp3'");
+                        return await GetSound("", outputFileName);
+                        //return outputFileName;
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Error from API: " + errorContent);
+                }
+            }
+            return null;
         }
         #endregion
 

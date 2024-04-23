@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="7.0.0" />
+    <PackageReference Include="Google.Cloud.TextToSpeech.V1" Version="3.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.15" />

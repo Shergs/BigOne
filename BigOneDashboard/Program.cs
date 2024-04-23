@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AspNet.Security.OAuth.Discord;
+using Microsoft.Extensions.FileProviders;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +60,17 @@ else
 }
 
 app.UseHttpsRedirection();
+// Create a PhysicalFileProvider for an external directory
+var fileProvider = new PhysicalFileProvider("C:/Workspace_Git/BigOne/BigOneDashboard/Sounds");
+
+// Use static files middleware to serve files from the external directory
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = fileProvider,
+    RequestPath = "/Sounds" // URL path where these files will be accessible
+});
+
+// Standard static files (wwwroot)
 app.UseStaticFiles();
 
 app.UseRouting();
