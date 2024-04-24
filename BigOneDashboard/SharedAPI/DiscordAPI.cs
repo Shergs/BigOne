@@ -37,6 +37,7 @@ namespace BigOneDashboard.SharedAPI
             }
         }
 
+        // Make this get and create a userData instead of just username
         public static async Task<string> GetUserInfo(string token)
         {
             using (var client = new HttpClient())
@@ -46,7 +47,13 @@ namespace BigOneDashboard.SharedAPI
                 using (var doc = JsonDocument.Parse(result))
                 {
                     var username = doc.RootElement.GetProperty("username").GetString() ?? "";
-                    return username;
+                    var userId = doc.RootElement.GetProperty("id").GetString() ?? "";
+                    UserData userData = new UserData
+                    {
+                        UserId = userId,
+                        Username = username
+                    };
+                    return JsonConvert.SerializeObject(userData);
                 }
             }
         }

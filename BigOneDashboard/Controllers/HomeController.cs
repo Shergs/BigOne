@@ -16,6 +16,10 @@ using System.Text.Json;
 using BigOneDashboard.SharedAPI;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text;
+using Azure.Core;
+using BigOneDashboard.Areas.DiscordAuth;
+using Google.Apis.Http;
+using System.Globalization;
 
 namespace BigOneDashboard.Controllers
 {
@@ -34,12 +38,53 @@ namespace BigOneDashboard.Controllers
 
         public async Task<IActionResult> Index(string? serverId)
         {
-            if (!User.Identity.IsAuthenticated)
+            bool isAuth = await HandleAuth();
+            if (isAuth)
+            {
+                if (serverId != null)
+                {
+                    HttpContext.Session.SetString("ServerId", serverId);
+                }
+                return View(await HydrateDashboardViewModel(serverId));
+            }
+            else
             {
                 return View("LoginPage");
             }
+        }
 
-            return View(await HydrateDashboardViewModel(serverId));
+        public async Task<bool> HandleAuth()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                // Store this somewhere more persistent. Although server side session might be fine.
+                string userId = HttpContext.Session.GetString("UserId") ?? "";
+
+                TokenService tokenService = new TokenService(_context, _configuration);
+                if (userId != "")
+                {
+                    string userToken = await tokenService.GetAccessTokenAsync(userId);
+                    string botAccessToken = _configuration["Discord:BotKey"] ?? "";
+
+                    string userGuildsString = await DiscordAPI.GetUserGuilds(userToken);
+                    string username = await DiscordAPI.GetUserInfo(userToken);
+                    string botGuildsString = await DiscordAPI.GetBotGuilds(botAccessToken);
+
+                    // Set session
+                    HttpContext.Session.SetString("UserGuilds", userGuildsString);
+                    HttpContext.Session.SetString("Username", username);
+                    HttpContext.Session.SetString("BotGuilds", botGuildsString);
+
+                    List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
+                    List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds"));
+                    List<Guild> availableGuilds = userGuilds.Where(x => botGuilds.Any(y => x.Id == y.Id)).ToList();
+                    HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
+
+                    return true;
+                }
+                return false;
+            }
+            return true;
         }
 
         public async Task<DashboardViewModel> HydrateDashboardViewModel(string? serverId)
@@ -102,22 +147,43 @@ namespace BigOneDashboard.Controllers
         public async Task<IActionResult> HandleDiscordCallback()
         {
             var authenticateResult = await HttpContext.AuthenticateAsync(_configuration["Discord:AuthScheme"]);
-
             if (!authenticateResult.Succeeded)
                 return BadRequest();
 
-            var claims = authenticateResult.Principal.Identities.FirstOrDefault().Claims;
-            string userId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            //var claims = authenticateResult.Principal.Identities.FirstOrDefault().Claims;
+            //string userId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             // Store tokens in session
-            HttpContext.Session.SetString("access_token", authenticateResult.Properties.Items[".Token.access_token"]);
-            HttpContext.Session.SetString("refresh_token", authenticateResult.Properties.Items[".Token.refresh_token"]);
+            string accessToken = authenticateResult.Properties.Items[".Token.access_token"] ?? ""; 
+            string refreshToken = authenticateResult.Properties.Items[".Token.refresh_token"] ?? "";
+
+            // Extract the expiry date string
+            if (!authenticateResult.Properties.Items.TryGetValue(".expires", out var expiryDateString))
+            {
+                return BadRequest("Expiration date not found.");
+            }
+
+            // Parse the GMT expiry date string to a DateTime object
+            if (!DateTime.TryParseExact(expiryDateString, "ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var expiryDate))
+            {
+                return BadRequest("Invalid expiration date format.");
+            }
+
+            // Calculate the remaining seconds from now until the expiry date
+            var secondsRemaining = (int)(expiryDate - DateTime.UtcNow).TotalSeconds;
+            secondsRemaining = Math.Max(0, secondsRemaining);  // Ensure it doesn't go negative
+
+
+            HttpContext.Session.SetString("access_token", accessToken);
+            HttpContext.Session.SetString("refresh_token", refreshToken);
+            // Get bot access token
+            var botAccessToken = _configuration["Discord:BotKey"] ?? "";
 
             // store tokens with identity
             var tokens = new List<AuthenticationToken>
             {
-                new AuthenticationToken { Name = "access_token", Value = authenticateResult.Properties.Items[".Token.access_token"] },
-                new AuthenticationToken { Name = "refresh_token", Value = authenticateResult.Properties.Items[".Token.refresh_token"] }
+                new AuthenticationToken { Name = "access_token", Value = authenticateResult.Properties.Items[".Token.access_token"] ?? "" },
+                new AuthenticationToken { Name = "refresh_token", Value = authenticateResult.Properties.Items[".Token.refresh_token"] ?? "" }
             };
 
             var authProperties = new AuthenticationProperties() { IsPersistent = true };
@@ -126,15 +192,18 @@ namespace BigOneDashboard.Controllers
             // Sign in the user
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal, authProperties);
 
-            var accessToken = HttpContext.Session.GetString("access_token") ?? "";
-            var botAccessToken = _configuration["Discord:BotKey"] ?? "";
+            string userString = await DiscordAPI.GetUserInfo(accessToken);
+            UserData user = JsonConvert.DeserializeObject<UserData>(userString);
+            await StoreUser(user);
+            await StoreToken(user.UserId, accessToken, refreshToken, secondsRemaining);
 
             string userGuildsString = await DiscordAPI.GetUserGuilds(accessToken);
-            string username = await DiscordAPI.GetUserInfo(accessToken);
             string botGuildsString = await DiscordAPI.GetBotGuilds(botAccessToken);
 
             HttpContext.Session.SetString("UserGuilds", userGuildsString);
-            HttpContext.Session.SetString("Username", username);
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("UserId", user.UserId);
+            HttpContext.Session.SetString("UserInfo", userString);
             HttpContext.Session.SetString("BotGuilds", botGuildsString);
 
             List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
@@ -143,6 +212,27 @@ namespace BigOneDashboard.Controllers
             HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
 
             return RedirectToAction("Index");
+        }
+
+        public async Task StoreUser(UserData user)
+        {
+            ApplicationUser appUser = new ApplicationUser();
+            appUser.Username = user.Username;
+            appUser.UserId = user.UserId;
+
+            _context.ApplicationUsers.Add(appUser);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task StoreToken(string userId, string accessToken, string refreshToken, int expires)
+        {
+            UserToken userToken = new UserToken();
+            userToken.UserId = userId;
+            userToken.AccessToken = accessToken;
+            userToken.RefreshToken = refreshToken;
+            userToken.Expiry = DateTime.UtcNow.AddSeconds(expires);
+            _context.UserTokens.Add(userToken);
+            await _context.SaveChangesAsync();
         }
         #endregion
 
@@ -386,6 +476,7 @@ namespace BigOneDashboard.Controllers
         #endregion
 
         #region TTS
+
         public async Task<IActionResult> TTSSubmit(string query, string action, string ttsServerId)
         {
             switch (action)
@@ -398,6 +489,7 @@ namespace BigOneDashboard.Controllers
                 case "save":
                     // Handle save logic
                     // Just open a save modal to save the output{username}.mp3 with a different name and add to the DB as a sound
+                    //await SaveTTS(query);
                     break;
                 case "playToServer":
                     // Send a request to the discord bot to play this sound.
@@ -460,6 +552,62 @@ namespace BigOneDashboard.Controllers
                 }
             }
             return null;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveTTS([Bind(Prefix = "EditSoundViewModel")] EditSoundViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string? username = HttpContext.Session.GetString("Username");
+                if (username == null)
+                {
+                    TempData["Message"] = "Failed To Save TTS. Could not find discord username. Please reauthenticate.";
+                    TempData["MessageType"] = "Error";
+                    return View("Index", await HydrateDashboardViewModel(model.serverId));
+                }
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", $"output{username}.mp3");
+                string fileName = $"{model.Name.Replace(" ", "_")}{username}.mp3";
+                string newFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Sounds", fileName);
+
+                if (!System.IO.File.Exists(path))
+                {
+                    TempData["Message"] = "Failed To Save TTS. 'output.mp3' doesn't exist. Please try again";
+                    TempData["MessageType"] = "Error";
+                    return View("Index", await HydrateDashboardViewModel(model.serverId));
+                }
+
+                if (System.IO.File.Exists(newFilePath))
+                {
+                    TempData["Message"] = $"Failed To Save TTS. {fileName} already exists.";
+                    TempData["MessageType"] = "Error";
+                    return View("Index", await HydrateDashboardViewModel(model.serverId));
+                }
+
+                // Rename file
+                System.IO.File.Move(path, newFilePath);
+
+                // Save to db
+                Sound sound = new Sound();
+                sound.Name = model.Name;
+                sound.ServerId = model.serverId;
+                sound.Emote = model.Emote;
+                sound.FilePath = fileName;
+
+                await _context.AddAsync(sound);
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = $"Failed To Save TTS. {fileName} already exists.";
+                TempData["MessageType"] = "Success";
+                return View("Index", await HydrateDashboardViewModel(model.serverId));
+            }
+            else
+            {
+                TempData["Message"] = $"Failed To Save TTS.";
+                TempData["MessageType"] = "Error";
+                return View("Index", await HydrateDashboardViewModel(model.serverId));
+            }
         }
         #endregion
 

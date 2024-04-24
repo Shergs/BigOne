@@ -87,6 +87,7 @@
                             </div>
                             <!-- Buttons -->
                             <div class="ml-auto flex items-center space-x-2" style="margin-left:auto;">
+                                @* <button type="button" class="px-4 py-2 bg-blue-100 text-white rounded-md hover:bg-blue-200 mr-[16px]" id="playToServer">Server Play</button> *@
                                 <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 mr-[16px]" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">Edit</button>
                                 <button type="button" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">Delete</button>
                             </div>
@@ -180,7 +181,7 @@
                             <textarea name="query" class="w-full h-full"></textarea>
                         </div>
                         <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
-                        <button type="submit" name="action" value="save" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
+                        <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#editSoundModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
                         <button type="submit" name="action" value="playToServer" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Play to Server</button>
                         <input type="hidden" name="ttsServerId" value="@Model.serverId"/>
                         <!-- Audio Player -->
@@ -191,6 +192,48 @@
                             </audio>
                         </div>
                     }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Save TTS Modal *@
+    <!-- Modal Background -->
+    <div class="modal fade" id="saveTTSModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-md shadow-lg">
+                <div class="modal-header border-b">
+                    <h5 class="modal-title" id="editSoundModalLabel">Edit Sound</h5>
+                    <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body bg-white p-5">
+                    <!-- Form Start -->
+                    @using (Html.BeginForm("SaveTTS", "Home", FormMethod.Post, new { id = "SaveTTS", enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.EditSoundViewModel.serverId) 
+
+                        <div class="mt-4">
+                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
+                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "EditName" })
+                            @Html.ValidationMessageFor(m => m.EditSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
+                        </div>
+
+                        <div class="mt-4">
+                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
+                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                            @Html.ValidationMessageFor(m => m.EditSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save TTS</button>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-t">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
