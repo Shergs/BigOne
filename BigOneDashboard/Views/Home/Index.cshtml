@@ -27,7 +27,7 @@
 <div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
         
     @*Save new sound*@
-    <div id="SaveNewSoundCard" class="border border-gray-400 rounded-[16px] shadow-lg" style="grid-column: span 4/span 4; grid-row: span 7/span 7;">
+        <div id="SaveNewSoundCard" class="border border-gray-400 rounded-[16px] shadow-lg" style="grid-column: span 4/span 4; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 bg-white rounded-lg">
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
@@ -65,7 +65,7 @@
     </div>
 
     @*Soundboard display*@
-    <div id="SoundboardCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 8/span 8; grid-row: span 7/span 7;">
+        <div id="SoundboardCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 8/span 8; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 bg-white rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Soundboard</h2>
@@ -98,8 +98,36 @@
         </div>
     </div>
 
+    @* Text to speech *@
+        <div id="TTSCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 12/span 12; grid-row: span 4/span 4; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
+        <div class="w-full h-full mx-auto my-8">
+            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <h2 class="text-2xl mb-2 font-bold">Text to Speech</h2>
+                <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
+                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                    @using (Html.BeginForm("TTSSubmit", "Home", FormMethod.Post, new { id = "textToSpeechForm", @class = "w-full" }))
+                    {
+                        <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                            <textarea name="query" class="w-full h-full"></textarea>
+                        </div>
+                        <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
+                        <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#editSoundModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
+                        <button type="submit" name="action" value="playToServer" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Play to Server</button>
+                        <input type="hidden" name="ttsServerId" value="@Model.serverId"/>
+                        <!-- Audio Player -->
+                        <div style="display:none;">
+                            <audio id="audioPlayer" controls preload="none">
+                                <source src="" type="audio/mp3">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
     @* Edit Modal *@
-    <!-- Modal Background -->
     <div class="modal fade" id="editSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-md shadow-lg">
@@ -110,7 +138,6 @@
                     </button>
                 </div>
                 <div class="modal-body bg-white p-5">
-                    <!-- Form Start -->
                     @using (Html.BeginForm("EditSound", "Home", FormMethod.Post, new { id = "EditSound", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
@@ -140,6 +167,7 @@
             </div>
         </div>
     </div>
+
     @* Delete Modal *@
     <div class="modal fade" id="deleteSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -168,37 +196,7 @@
         </div>
     </div>
 
-    @* Text to speech *@
-    <div id="TTSCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 12/span 12; grid-row: span 4/span 4;">
-        <div class="w-full h-full mx-auto my-8">
-            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
-                <h2 class="text-2xl mb-2 font-bold">Text to Speech</h2>
-                <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
-                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
-                    @using (Html.BeginForm("TTSSubmit", "Home", FormMethod.Post, new { id = "textToSpeechForm", @class = "w-full" }))
-                    {
-                        <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
-                            <textarea name="query" class="w-full h-full"></textarea>
-                        </div>
-                        <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
-                        <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#editSoundModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
-                        <button type="submit" name="action" value="playToServer" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Play to Server</button>
-                        <input type="hidden" name="ttsServerId" value="@Model.serverId"/>
-                        <!-- Audio Player -->
-                        <div style="display:none;">
-                            <audio id="audioPlayer" controls preload="none">
-                                <source src="" type="audio/mp3">
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
     @* Save TTS Modal *@
-    <!-- Modal Background -->
     <div class="modal fade" id="saveTTSModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-md shadow-lg">
@@ -209,7 +207,6 @@
                     </button>
                 </div>
                 <div class="modal-body bg-white p-5">
-                    <!-- Form Start -->
                     @using (Html.BeginForm("SaveTTS", "Home", FormMethod.Post, new { id = "SaveTTS", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()

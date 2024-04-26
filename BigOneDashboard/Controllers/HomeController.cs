@@ -41,6 +41,10 @@ namespace BigOneDashboard.Controllers
             bool isAuth = await HandleAuth();
             if (isAuth)
             {
+                if (_configuration["Env:IsLocal"] == "true")
+                {
+                    serverId = "783190942806835200";
+                }
                 if (serverId != null)
                 {
                     HttpContext.Session.SetString("ServerId", serverId);
@@ -60,6 +64,12 @@ namespace BigOneDashboard.Controllers
                 // Store this somewhere more persistent. Although server side session might be fine.
                 string userId = HttpContext.Session.GetString("UserId") ?? "";
 
+                bool isLocal = _configuration["Env:IsLocal"] == "true";
+                if (isLocal)
+                {
+                    userId = "140910636488982529";
+                }
+
                 TokenService tokenService = new TokenService(_context, _configuration);
                 if (userId != "")
                 {
@@ -70,9 +80,11 @@ namespace BigOneDashboard.Controllers
                     string username = await DiscordAPI.GetUserInfo(userToken);
                     string botGuildsString = await DiscordAPI.GetBotGuilds(botAccessToken);
 
+                    UserData user = JsonConvert.DeserializeObject<UserData>(username);
+
                     // Set session
                     HttpContext.Session.SetString("UserGuilds", userGuildsString);
-                    HttpContext.Session.SetString("Username", username);
+                    HttpContext.Session.SetString("Username", user.Username);
                     HttpContext.Session.SetString("BotGuilds", botGuildsString);
 
                     List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
@@ -216,6 +228,16 @@ namespace BigOneDashboard.Controllers
 
         public async Task StoreUser(UserData user)
         {
+            ApplicationUser? currentUser = await _context.ApplicationUsers.OrderByDescending(x => x.Id).Where(x => x.UserId == user.UserId).FirstOrDefaultAsync();
+            if (currentUser != null)
+            {
+                // In case their userId/username changes
+                currentUser.UserId = user.UserId;
+                currentUser.Username = user.Username;
+                _context.Update(currentUser);
+                await _context.SaveChangesAsync();
+            }
+
             ApplicationUser appUser = new ApplicationUser();
             appUser.Username = user.Username;
             appUser.UserId = user.UserId;
@@ -226,6 +248,15 @@ namespace BigOneDashboard.Controllers
 
         public async Task StoreToken(string userId, string accessToken, string refreshToken, int expires)
         {
+            UserToken? currentToken = await _context.UserTokens.OrderByDescending(x => x.Expiry).Where(x => x.UserId == userId).FirstOrDefaultAsync();
+            if (currentToken != null)
+            { 
+                currentToken.Expiry = DateTime.UtcNow.AddSeconds(expires);
+                _context.Update(currentToken);
+                await _context.SaveChangesAsync();
+                return;
+            }
+
             UserToken userToken = new UserToken();
             userToken.UserId = userId;
             userToken.AccessToken = accessToken;
