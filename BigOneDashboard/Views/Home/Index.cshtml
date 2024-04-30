@@ -27,9 +27,9 @@
 <div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
         
     @*Save new sound*@
-        <div id="SaveNewSoundCard" class="border border-gray-400 rounded-[16px] shadow-lg" style="grid-column: span 4/span 4; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
+        <div id="SaveNewSoundCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg col-span-4 row-span-7"> @* grid-column-span-4 grid-row-span-7"> *@ @* style="grid-column: span 4/span 4; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
         <div class="w-full h-full mx-auto my-8">
-            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+            <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
                 <p><strong>Server:</strong> @Model.Guild.Name</p>
                 <p><strong>Discord User:</strong> @Model.DiscordName</p>
@@ -39,19 +39,19 @@
                     @Html.HiddenFor(m => m.SaveNewSoundViewModel.serverId)
 
                     <div class="mt-4">
-                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
-                        @Html.TextBoxFor(m => m.SaveNewSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "Name" })
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-300" })
+                        @Html.TextBoxFor(m => m.SaveNewSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900", id = "Name" })
                         @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
                     </div>
 
                     <div class="mt-4">
-                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
-                        <input id="EmoteSelector" name="@Html.NameFor(m => m.SaveNewSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-300" })
+                        <input id="EmoteSelector" name="@Html.NameFor(m => m.SaveNewSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900" />
                         @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
                     </div>
 
                     <div class="mt-4">
-                        @Html.LabelFor(m => m.SaveNewSoundViewModel.File, new { @class = "block text-sm font-medium text-gray-700" })
+                        @Html.LabelFor(m => m.SaveNewSoundViewModel.File, new { @class = "block text-sm font-medium text-gray-300" })
                         <input type="file" id="File" name="@Html.NameFor(m => m.SaveNewSoundViewModel.File)" class="mt-1 block w-full px-3 py-2 border rounded-md" />
                         @Html.ValidationMessageFor(m => m.SaveNewSoundViewModel.File, "", new { @class = "text-red-600 text-sm" })
                     </div>
@@ -65,31 +65,53 @@
     </div>
 
     @*Soundboard display*@
-        <div id="SoundboardCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 8/span 8; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
+        <div id="SoundboardCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-8 row-span-7"> @*grid-column-span-8 grid-row-span-7">  style="grid-column: span 8/span 8; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
         <div class="w-full h-full mx-auto my-8">
-            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Soundboard</h2>
                 <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
-                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                    <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
                     @foreach (Sound sound in Model.Sounds)
                     {
-                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm bg-gray-100 mb-4 justify-between">
+                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between">
                             <div class="flex items-center space-x-4" style="align-items:center;">
                                 <div>@sound.Emote</div>
-                                <div>@sound.Name</div>
+                                <div class="text-gray-300">@sound.Name</div>
                             </div>
                             <!-- Audio Player -->
-                            <div class="flex-grow px-4" style="margin-left:auto;">
+                            @* <div class="flex-grow px-4" style="margin-left:auto;">
                                 <audio controls preload="none">
-                                    <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
+                                        <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
                                     Your browser does not support the audio element.
                                 </audio>
-                            </div>
+                            </div> *@
+                                <div class="audio-player bg-gray-200 dark:bg-gray-700 p-4">
+                                    <audio id="audio">
+                                        <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                    <div class="controls flex items-center gap-4">
+                                        <button id="playPauseBtn" class="bg-blue-500 text-white px-2 py-1">Play</button>
+                                        <input type="range" id="seekSlider" value="0" class="flex-grow">
+                                        <span id="currentTime" class="w-12 text-center">0:00</span>
+                                        <span id="duration" class="w-12 text-center">0:00</span>
+                                    </div>
+                                </div>
                             <!-- Buttons -->
                             <div class="ml-auto flex items-center space-x-2" style="margin-left:auto;">
                                 @* <button type="button" class="px-4 py-2 bg-blue-100 text-white rounded-md hover:bg-blue-200 mr-[16px]" id="playToServer">Server Play</button> *@
-                                <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 mr-[16px]" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">Edit</button>
-                                <button type="button" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">Delete</button>
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
+                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                        <path  d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                                    </svg>
+                                </button>
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
+                                            <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                        <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     }
@@ -99,16 +121,16 @@
     </div>
 
     @* Text to speech *@
-        <div id="TTSCard" class="border border-gray-400 rounded-[16px] shadow-lg background-gray-400" style="grid-column: span 12/span 12; grid-row: span 4/span 4; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);">
+        <div id="TTSCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-5"> @* grid-column-span-12 grid-row-span-5"> *@@*  style="grid-column: span 12/span 12; grid-row: span 5/span 5; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
         <div class="w-full h-full mx-auto my-8">
-            <div class="flex flex-col w-full px-8 bg-white rounded-lg">
+                <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Text to Speech</h2>
                 <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
                 <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
                     @using (Html.BeginForm("TTSSubmit", "Home", FormMethod.Post, new { id = "textToSpeechForm", @class = "w-full" }))
                     {
                         <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
-                            <textarea name="query" class="w-full h-full"></textarea>
+                                <textarea name="query" class="w-full h-full dark:!bg-gray-300 dark:!text-gray-900"></textarea>
                         </div>
                         <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
                         <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#editSoundModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
@@ -411,6 +433,51 @@ else
                     }
                 });
             });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var audio = document.getElementById("audio");
+            var playPauseBtn = document.getElementById("playPauseBtn");
+            var seekSlider = document.getElementById("seekSlider");
+            var currentTimeDisplay = document.getElementById("currentTime");
+            var durationDisplay = document.getElementById("duration");
+
+            // Update the seek slider max value when the metadata is loaded
+            audio.addEventListener("loadedmetadata", function () {
+                seekSlider.max = audio.duration;
+                durationDisplay.textContent = formatTime(audio.duration);
+            });
+
+            // Update the current time display and the seek slider value
+            audio.addEventListener("timeupdate", function () {
+                seekSlider.value = audio.currentTime;
+                currentTimeDisplay.textContent = formatTime(audio.currentTime);
+            });
+
+            // Play or pause the audio
+            playPauseBtn.addEventListener("click", function () {
+                if (audio.paused) {
+                    audio.play();
+                    playPauseBtn.textContent = 'Pause';
+                } else {
+                    audio.pause();
+                    playPauseBtn.textContent = 'Play';
+                }
+            });
+
+            // Seek the audio
+            seekSlider.addEventListener("input", function () {
+                audio.currentTime = seekSlider.value;
+            });
+
+            // Helper function to format time in minutes and seconds
+            function formatTime(seconds) {
+                let minutes = Math.floor(seconds / 60);
+                seconds = Math.floor(seconds % 60);
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                return minutes + ":" + seconds;
+            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
