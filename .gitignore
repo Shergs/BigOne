@@ -374,3 +374,4 @@ BigOneDashboard/appsettings*.json
 BigOne/appsettings*.json
 BigOneDashboard/Sounds
 BigOne/output.mp3
+/BigOneDashboard/appsettings.Development.json
