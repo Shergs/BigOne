@@ -21,7 +21,6 @@ namespace BigOne
                 Console.WriteLine("Downloading file from API...");
                 using (var client = new HttpClient())
                 {
-                    //string endpoint = $"{System.Configuration.ConfigurationManager.AppSettings["BaseAppUrl"]}/get-sound/{soundName.Replace(" ", "_")}";
                     string endpoint = $"https://bigonedashboard.azurewebsites.net/get-sound/{soundName.Replace(" ", "_")}";
                     var response = await client.GetAsync(endpoint);
                     if (response.IsSuccessStatusCode)
