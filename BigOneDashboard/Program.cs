@@ -61,7 +61,8 @@ else
 
 app.UseHttpsRedirection();
 // Create a PhysicalFileProvider for an external directory
-var fileProvider = new PhysicalFileProvider("C:/Workspace_Git/BigOne/BigOneDashboard/Sounds");
+var baseDir = Directory.GetCurrentDirectory();
+var fileProvider = new PhysicalFileProvider(Path.Combine(baseDir, "Sounds"));
 
 // Use static files middleware to serve files from the external directory
 app.UseStaticFiles(new StaticFileOptions
