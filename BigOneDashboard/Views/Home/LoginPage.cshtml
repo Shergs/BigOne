@@ -1,10 +1,5 @@
-﻿@* <div>Discord login not found. Please use this link to authorize with discord</div>
-
-<a href="https://discord.com/oauth2/authorize?client_id=1225139298395750452&response_type=code&redirect_uri=https%3A%2F%2F5f7f-69-112-102-152.ngrok-free.app%2Fsignin-discord&scope=guilds+guilds.join+connections+guilds.members.read+rpc.notifications.read+rpc.video.read+rpc.screenshare.write+webhook.incoming+applications.builds.read+applications.entitlements+relationships.read+role_connections.write+dm_channels.read+activities.write+applications.store.update+applications.builds.upload+rpc.screenshare.read+rpc.voice.write+rpc+email+gdm.join+rpc.voice.read+rpc.video.write+rpc.activities.write+messages.read+applications.commands+activities.read+voice+applications.commands.permissions.update+identify"
->Authorize with Discord</a> *@
-
-<div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <a class="flex items-center bg-white border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+﻿<div class="flex items-center justify-center min-h-screen bg-gray-100 dark:!bg-gray-800">
+    <a class="flex items-center bg-white dark:!bg-gray-600 border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 dark:!text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             href="@Url.Action("DiscordSignIn", "Home")">
 
         <svg class="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -17,7 +12,7 @@
             </g>
         </svg>
 
-        <span>Continue with Discord</span>
+        <span class="dark:!text-white">Continue with Discord</span>
 
     </a>
 </div>
