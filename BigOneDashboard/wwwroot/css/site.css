@@ -21,15 +21,6 @@ html {
   min-height: 100%;
 }
 
-/*body {
-  margin-bottom: 60px;
-}*/
-
-/** {
-    scrollbar-width: thin; 
-    scrollbar-color: #007BFF transparent; 
-}*/
-
 html {
     scroll-behavior: smooth;
 }
@@ -46,7 +37,7 @@ html {
 ::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 16px;
-    border: 10px solid transparent; /* Simulating a margin with transparent border */
+    border: 10px solid transparent;
     opacity: 0.5;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -70,41 +61,27 @@ html {
     display: none;
 }
 
+/*.emojionearea .emojionearea-editor {
+    background-color: #333; 
+    color: #fff; 
+}
 
-/* Universal Custom Scrollbar CSS */
-/** {
-    scrollbar-width: thin;*/ /* For Firefox */
-    /*scrollbar-color: rgba(107, 114, 128, 0.5) transparent;*/ /* Adjusted for Firefox */
-/*}
+.emojionearea .emojionearea-picker {
+    background-color: #222; 
+}
 
-    *::-webkit-scrollbar {
-        width: 8px;*/ /* Width of the scrollbar */
-    /*}
+.emojionearea .emojionearea-button {
+    filter: invert(1); 
+}
 
-    *::-webkit-scrollbar-track {
-        background: transparent;*/ /* Transparent track */
-        /*border-radius: 16px;*/ /* Rounded corners of the track */
-    /*}
+.emojionearea .emojionearea-category {
+    background-color: #444; 
+}
 
-    *::-webkit-scrollbar-thumb {
-        background-color: rgba(107, 114, 128, 0.5);*/ /* Semi-transparent grey */
-        /*border-radius: 10px;*/ /* Rounded corners on the thumb */
-        /*border: 5px solid transparent;*/ /* Transparent border creating padding effect */
-        /*background-clip: padding-box;*/ /* Ensures the background only fills the padding-box */
-    /*}*/
+.emojionearea .emojionearea-picker .emojionearea-tab {
+    color: #ccc; 
+}
 
-    /*html::-webkit-scrollbar {
-        width: 8px;*/ /* Scrollbar width */
-        /*height: 8px;*/ /* Horizontal scrollbar height */
-    /*}
-
-    html::-webkit-scrollbar-track {
-        background: #ccc;*/ /* Track color */
-        /*border-radius: 4px;*/ /* Rounded corners of the track */
-    /*}
-
-    html::-webkit-scrollbar-thumb {
-        background-color: #333;*/ /* Thumb color */
-        /*border-radius: 4px;*/ /* Rounded corners of the thumb */
-        /*border: 2px solid #ccc;*/ /* Border around the thumb */
-    /*}*/
+    .emojionearea .emojionearea-picker .emojionearea-tab.active {
+        color: white; 
+    }*/

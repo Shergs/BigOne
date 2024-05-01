@@ -630,7 +630,7 @@ namespace BigOneDashboard.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Message"] = $"Failed To Save TTS. {fileName} already exists.";
-                TempData["MessageType"] = "Success";
+                TempData["MessageType"] = "Error";
                 return View("Index", await HydrateDashboardViewModel(model.serverId));
             }
             else

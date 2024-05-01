@@ -24,14 +24,16 @@
 
 @if (currentGuild != null)
 {
-<div class="p-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
+<div class="px-2 py-4 md:px-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
         
     @*Save new sound*@
-        <div id="SaveNewSoundCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg col-span-4 row-span-7"> @* grid-column-span-4 grid-row-span-7"> *@ @* style="grid-column: span 4/span 4; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
+        <div id="SaveNewSoundCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg !col-span-12 !row-span-6 md:!col-span-4 md:!row-span-7">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
-                <p><strong>Server:</strong> @Model.Guild.Name</p>
+                <div class="hidden lg:block">
+                    <p><strong>Server:</strong> @Model.Guild.Name</p>
+                </div>
                 <p><strong>Discord User:</strong> @Model.DiscordName</p>
                 @using (Html.BeginForm("SaveNewSound", "Home", FormMethod.Post, new { id = "SaveNewSound", enctype = "multipart/form-data" }))
                 {
@@ -57,7 +59,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save New Sound</button>
+                        <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
                     </div>
                 }
             </div>
@@ -65,53 +67,56 @@
     </div>
 
     @*Soundboard display*@
-        <div id="SoundboardCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-8 row-span-7"> @*grid-column-span-8 grid-row-span-7">  style="grid-column: span 8/span 8; grid-row: span 7/span 7; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
+    <div id="SoundboardCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 !col-span-12 md:!col-span-8 !row-span-7">
         <div class="w-full h-full mx-auto my-8">
                 <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Soundboard</h2>
                 <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
-                    <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
+                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
                     @foreach (Sound sound in Model.Sounds)
                     {
-                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between">
-                            <div class="flex items-center space-x-4" style="align-items:center;">
-                                <div>@sound.Emote</div>
-                                <div class="text-gray-300">@sound.Name</div>
+                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
+                            <div class="flex items-center space-x-4 truncate" style="align-items:center;">
+                                <div class="truncate">@sound.Emote</div>
+                                <div class="truncate text-gray-300">@sound.Name</div>
                             </div>
-                            <!-- Audio Player -->
-                            @* <div class="flex-grow px-4" style="margin-left:auto;">
-                                <audio controls preload="none">
-                                        <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div> *@
-                                <div class="audio-player bg-gray-200 dark:bg-gray-700 p-4">
+                            <div class="flex items-center space-x-2 ml-auto">
+                                <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 hidden sm:block">
                                     <audio id="audio">
                                         <source src="@Url.Action("GetSound", "Home", new { soundName = sound.Name, filePath = sound.FilePath })" type="audio/mp3">
                                         Your browser does not support the audio element.
                                     </audio>
                                     <div class="controls flex items-center gap-4">
-                                        <button id="playPauseBtn" class="bg-blue-500 text-white px-2 py-1">Play</button>
-                                        <input type="range" id="seekSlider" value="0" class="flex-grow">
-                                        <span id="currentTime" class="w-12 text-center">0:00</span>
-                                        <span id="duration" class="w-12 text-center">0:00</span>
+                                        <button class="hidden sm:block" data-type="playPauseBtn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-sky-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 384 512">
+                                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+                                            </svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" data-type="pause" class="size-6 text-sky-500 hover:text-sky-600 hidden" fill="currentColor" viewBox="0 0 320 512">
+                                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                <path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z" />
+                                            </svg>
+                                        </button>
+                                        <input type="range" class="hidden lg:block" data-type="seekSlider" value="0" class="flex-grow">
+                                        <span data-type="currentTime" class="hidden xl:block w-12 text-center">0:00</span>
+                                        <span data-type="duration" class="hidden xl:block w-12 text-center">0:00</span>
                                     </div>
                                 </div>
-                            <!-- Buttons -->
-                            <div class="ml-auto flex items-center space-x-2" style="margin-left:auto;">
-                                @* <button type="button" class="px-4 py-2 bg-blue-100 text-white rounded-md hover:bg-blue-200 mr-[16px]" id="playToServer">Server Play</button> *@
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
-                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                        <path  d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
-                                    </svg>
-                                </button>
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
+                            
+                                <div class="ml-auto flex items-center space-x-2">
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#editSoundModal" onclick="setModalSoundId('editSoundModal','@sound.Id')" style="margin-right:16px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
                                             <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                        <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                                    </svg>
-                                </button>
+                                            <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#deleteSoundModal" onclick="setModalSoundId('deleteSoundModal','@sound.Id')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
+                                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -121,7 +126,7 @@
     </div>
 
     @* Text to speech *@
-        <div id="TTSCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-5"> @* grid-column-span-12 grid-row-span-5"> *@@*  style="grid-column: span 12/span 12; grid-row: span 5/span 5; box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(255, 255, 255, 0.06);"> *@
+    <div id="TTSCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-5">
         <div class="w-full h-full mx-auto my-8">
                 <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-2 font-bold">Text to Speech</h2>
@@ -133,7 +138,7 @@
                                 <textarea name="query" class="w-full h-full dark:!bg-gray-300 dark:!text-gray-900"></textarea>
                         </div>
                         <button type="button" id="TTSPlayButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Play</button>
-                        <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#editSoundModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
+                            <button type="button" name="action" value="save" data-bs-toggle="modal" data-bs-target="#saveTTSModal" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
                         <button type="submit" name="action" value="playToServer" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Play to Server</button>
                         <input type="hidden" name="ttsServerId" value="@Model.serverId"/>
                         <!-- Audio Player -->
@@ -152,14 +157,14 @@
     @* Edit Modal *@
     <div class="modal fade" id="editSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-md shadow-lg">
-                <div class="modal-header border-b">
+            <div class="modal-content rounded-md shadow-lg dark:!bg-gray-600 dark:text-white">
+                <div class="modal-header border-b border-gray-200 dark:border-gray-300">
                     <h5 class="modal-title" id="editSoundModalLabel">Edit Sound</h5>
                     <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body bg-white p-5">
+                <div class="modal-body bg-white dark:!bg-gray-600 p-5">
                     @using (Html.BeginForm("EditSound", "Home", FormMethod.Post, new { id = "EditSound", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
@@ -167,14 +172,14 @@
                         @Html.HiddenFor(model => model.EditSoundViewModel.serverId)
 
                         <div class="mt-4">
-                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
-                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "EditName" })
+                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-300" })
+                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900", id = "EditName" })
                             @Html.ValidationMessageFor(m => m.EditSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
                         </div>
 
                         <div class="mt-4">
-                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
-                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-300" })
+                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900" />
                             @Html.ValidationMessageFor(m => m.EditSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
                         </div>
 
@@ -183,7 +188,7 @@
                         </div>
                     }
                 </div>
-                <div class="modal-footer border-t">
+                <div class="modal-footer border-t border-gray-200 dark:border-gray-300">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -193,14 +198,14 @@
     @* Delete Modal *@
     <div class="modal fade" id="deleteSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-md shadow-lg">
-                <div class="modal-header border-b">
+            <div class="modal-content rounded-md shadow-lg dark:!bg-gray-600 dark:text-white">
+                <div class="modal-header border-b border-gray-200 dark:border-gray-300">
                     <h5 class="modal-title" id="editSoundModalLabel">Delete Sound</h5>
                     <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body bg-white p-5">
+                <div class="modal-body bg-white dark:!bg-gray-600 p-5">
                     @using (Html.BeginForm("DeleteSound", "Home", FormMethod.Post, new { id = "DeleteSound", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
@@ -210,7 +215,7 @@
                         <span>Are you sure you would like to delete this sound?</span>
                     }
                 </div>
-                <div class="modal-footer border-t">
+                <div class="modal-footer border-t border-gray-200 dark:border-gray-300">
                     <button type="submit" class="btn btn-primary" form="DeleteSound">Yes</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                 </div>
@@ -221,28 +226,28 @@
     @* Save TTS Modal *@
     <div class="modal fade" id="saveTTSModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-md shadow-lg">
-                <div class="modal-header border-b">
-                    <h5 class="modal-title" id="editSoundModalLabel">Edit Sound</h5>
+            <div class="modal-content rounded-md shadow-lg dark:!bg-gray-600 dark:text-white">
+                <div class="modal-header border-b border-gray-200 dark:border-gray-300">
+                    <h5 class="modal-title" id="editSoundModalLabel">Save TTS</h5>
                     <button type="button" class="close text-red-500" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body bg-white p-5">
+                <div class="modal-body bg-white dark:!bg-gray-600 p-5">
                     @using (Html.BeginForm("SaveTTS", "Home", FormMethod.Post, new { id = "SaveTTS", enctype = "multipart/form-data" }))
                     {
                         @Html.AntiForgeryToken()
                         @Html.HiddenFor(model => model.EditSoundViewModel.serverId) 
 
                         <div class="mt-4">
-                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-700" })
-                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md", id = "EditName" })
+                            @Html.LabelFor(m => m.EditSoundViewModel.Name, new { @class = "block text-sm font-medium text-gray-300" })
+                            @Html.TextBoxFor(m => m.EditSoundViewModel.Name, new { @class = "mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900", id = "EditName" })
                             @Html.ValidationMessageFor(m => m.EditSoundViewModel.Name, "", new { @class = "text-red-600 text-sm" })
                         </div>
 
                         <div class="mt-4">
-                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-700" })
-                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md" />
+                            @Html.LabelFor(m => m.EditSoundViewModel.Emote, new { @class = "block text-sm font-medium text-gray-300" })
+                            <input id="EditEmoteSelector" name="@Html.NameFor(m => m.EditSoundViewModel.Emote)" class="mt-1 p-2 w-full border rounded-md dark:!bg-gray-300 dark:!text-gray-900" />
                             @Html.ValidationMessageFor(m => m.EditSoundViewModel.Emote, "", new { @class = "text-red-600 text-sm" })
                         </div>
 
@@ -251,7 +256,7 @@
                         </div>
                     }
                 </div>
-                <div class="modal-footer border-t">
+                <div class="modal-footer border-t border-gray-200 dark:border-gray-300">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -283,6 +288,7 @@ else
     <script>
         $(document).ready(function () {
             // initialize emoji selector
+            // TODO generalize this
             try {
                 $("#EmoteSelector").emojioneArea({
                     pickerPosition: "bottom",
@@ -290,24 +296,25 @@ else
                     tones: false,
                     autocomplete: false,
                     inline: true,
+                    darkMode: true,
                     events: {
                         keyup: function (editor, event) {
                             let content = this.getText();
-                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g);
                             if (matches && matches.length > 0) {
-                                this.setText(matches[0]); // Set only the first found emoji
+                                this.setText(matches[0]);
                             } else {
-                                this.setText(''); // Clear if no valid emojis
+                                this.setText(''); 
                             }
                         },
                         paste: function (editor, event) {
-                            setTimeout(() => { // Timeout to let paste complete and then process
+                            setTimeout(() => { 
                                 let content = this.getText();
-                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); 
                                 if (matches && matches.length > 0) {
-                                    this.setText(matches[0]); // Set only the first found emoji
+                                    this.setText(matches[0]); 
                                 } else {
-                                    this.setText(''); // Clear if no valid emojis
+                                    this.setText('');
                                 }
                             }, 100);
                         }
@@ -323,24 +330,25 @@ else
                     tones: false,
                     autocomplete: false,
                     inline: true,
+                    darkMode: true,
                     events: {
                         keyup: function (editor, event) {
                             let content = this.getText();
-                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                            let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); 
                             if (matches && matches.length > 0) {
-                                this.setText(matches[0]); // Set only the first found emoji
+                                this.setText(matches[0]); 
                             } else {
-                                this.setText(''); // Clear if no valid emojis
+                                this.setText(''); 
                             }
                         },
                         paste: function (editor, event) {
-                            setTimeout(() => { // Timeout to let paste complete and then process
+                            setTimeout(() => { 
                                 let content = this.getText();
-                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); // Match all potential emojis
+                                let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g); 
                                 if (matches && matches.length > 0) {
-                                    this.setText(matches[0]); // Set only the first found emoji
+                                    this.setText(matches[0]); 
                                 } else {
-                                    this.setText(''); // Clear if no valid emojis
+                                    this.setText(''); 
                                 }
                             }, 100);
                         }
@@ -350,30 +358,28 @@ else
                 console.error("Error initializing EmojiOne Area:", error);
             }
 
-            // Validate submission
             document.getElementById('SaveNewSound').onsubmit = function () {
                 const emoteInput = $("#EmoteSelector").data("emojioneArea").getText();
                 const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
 
                 if (!isValidEmoji) {
                     alert('Please select exactly one emoji.');
-                    return false; // Prevent form submission
+                    return false; 
                 }
 
-                return true; // Allow form submission
+                return true; 
             };
 
-            // Validate submission
             document.getElementById('EditSound').onsubmit = function () {
                 const emoteInput = $("#EditEmoteSelector").data("emojioneArea").getText();
                 const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
 
                 if (!isValidEmoji) {
                     alert('Please select exactly one emoji.');
-                    return false; // Prevent form submission
+                    return false; 
                 }
 
-                return true; // Allow form submission
+                return true; 
             };
         });
     </script>
@@ -398,7 +404,7 @@ else
                             nameInput.value = data.name;
                         }
 
-                        var emoteInput = $('#EditEmoteSelector'); // Your original input selector
+                        var emoteInput = $('#EditEmoteSelector');
                         if (emoteInput.data("emojioneArea")) {
                             emoteInput.data("emojioneArea").setText(data.emote);
                         }
@@ -422,11 +428,10 @@ else
                     type: 'POST',
                     data: { query: textToSpeech },
                     success: function (response) {
-                        // Assuming the response is the URL to the audio file
                         console.log(response.audioUrl);
                         $('#audioPlayer source').attr('src', response.audioUrl);
-                        $('#audioPlayer')[0].load(); // Reload the source
-                        $('#audioPlayer')[0].play(); // Play the audio
+                        $('#audioPlayer')[0].load(); 
+                        $('#audioPlayer')[0].play(); 
                     },
                     error: function () {
                         alert('Error generating speech.');
@@ -437,41 +442,40 @@ else
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var audio = document.getElementById("audio");
-            var playPauseBtn = document.getElementById("playPauseBtn");
-            var seekSlider = document.getElementById("seekSlider");
-            var currentTimeDisplay = document.getElementById("currentTime");
-            var durationDisplay = document.getElementById("duration");
+            let sounds = document.querySelectorAll('[data-itemType="sound"]');
+            sounds.forEach((sound) => {
+                let playPauseBtn = sound.querySelector('[data-type="playPauseBtn"]');
+                let audio = sound.querySelector('audio');
+                let seekSlider = sound.querySelector('[data-type="seekSlider"]');
+                let currentTimeDisplay = sound.querySelector('[data-type="currentTime"]');
+                let durationDisplay = sound.querySelector('[data-type="duration"]')
 
-            // Update the seek slider max value when the metadata is loaded
-            audio.addEventListener("loadedmetadata", function () {
-                seekSlider.max = audio.duration;
-                durationDisplay.textContent = formatTime(audio.duration);
+                audio.addEventListener("loadedmetadata", function () {
+                    seekSlider.max = audio.duration;
+                    durationDisplay.textContent = formatTime(audio.duration);
+                });
+                audio.addEventListener("timeupdate", function () {
+                    seekSlider.value = audio.currentTime;
+                    currentTimeDisplay.textContent = formatTime(audio.currentTime);
+                });
+                playPauseBtn.addEventListener("click", function () {
+                    const pauseBtn = playPauseBtn.querySelector('[data-type="pause"]');
+                    const playBtn = playPauseBtn.querySelector('[data-type="play"]');
+                    if (audio.paused) {
+                        audio.play();
+                        pauseBtn.classList.remove('hidden');
+                        playBtn.classList.add('hidden');
+                    } else {
+                        audio.pause();
+                        playBtn.classList.remove('hidden');
+                        pauseBtn.classList.add('hidden'); 
+                    }
+                });
+                seekSlider.addEventListener("input", function () {
+                    audio.currentTime = seekSlider.value;
+                });
             });
 
-            // Update the current time display and the seek slider value
-            audio.addEventListener("timeupdate", function () {
-                seekSlider.value = audio.currentTime;
-                currentTimeDisplay.textContent = formatTime(audio.currentTime);
-            });
-
-            // Play or pause the audio
-            playPauseBtn.addEventListener("click", function () {
-                if (audio.paused) {
-                    audio.play();
-                    playPauseBtn.textContent = 'Pause';
-                } else {
-                    audio.pause();
-                    playPauseBtn.textContent = 'Play';
-                }
-            });
-
-            // Seek the audio
-            seekSlider.addEventListener("input", function () {
-                audio.currentTime = seekSlider.value;
-            });
-
-            // Helper function to format time in minutes and seconds
             function formatTime(seconds) {
                 let minutes = Math.floor(seconds / 60);
                 seconds = Math.floor(seconds % 60);

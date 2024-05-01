@@ -1,6 +1,6 @@
 ﻿@using Newtonsoft.Json;
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +11,7 @@
     <link href="~/css/output.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 </head>
-<body class="dark pt-4 smoothScroll">
+<body class="dark:!bg-gray-800 pt-4 smoothScroll">
     <header>
         @{
             string? guilds = Context.Session.GetString("AvailableGuilds");
@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="dark:!bg-gray-800 border-t border-gray-200 dark:border-gray-600 footer text-muted">
         <div class="container">
             &copy; 2024 - BigOneDashboard - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
@@ -74,27 +74,21 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        // JavaScript to toggle the dropdown
         const dropdownButton = document.getElementById('dropdown-button');
         if (dropdownButton) {
             const dropdownMenu = document.getElementById('dropdown-menu');
             const searchInput = document.getElementById('search-input');
-            let isOpen = false; // Set to true to open the dropdown by default
+            let isOpen = false; 
 
-            // Function to toggle the dropdown state
             function toggleDropdown() {
                 isOpen = !isOpen;
                 dropdownMenu.classList.toggle('hidden', !isOpen);
             }
 
-            // Set initial state
-            // toggleDropdown();
-
             dropdownButton.addEventListener('click', () => {
                 toggleDropdown();
             });
 
-            // Add event listener to filter items based on input
             searchInput.addEventListener('input', () => {
                 const searchTerm = searchInput.value.toLowerCase();
                 const items = dropdownMenu.querySelectorAll('a');
@@ -110,37 +104,19 @@
             });
             dropdownButton.addEventListener('blur',() => {
                 setTimeout(() => {
-                    if (document.activeElement != searchInput && document.activeElement != document.querySelector("[data-dropdown-element='server']")) {
+                    if (document.activeElement != searchInput && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
                         toggleDropdown();
                     }
                 }, 0);
             });
             searchInput.addEventListener('blur', () => {
                 setTimeout(() => {
-                    if (document.activeElement != dropdownButton && document.activeElement != document.querySelector("[data-dropdown-element='server']")) {
+                    if (document.activeElement != dropdownButton && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
                         toggleDropdown();
                     }
                 }, 0);
             });
         }
     </script>
-@*     <script>
-        document.querySelector('.smoothScroll').addEventListener('scroll', function (e) {
-            const container = e.target;
-            const maxScroll = container.scrollHeight - container.clientHeight;
-
-            if (container.scrollTop === 0) {
-                container.style.transform = 'translateY(10px)';
-                setTimeout(() => {
-                    container.style.transform = 'translateY(0px)';
-                }, 200);
-            } else if (container.scrollTop >= maxScroll) {
-                container.style.transform = 'translateY(-10px)';
-                setTimeout(() => {
-                    container.style.transform = 'translateY(0px)';
-                }, 200);
-            }
-        });
-    </script> *@
 </body>
 </html>
