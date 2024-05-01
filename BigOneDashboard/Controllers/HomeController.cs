@@ -74,6 +74,10 @@ namespace BigOneDashboard.Controllers
                 if (userId != "")
                 {
                     string userToken = await tokenService.GetAccessTokenAsync(userId);
+                    if (userToken == "")
+                    {
+                        return false;
+                    }
                     string botAccessToken = _configuration["Discord:BotKey"] ?? "";
 
                     string userGuildsString = await DiscordAPI.GetUserGuilds(userToken);
@@ -608,13 +612,14 @@ namespace BigOneDashboard.Controllers
                     TempData["MessageType"] = "Error";
                     return View("Index", await HydrateDashboardViewModel(model.serverId));
                 }
-
-                if (System.IO.File.Exists(newFilePath))
-                {
-                    TempData["Message"] = $"Failed To Save TTS. {fileName} already exists.";
-                    TempData["MessageType"] = "Error";
-                    return View("Index", await HydrateDashboardViewModel(model.serverId));
-                }
+                
+                // this check will break after playing the sound first.
+                //if (System.IO.File.Exists(newFilePath))
+                //{
+                //    TempData["Message"] = $"Failed To Save TTS. {fileName} already exists.";
+                //    TempData["MessageType"] = "Error";
+                //    return View("Index", await HydrateDashboardViewModel(model.serverId));
+                //}
 
                 // Rename file
                 System.IO.File.Move(path, newFilePath);

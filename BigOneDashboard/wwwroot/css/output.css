@@ -1269,13 +1269,6 @@ html {
   color: rgb(59 130 246 / var(--tw-text-opacity)) !important;
 }
 
-@media (min-width: 640px) {
-
-  .sm\:block {
-    display: block;
-  }
-}
-
 @media (min-width: 768px) {
 
   .md\:order-1 {

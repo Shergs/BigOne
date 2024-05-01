@@ -71,7 +71,7 @@ namespace BigOneDashboard.Areas.DiscordAuth
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Failed to refresh token.");
+                return "";
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
