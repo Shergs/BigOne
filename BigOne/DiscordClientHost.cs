@@ -90,25 +90,34 @@ internal sealed class DiscordClientHost : IHostedService
 
     private async Task ClientReady()
     {
-        try
+        using (var scope = _serviceProvider.CreateScope())
         {
-            await _interactionService
-                .AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider)
-                .ConfigureAwait(false);
+            var interactionService = scope.ServiceProvider.GetRequiredService<InteractionService>();
+            try
+            {
+                await interactionService
+                    .AddModulesAsync(Assembly.GetExecutingAssembly(), scope.ServiceProvider)
+                    .ConfigureAwait(false);
 
-            // Register to Guild
-            await _interactionService
-                .RegisterCommandsToGuildAsync(783190942806835200)
-                .ConfigureAwait(false);
-            await _interactionService
-                .RegisterCommandsToGuildAsync(1008235979045339168)
-                .ConfigureAwait(false);
+                // Register to Guilds for fast testing
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(783190942806835200)
+                    .ConfigureAwait(false);
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(1008235979045339168)
+                    .ConfigureAwait(false);
 
-            Console.WriteLine("Commands registered successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error registering commands: {ex.Message}");
+                // Register globally as well
+                await _interactionService
+                    .RegisterCommandsGloballyAsync()
+                    .ConfigureAwait(false);
+
+                Console.WriteLine("Commands registered successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error registering commands: {ex.Message}");
+            }
         }
     }
 }

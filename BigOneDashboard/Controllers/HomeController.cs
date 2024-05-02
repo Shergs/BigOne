@@ -66,7 +66,7 @@ namespace BigOneDashboard.Controllers
 
                 bool isLocal = _configuration["Env:IsLocal"] == "true";
                 if (isLocal)
-                {
+                { 
                     userId = "140910636488982529";
                 }
 
