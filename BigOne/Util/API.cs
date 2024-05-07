@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace BigOne
+namespace BigOne.Util
 {
     public class API : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         public API(ApplicationDbContext context)
-        { 
+        {
             _context = context;
         }
 

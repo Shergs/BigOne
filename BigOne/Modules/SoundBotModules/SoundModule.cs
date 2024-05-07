@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Lavalink4NET;
+using BigOne.Util;
 
 [RequireContext(ContextType.Guild)]
 public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext>

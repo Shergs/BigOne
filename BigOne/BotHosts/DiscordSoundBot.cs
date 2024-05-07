@@ -97,7 +97,7 @@ internal sealed class DiscordSoundBot : IHostedService
 
         try
         {
-            await _interactionService.AddModuleAsync<BigOne.Modules.SoundBotModules.SoundModule>(_serviceProvider).ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<SoundModule>(_serviceProvider).ConfigureAwait(false);
             await _interactionService.AddModuleAsync<TTSModule>(_serviceProvider).ConfigureAwait(false);
 
             // Register to Guilds for fast testing
