@@ -9,25 +9,25 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using System.Configuration;
+using BigOne.Modules.SoundBotModules;
 
-internal sealed class DiscordClientHost : IHostedService
+internal sealed class DiscordSoundBot : IHostedService
 {
     private readonly DiscordSocketClient _discordSocketClient;
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
 
-    public DiscordClientHost(
-        DiscordSocketClient discordSocketClient,
-        InteractionService interactionService,
+    public DiscordSoundBot(
         IServiceProvider serviceProvider)
     {
-        ArgumentNullException.ThrowIfNull(discordSocketClient);
-        ArgumentNullException.ThrowIfNull(interactionService);
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
-        _discordSocketClient = discordSocketClient;
-        _interactionService = interactionService;
         _serviceProvider = serviceProvider;
+
+        var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
+
+        _discordSocketClient = registry.GetOrCreate("SoundBotSocketClient", () => new DiscordSocketClient());
+        _interactionService = registry.GetOrCreate("SoundBotInteractions", () => new InteractionService(_discordSocketClient));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ internal sealed class DiscordClientHost : IHostedService
 
         // Put bot token here
         await _discordSocketClient
-            .LoginAsync(TokenType.Bot, ConfigurationManager.AppSettings["DiscordAPIKey"])
+            .LoginAsync(TokenType.Bot, ConfigurationManager.AppSettings["Bot2"])
             .ConfigureAwait(false);
 
         await _discordSocketClient
@@ -88,36 +88,36 @@ internal sealed class DiscordClientHost : IHostedService
         }
     }
 
+
     private async Task ClientReady()
     {
-        using (var scope = _serviceProvider.CreateScope())
+        //using (var scope = _serviceProvider.CreateScope())
+        //{
+            //var _interactionService = scope.ServiceProvider.GetRequiredService<InteractionService>();
+
+        try
         {
-            var interactionService = scope.ServiceProvider.GetRequiredService<InteractionService>();
-            try
-            {
-                await interactionService
-                    .AddModulesAsync(Assembly.GetExecutingAssembly(), scope.ServiceProvider)
-                    .ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<BigOne.Modules.SoundBotModules.SoundModule>(_serviceProvider).ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<TTSModule>(_serviceProvider).ConfigureAwait(false);
 
-                // Register to Guilds for fast testing
-                await _interactionService
-                    .RegisterCommandsToGuildAsync(783190942806835200)
-                    .ConfigureAwait(false);
-                await _interactionService
-                    .RegisterCommandsToGuildAsync(1008235979045339168)
-                    .ConfigureAwait(false);
+            // Register to Guilds for fast testing
+            await _interactionService
+                .RegisterCommandsToGuildAsync(783190942806835200)
+                .ConfigureAwait(false);
+            await _interactionService
+                .RegisterCommandsToGuildAsync(1008235979045339168)
+                .ConfigureAwait(false);
 
-                // Register globally as well
-                await _interactionService
-                    .RegisterCommandsGloballyAsync()
-                    .ConfigureAwait(false);
+            // Register globally as well
+            await _interactionService
+                .RegisterCommandsGloballyAsync()
+                .ConfigureAwait(false);
 
-                Console.WriteLine("Commands registered successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error registering commands: {ex.Message}");
-            }
+            Console.WriteLine("Bot2 - Commands registered successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Bot2 - Error registering commands: {ex.Message}");
         }
     }
 }

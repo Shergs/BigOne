@@ -1,4 +1,4 @@
-﻿namespace BigOne.Modules;
+﻿namespace BigOne.Modules.SoundBotModules;
 
 using Discord.Audio;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
+using Lavalink4NET;
 
 [RequireContext(ContextType.Guild)]
 public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext>

@@ -1,4 +1,4 @@
-﻿namespace BigOne.Modules;
+﻿namespace BigOne.Modules.SoundBotModules;
 
 using System;
 using System.Threading.Tasks;
@@ -83,7 +83,7 @@ public sealed class TTSModule : InteractionModuleBase<SocketInteractionContext>
             };
 
             // Serialize request data to JSON
-            string json = System.Text.Json.JsonSerializer.Serialize(requestData);
+            string json = JsonSerializer.Serialize(requestData);
             HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // Send a POST request
@@ -164,7 +164,7 @@ public sealed class TTSModule : InteractionModuleBase<SocketInteractionContext>
             };
 
             // Serialize request data to JSON
-            string json = System.Text.Json.JsonSerializer.Serialize(requestData);
+            string json = JsonSerializer.Serialize(requestData);
             HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // Send a POST request
@@ -195,7 +195,7 @@ public sealed class TTSModule : InteractionModuleBase<SocketInteractionContext>
                     sound.ServerId = Context.Guild.Id.ToString();
                     _context.Sounds.Add(sound);
                     await _context.SaveChangesAsync();
-                    
+
                     await FollowupAsync("Text to speech playing.").ConfigureAwait(false);
                     using (var ffmpeg = CreateProcess($"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{name.Replace(" ", "_")}.mp3"))
                     using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))

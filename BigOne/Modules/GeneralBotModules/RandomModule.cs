@@ -1,4 +1,4 @@
-﻿namespace BigOne.Modules;
+﻿namespace BigOne.Modules.GeneralBotModules;
 
 using System;
 using System.Threading.Tasks;

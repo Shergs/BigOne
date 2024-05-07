@@ -1,4 +1,4 @@
-﻿namespace BigOne.Modules;
+﻿namespace BigOne.Modules.GeneralBotModules;
 
 using System;
 using System.Threading.Tasks;
@@ -9,6 +9,10 @@ using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
+using Discord.WebSocket;
+using Discord.Audio;
+using System.Diagnostics;
+using System.Configuration;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.
@@ -49,9 +53,67 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync("Disconnected.").ConfigureAwait(false);
     }
 
-    #region sound
+    //#region TestingLavalinkRemoval
+    //[SlashCommand("playtest", description: "Plays music", runMode: RunMode.Async)]
+    //public async Task PlayTest(string query)
+    //{
+    //    await DeferAsync().ConfigureAwait(false);
+    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+    //    var guild = (Context.User as IGuildUser)?.Guild;
+    //    var voiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
 
-    #endregion
+    //    // Check if the user is in a voice channel
+    //    if (voiceChannel == null)
+    //    {
+    //        await FollowupAsync("You need to be in a voice channel to play music.").ConfigureAwait(false);
+    //        return;
+    //    }
+
+    //    // Connect to the voice channel and get the audio client
+    //    var audioClient = await voiceChannel.ConnectAsync();
+
+    //    // Assuming you have a method to handle the streaming part
+    //    await StreamAudioToChannel(query, audioClient);
+    //}
+
+    //private async Task StreamAudioToChannel(string query, IAudioClient audioClient)
+    //{
+    //    // Convert user query to a YouTube search and get the stream URL
+    //    var youtubeService = new YoutubeAPIService(ConfigurationManager.AppSettings["YoutubeAPIKey"]);
+    //    string videoUrl = await youtubeService.GetYouTubeVideoUrl(query);
+    //    if (string.IsNullOrEmpty(videoUrl))
+    //    {
+    //        await FollowupAsync("Could not find the video.").ConfigureAwait(false);
+    //        return;
+    //    }
+
+    //    // Setup FFmpeg to stream audio
+    //    var process = CreateProcess(videoUrl);
+    //    var output = process.StandardOutput.BaseStream;
+    //    var discordStream = audioClient.CreatePCMStream(AudioApplication.Music);
+    //    try
+    //    {
+    //        await output.CopyToAsync(discordStream);
+    //    }
+    //    finally
+    //    {
+    //        await discordStream.FlushAsync();
+    //        process.Kill();
+    //    }
+    //}
+
+    //private Process CreateProcess(string url)
+    //{
+    //    return Process.Start(new ProcessStartInfo
+    //    {
+    //        FileName = "yt-dlp",
+    //        Arguments = $"-o - {url} | ffmpeg -i pipe:0 -f s16le -ar 48000 -ac 2 pipe:1",
+    //        UseShellExecute = false,
+    //        RedirectStandardOutput = true,
+    //        RedirectStandardError = true
+    //    });
+    //}
+    //#endregion
 
     #region PlayService
     /// <summary>
