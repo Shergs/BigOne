@@ -10,7 +10,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using System.Configuration;
 using Microsoft.Win32;
-using BigOne.Modules.SoundBotModules;
+using BigOne.Modules.GeneralBotModules;
+using Microsoft.Extensions.DependencyInjection;
 
 internal sealed class DiscordClientHost : IHostedService
 {
@@ -19,16 +20,17 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly IServiceProvider _serviceProvider;
 
     public DiscordClientHost(
+        DiscordSocketClient discordSocketClient,
+        InteractionService interactionService,
         IServiceProvider serviceProvider)
     {
+        ArgumentNullException.ThrowIfNull(discordSocketClient);
+        ArgumentNullException.ThrowIfNull(interactionService);
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
+        _discordSocketClient = discordSocketClient;
+        _interactionService = interactionService;
         _serviceProvider = serviceProvider;
-
-        var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-
-        _discordSocketClient = registry.GetOrCreate("GeneralBotSocketClient", () => new DiscordSocketClient());
-        _interactionService = registry.GetOrCreate("GeneralBotInteractions", () => new InteractionService(_discordSocketClient));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -90,14 +92,11 @@ internal sealed class DiscordClientHost : IHostedService
     }
     private async Task ClientReady()
     {
-        //using (var scope = _serviceProvider.CreateScope())
-        //{
-        //    var interactionService = scope.ServiceProvider.GetRequiredService<InteractionService>();
         try
         {
-            await _interactionService.AddModuleAsync<BigOne.Modules.GeneralBotModules.MusicModule>(_serviceProvider).ConfigureAwait(false);
-            await _interactionService.AddModuleAsync<BigOne.Modules.GeneralBotModules.ChatModule>(_serviceProvider).ConfigureAwait(false);
-            await _interactionService.AddModuleAsync<BigOne.Modules.GeneralBotModules.RandomModule>(_serviceProvider).ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<MusicModule>(_serviceProvider).ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<ChatModule>(_serviceProvider).ConfigureAwait(false);
+            await _interactionService.AddModuleAsync<RandomModule>(_serviceProvider).ConfigureAwait(false);
 
             // Register to Guilds for fast testing
             await _interactionService

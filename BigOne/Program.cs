@@ -19,31 +19,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<KeyedSingletonRegistry>();
 
 // Discord
-// Configuration for GeneralBot
-builder.Services.AddSingleton<DiscordSocketClient>(serviceProvider =>
-{
-    var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-    return registry.GetOrCreate("GeneralBotSocketClient", () => new DiscordSocketClient());
-});
+// General Bot services
+builder.Services.AddSingleton<DiscordSocketClient>();
+builder.Services.AddSingleton<InteractionService>();
 
-builder.Services.AddSingleton<InteractionService>(serviceProvider =>
+// Soundbot services
+builder.Services.AddKeyedSingleton<DiscordSocketClient>("SoundBotSocketClient");
+builder.Services.AddKeyedSingleton<InteractionService>("SoundBotInteractions", (serviceProvider,_) =>
 {
-    var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-    var client = serviceProvider.GetRequiredService<DiscordSocketClient>(); // Assuming client is resolved the same way
-    return registry.GetOrCreate("GeneralBotInteractions", () => new InteractionService(client));
-});
-
-// Configuration for SoundBot
-builder.Services.AddSingleton<DiscordSocketClient>(serviceProvider =>
-{
-    var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-    return registry.GetOrCreate("SoundBotSocketClient", () => new DiscordSocketClient());
-});
-builder.Services.AddSingleton<InteractionService>(serviceProvider =>
-{
-    var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-    var client = serviceProvider.GetRequiredService<DiscordSocketClient>(); // Resolve specifically for SoundBot
-    return registry.GetOrCreate("SoundBotInteractions", () => new InteractionService(client));
+    var client = serviceProvider.GetRequiredKeyedService<DiscordSocketClient>("SoundBotSocketClient");
+    return new InteractionService(client);
 });
 
 builder.Services.AddSingleton<ConversationService>();
@@ -55,7 +40,7 @@ builder.Services.ConfigureLavalink(config =>
     config.ReadyTimeout = TimeSpan.FromSeconds(60)
 );
 builder.Services.AddLavalink();
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug));
 
 //Database
 var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? throw new InvalidOperationException("Connection string 'BigOne' not found.");
@@ -88,8 +73,3 @@ app.MapControllers();
 
 // Run the application
 app.Run();
-
-
-
-
-

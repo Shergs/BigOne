@@ -13,6 +13,7 @@ using Discord.WebSocket;
 using Discord.Audio;
 using System.Diagnostics;
 using System.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.

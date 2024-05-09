@@ -18,16 +18,17 @@ internal sealed class DiscordSoundBot : IHostedService
     private readonly IServiceProvider _serviceProvider;
 
     public DiscordSoundBot(
+        [FromKeyedServices("SoundBotSocketClient")] DiscordSocketClient discordSocketClient,
+        [FromKeyedServices("SoundBotInteractions")] InteractionService interactionService,
         IServiceProvider serviceProvider)
     {
+        ArgumentNullException.ThrowIfNull(discordSocketClient);
+        ArgumentNullException.ThrowIfNull(interactionService);
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
+        _discordSocketClient = discordSocketClient;
+        _interactionService = interactionService;
         _serviceProvider = serviceProvider;
-
-        var registry = serviceProvider.GetRequiredService<KeyedSingletonRegistry>();
-
-        _discordSocketClient = registry.GetOrCreate("SoundBotSocketClient", () => new DiscordSocketClient());
-        _interactionService = registry.GetOrCreate("SoundBotInteractions", () => new InteractionService(_discordSocketClient));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
