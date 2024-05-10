@@ -143,6 +143,7 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.Guild = guild;
                 dashboardViewModel.serverId = guild.Id;
             }
+            dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
 
             return dashboardViewModel;
         }

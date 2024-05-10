@@ -14,6 +14,9 @@ using Discord.Audio;
 using System.Diagnostics;
 using System.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR;
+using BigOne.Hubs;
+using BigOne.Services;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.
@@ -22,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IAudioService _audioService;
+    private readonly ISignalService _signalService;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -30,10 +34,11 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService)
+    public MusicModule(IAudioService audioService, ISignalService signalService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
+        _signalService = signalService;
     }
 
     /// <summary>
@@ -143,6 +148,8 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             await FollowupAsync("😖 No results.").ConfigureAwait(false);
             return;
         }
+
+        await _signalService.SendNowPlaying(Context.Guild.Id.ToString(),"TestName", "TestUrl");
 
         var position = await player.PlayAsync(track).ConfigureAwait(false);
 

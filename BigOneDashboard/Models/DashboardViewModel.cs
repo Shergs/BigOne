@@ -23,5 +23,6 @@ namespace BigOneDashboard.Models
         public List<Guild> AvailableGuilds { get; set; }
         public Guild Guild { get; set; }
         public string serverId { get; set; }
+        public string botUrl { get; set; }
     }
 }

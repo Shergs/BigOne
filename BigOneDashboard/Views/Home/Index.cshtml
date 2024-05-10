@@ -25,9 +25,21 @@
 @if (currentGuild != null)
 {
 <div class="px-2 py-4 md:px-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
-        
+    @* Now Playing *@
+    <div id="NowPlayingCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-5">
+        <div class="w-full h-full mx-auto my-8">
+            <div class="flex flex-col w-full px-8 rounded-lg">
+                <h2 class="text-2xl mb-2 font-bold">Now Playing</h2>
+                <p class="mb-4"><strong>Server:</strong> @Model.Guild.Name</p>
+                <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm background-gray-400 overflow-y-auto">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
     @*Save new sound*@
-        <div id="SaveNewSoundCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg !col-span-12 !row-span-6 md:!col-span-4 md:!row-span-7">
+    <div id="SaveNewSoundCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg !col-span-12 !row-span-6 md:!col-span-4 md:!row-span-7">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-col w-full px-8 rounded-lg">
                 <h2 class="text-2xl mb-4 font-bold">Save New Sound</h2>
@@ -485,5 +497,10 @@ else
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <script src="/js/Index.js"></script>
+    <script type="text/javascript">
+        setGlobals('@Model.botUrl','@Model.serverId');
+    </script>
 }
 

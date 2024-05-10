@@ -13,6 +13,8 @@ using Google.Api;
 using Lavalink4NET;
 using BigOne.BotHosts;
 using BigOne;
+using BigOne.Hubs;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,8 @@ builder.Services.ConfigureLavalink(config =>
 builder.Services.AddLavalink();
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug));
 
+builder.Services.AddSignalR();
+
 //Database
 var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? throw new InvalidOperationException("Connection string 'BigOne' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -54,6 +58,17 @@ builder.Services.AddControllers();
 // Logging
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy",
+        builder => builder.WithOrigins(System.Configuration.ConfigurationManager.AppSettings["DashboardBaseUrl"] ?? "") // Specify the client URL
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials());
+});
+builder.Services.AddSignalR();
+
+
 // Build the application
 var app = builder.Build();
 
@@ -64,12 +79,16 @@ var app = builder.Build();
 //    app.UseHsts();
 //}
 
+app.UseCors("CorsPolicy");
+
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
 
 // Map controllers
 app.MapControllers();
+
+app.MapHub<PlayerHub>("playerinfo-hub");
 
 // Run the application
 app.Run();
