@@ -14,6 +14,7 @@ namespace BigOneDashboard.Models
             Sounds = new List<Sound>();
             serverId = "";
             DiscordName = "";
+            Position = "";
         }
         public SaveNewSoundViewModel SaveNewSoundViewModel { get; set; }
         public EditSoundViewModel EditSoundViewModel { get; set; }
@@ -24,5 +25,8 @@ namespace BigOneDashboard.Models
         public Guild Guild { get; set; }
         public string serverId { get; set; }
         public string botUrl { get; set; }
+        public List<Song> Songs { get; set; }
+        public List<SongHistory> SongHistory { get; set; }
+        public string Position { get; set; }
     }
 }

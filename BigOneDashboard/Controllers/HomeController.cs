@@ -142,6 +142,9 @@ namespace BigOneDashboard.Controllers
             {
                 dashboardViewModel.Guild = guild;
                 dashboardViewModel.serverId = guild.Id;
+                dashboardViewModel.Songs = await GetPlayerSongs(guild.Id);
+                dashboardViewModel.SongHistory = await GetPlayerHistory(guild.Id);
+                dashboardViewModel.Position = await GetPlayerPosition(guild.Id);
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
 
@@ -646,6 +649,28 @@ namespace BigOneDashboard.Controllers
                 return View("Index", await HydrateDashboardViewModel(model.serverId));
             }
         }
+        #endregion
+
+        #region NowPlaying
+        public async Task DownloadYtMP3(string url)
+        { 
+            
+        }
+
+        public async Task<List<Song>> GetPlayerSongs(string serverId)
+        { 
+            // Make the endpoint in the bot for these
+        }
+
+        public async Task<List<SongHistory>> GetPlayerHistory(string serverId)
+        { 
+        
+        }
+
+        public async Task<string> GetPlayerPosition(string serverId)
+        { 
+        
+        }   
         #endregion
 
         public IActionResult Privacy()
