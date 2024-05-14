@@ -26,7 +26,7 @@ namespace BigOneDashboard.Models
         public string serverId { get; set; }
         public string botUrl { get; set; }
         public List<Song> Songs { get; set; }
-        public List<SongHistory> SongHistory { get; set; }
+        public List<SongHistoryItem> SongHistory { get; set; }
         public string Position { get; set; }
     }
 }

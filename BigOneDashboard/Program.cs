@@ -3,9 +3,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AspNet.Security.OAuth.Discord;
 using Microsoft.Extensions.FileProviders;
+using BigOneDashboard.Clients;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add appsettings.json and appsettings.{Environment}.json to the configuration
+builder.Configuration
+       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+       .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+       .AddEnvironmentVariables();
+
+builder.Services.AddHttpClient<IBotClient, BotClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Bot:BaseUrl"]);
+});
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? throw new InvalidOperationException("Connection string 'BigOne' not found.");

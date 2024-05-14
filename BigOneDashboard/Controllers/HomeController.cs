@@ -20,6 +20,7 @@ using Azure.Core;
 using BigOneDashboard.Areas.DiscordAuth;
 using Google.Apis.Http;
 using System.Globalization;
+using BigOneDashboard.Services;
 
 namespace BigOneDashboard.Controllers
 {
@@ -28,12 +29,15 @@ namespace BigOneDashboard.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IBotService _botService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IConfiguration configuration)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IConfiguration configuration
+            , IBotService botService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
+            _botService = botService;
         }
 
         public async Task<IActionResult> Index(string? serverId)
@@ -142,9 +146,9 @@ namespace BigOneDashboard.Controllers
             {
                 dashboardViewModel.Guild = guild;
                 dashboardViewModel.serverId = guild.Id;
-                dashboardViewModel.Songs = await GetPlayerSongs(guild.Id);
-                dashboardViewModel.SongHistory = await GetPlayerHistory(guild.Id);
-                dashboardViewModel.Position = await GetPlayerPosition(guild.Id);
+                dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
+                dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
+                dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
 
@@ -652,25 +656,6 @@ namespace BigOneDashboard.Controllers
         #endregion
 
         #region NowPlaying
-        public async Task DownloadYtMP3(string url)
-        { 
-            
-        }
-
-        public async Task<List<Song>> GetPlayerSongs(string serverId)
-        { 
-            // Make the endpoint in the bot for these
-        }
-
-        public async Task<List<SongHistory>> GetPlayerHistory(string serverId)
-        { 
-        
-        }
-
-        public async Task<string> GetPlayerPosition(string serverId)
-        { 
-        
-        }   
         #endregion
 
         public IActionResult Privacy()
