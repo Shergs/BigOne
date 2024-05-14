@@ -39,7 +39,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet("getplayerposition")]
-    public async Task<IActionResult> GetPlayerHistory(string serverId)
+    public async Task<IActionResult> GetPlayerPosition(string serverId)
     {
         //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         //if (player == null)
@@ -55,6 +55,7 @@ public class PlayerController : ControllerBase
         //}).ToList();
 
         //return Ok(queue);
-        return Ok();
+        //return Ok("");
+        return Ok("TestResult");
     }
 }
