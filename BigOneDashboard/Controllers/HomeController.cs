@@ -30,14 +30,16 @@ namespace BigOneDashboard.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IBotService _botService;
+        private readonly IYoutubeService _youtubeService;
 
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IConfiguration configuration
-            , IBotService botService)
+            , IBotService botService, IYoutubeService youtubeService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
             _botService = botService;
+            _youtubeService = youtubeService;
         }
 
         public async Task<IActionResult> Index(string? serverId)
@@ -420,6 +422,13 @@ namespace BigOneDashboard.Controllers
                 return View("Index", await HydrateDashboardViewModel(deleteModel.serverId));
             }
         }
+
+        #region YoutubeAPI
+        public async Task<IActionResult> DownloadYtMP3(string url)
+        { 
+            return await _youtubeService.GetMP3FromYoutube(url);
+        }
+        #endregion
 
         #region SoundAPI
         public async Task<IActionResult> GetSound(string soundName, string filePath)

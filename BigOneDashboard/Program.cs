@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using AspNet.Security.OAuth.Discord;
 using Microsoft.Extensions.FileProviders;
 using BigOneDashboard.Clients;
+using BigOneDashboard.Services;
+using BigOneDashboard.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +16,16 @@ builder.Configuration
        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
        .AddEnvironmentVariables();
 
+builder.Services.AddScoped<IBotService, BotService>();
+builder.Services.AddScoped<IBotRepository, BotRepository>();
+builder.Services.AddScoped<IYoutubeService, YoutubeService>();
 builder.Services.AddHttpClient<IBotClient, BotClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Bot:BaseUrl"]);
+});
+builder.Services.AddHttpClient<IYoutubeClient, YoutubeClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["APILocations:Youtube"]);
 });
 
 // Add services to the container.

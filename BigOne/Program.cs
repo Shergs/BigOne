@@ -15,6 +15,7 @@ using BigOne.BotHosts;
 using BigOne;
 using BigOne.Hubs;
 using System.Configuration;
+using BigOne.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddKeyedSingleton<InteractionService>("SoundBotInteractions", (
     return new InteractionService(client);
 });
 
+builder.Services.AddSingleton<ISignalService, SignalService>();
 builder.Services.AddSingleton<ConversationService>();
 builder.Services.AddHostedService<DiscordClientHost>();
 builder.Services.AddHostedService<DiscordSoundBot>();
@@ -42,7 +44,7 @@ builder.Services.ConfigureLavalink(config =>
     config.ReadyTimeout = TimeSpan.FromSeconds(60)
 );
 builder.Services.AddLavalink();
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug));
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 builder.Services.AddSignalR();
 
