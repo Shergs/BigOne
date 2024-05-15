@@ -148,9 +148,13 @@ namespace BigOneDashboard.Controllers
             {
                 dashboardViewModel.Guild = guild;
                 dashboardViewModel.serverId = guild.Id;
-                dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
-                dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
-                dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
+                dashboardViewModel.Song = await _botService.GetPlayerSong(guild.Id);
+                //dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
+                //dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
+                //dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
+                dashboardViewModel.Songs = new List<Song>();
+                dashboardViewModel.SongHistory = new List<SongHistoryItem>();
+                dashboardViewModel.Position = "";
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
 

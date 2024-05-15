@@ -29,9 +29,9 @@
     <div id="NowPlayingCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-8">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-row w-full px-8 rounded-lg">
-                <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80">
+                <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80" data-itemType="sound">
                     <audio id="nowPlayingAudio">
-                        <source src="@Url.Action("DownloadYtMP3", "Home", new { url = Model.Sounds[0] })" type="audio/mp3">
+                        <source src="@Url.Action("DownloadYtMP3", "Home", new { url = Model.Song.Url })" type="audio/mp3">
                         Your browser does not support the audio element.
                     </audio>
                     <!-- Video Player -->
@@ -52,8 +52,8 @@
                                 </g>
                             </svg>
                         </button>
-                        <button class="p-4 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none mx-4" id="nowPlayingPause">
-                            <svg width="64px" height="64px" viewBox="0 0 24 24" class="w-6 h-6 text-gray-600 dark:!text-white" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <button class="p-4 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none mx-4" id="nowPlayingPause" data-type="playPauseBtn">
+                            <svg data-type="pause" width="64px" height="64px" viewBox="0 0 24 24" class="w-6 h-6 text-gray-600 dark:!text-white hidden" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                                 <g id="SVGRepo_iconCarrier">
@@ -61,12 +61,10 @@
                                     <path d="M14 6C14 4.11438 14 3.17157 14.5858 2.58579C15.1716 2 16.1144 2 18 2C19.8856 2 20.8284 2 21.4142 2.58579C22 3.17157 22 4.11438 22 6V18C22 19.8856 22 20.8284 21.4142 21.4142C20.8284 22 19.8856 22 18 22C16.1144 22 15.1716 22 14.5858 21.4142C14 20.8284 14 19.8856 14 18V6Z" fill="#000000"></path>
                                 </g>
                             </svg>
-                        </button>
-                        <button class="p-4 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none mx-4 hidden" id="nowPlayingPlay">
-                            <svg width="64px" height="64px" xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-gray-600" viewBox="0 0 384 512">
-                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" fill="#000000" />
-                            </svg>
+                                <svg data-type="play" width="64px" height="64px" xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-gray-600" viewBox="0 0 384 512">
+                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                    <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" fill="#000000" />
+                                </svg>
                         </button>
                         <button class="p-3 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none" id="nowPlayingSkip">
                             <svg width="64px" height="64px" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600 dark:!text-white" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,13 +78,15 @@
                         </button>
                     </div>
                     <!-- Progress Bar -->
-                    <div class="mt-6 bg-gray-200 h-2 rounded-full">
+                    <input type="range" class="hidden lg:block mt-6 bg-gray-200 h-2 rounded-full" data-type="seekSlider" value="0" class="flex-grow">
+
+                    @* <div class="mt-6 bg-gray-200 h-2 rounded-full">
                         <div class="bg-teal-500 h-2 rounded-full w-1/2"></div>
-                    </div>
+                    </div> *@
                     <!-- Time Information -->
                     <div class="flex justify-between mt-2 text-sm text-gray-600 dark:!text-white">
-                        <span id="nowPlayingCurrentTime">1:57</span>
-                        <span id="nowPlayingDuration">3:53</span>
+                        <span id="nowPlayingCurrentTime" data-type="currentTime">0:00</span>
+                        <span id="nowPlayingDuration" data-type="duration">0:00</span>
                     </div>
                 </div>
                 @* Queue *@
@@ -607,55 +607,6 @@ else
                     }
                 });
             });
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let nowPlayingPlayer = document.getElementById();
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let sounds = document.querySelectorAll('[data-itemType="sound"]');
-            sounds.forEach((sound) => {
-                let playPauseBtn = sound.querySelector('[data-type="playPauseBtn"]');
-                let audio = sound.querySelector('audio');
-                let seekSlider = sound.querySelector('[data-type="seekSlider"]');
-                let currentTimeDisplay = sound.querySelector('[data-type="currentTime"]');
-                let durationDisplay = sound.querySelector('[data-type="duration"]')
-
-                audio.addEventListener("loadedmetadata", function () {
-                    seekSlider.max = audio.duration;
-                    durationDisplay.textContent = formatTime(audio.duration);
-                });
-                audio.addEventListener("timeupdate", function () {
-                    seekSlider.value = audio.currentTime;
-                    currentTimeDisplay.textContent = formatTime(audio.currentTime);
-                });
-                playPauseBtn.addEventListener("click", function () {
-                    const pauseBtn = playPauseBtn.querySelector('[data-type="pause"]');
-                    const playBtn = playPauseBtn.querySelector('[data-type="play"]');
-                    if (audio.paused) {
-                        audio.play();
-                        pauseBtn.classList.remove('hidden');
-                        playBtn.classList.add('hidden');
-                    } else {
-                        audio.pause();
-                        playBtn.classList.remove('hidden');
-                        pauseBtn.classList.add('hidden'); 
-                    }
-                });
-                seekSlider.addEventListener("input", function () {
-                    audio.currentTime = seekSlider.value;
-                });
-            });
-
-            function formatTime(seconds) {
-                let minutes = Math.floor(seconds / 60);
-                seconds = Math.floor(seconds % 60);
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                return minutes + ":" + seconds;
-            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>

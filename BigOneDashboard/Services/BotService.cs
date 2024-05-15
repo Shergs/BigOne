@@ -7,14 +7,14 @@ namespace BigOneDashboard.Services
 {
     public interface IBotService
     {
+        Task<Song> GetPlayerSong(string serverId);
         Task<List<Song>> GetPlayerSongs(string serverId);
         Task<List<SongHistoryItem>> GetPlayerHistory(string serverId);
         Task<string> GetPlayerPosition(string serverId);
     }
     public class BotService(
         IBotClient botClient,
-        IBotRepository botRepository
-        ) : IBotService
+        IBotRepository botRepository) : IBotService
     {
         //public async Task<IActionResult> DownloadYtMP3(string url)
         //{
@@ -24,6 +24,10 @@ namespace BigOneDashboard.Services
         //    //return PhysicalFile(fullPath, contentType, fileName);
         //    return;
         //}
+        public async Task<Song> GetPlayerSong(string serverId)
+        { 
+            return await botClient.GetPlayerSong(serverId);
+        }
 
         public async Task<List<Song>> GetPlayerSongs(string serverId)
         {

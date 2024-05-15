@@ -19,10 +19,27 @@ public class PlayerController : ControllerBase
         _audioService = audioService;
     }
 
-    [HttpGet("getplayersongs")]
-    public async Task<IActionResult> GetPlayerSongs(string serverId)
+    [HttpGet("getplayersong")]
+    public async Task<IActionResult> GetPlayerSong([FromQuery] string serverId)
     {
-        //VoteLavalinkPlayer player = _audioService.Players.RetrieveAsync(ulong.Parse(serverId), 0, playerFactory: PlayerFactory.Vote); //_audioService.Players.GetPlayerAsync(ulong.Parse(serverId));
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return NotFound("Player not found.");
+        }
+
+        var track = new Song
+        {
+            Name = player.CurrentTrack.Title,
+            Url = player.CurrentTrack.Uri.ToString()
+        };
+
+        return Ok(track);
+    }
+
+    [HttpGet("getplayersongs")]
+    public async Task<IActionResult> GetPlayerSongs([FromQuery] string serverId)
+    {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
