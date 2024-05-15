@@ -1,4 +1,5 @@
 ﻿using BigOneDashboard.Models;
+using System.Text.Json;
 
 namespace BigOneDashboard.Clients
 {
@@ -14,9 +15,22 @@ namespace BigOneDashboard.Clients
     {
         public async Task<Song> GetPlayerSong(string serverId)
         {
-            var response = await httpClient.GetFromJsonAsync<Song>(
-                $"Player/getplayersong?serverId={serverId}");
-            return response ?? new Song();
+            var response = await httpClient.GetAsync($"Player/getplayersong?serverId={serverId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                // Handle the case where the response is not successful
+                throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
+            }
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(responseString))
+            {
+                // Handle the empty string response and return a default Song object
+                return new Song();
+            }
+
+            // Deserialize the response string to a Song object
+            return JsonSerializer.Deserialize<Song>(responseString);
         }
 
         public async Task<List<Song>> GetPlayerSongs(string serverId)
