@@ -37,7 +37,6 @@ namespace BigOneDashboard.SharedAPI
             }
         }
 
-        // Make this get and create a userData instead of just username
         public static async Task<string> GetUserInfo(string token)
         {
             using (var client = new HttpClient())

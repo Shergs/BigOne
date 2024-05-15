@@ -25,7 +25,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return NotFound("Player not found.");
+            return Ok("");
         }
 
         var track = new Song
@@ -43,7 +43,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return NotFound("Player not found.");
+            return Ok("");
         }
         
         var queue = player.Queue.Select(track => new Song
@@ -61,7 +61,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return NotFound("Player not found.");
+            return Ok("");
         }
 
         var position = player.Position?.Position;
