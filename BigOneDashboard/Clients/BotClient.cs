@@ -14,20 +14,23 @@ namespace BigOneDashboard.Clients
     {
         public async Task<Song> GetPlayerSong(string serverId)
         {
-            return await httpClient.GetFromJsonAsync<Song>(
+            var response = await httpClient.GetFromJsonAsync<Song>(
                 $"Player/getplayersong?serverId={serverId}");
+            return response ?? new Song();
         }
 
         public async Task<List<Song>> GetPlayerSongs(string serverId)
         {
-            return await httpClient.GetFromJsonAsync<List<Song>>(
+            var response = await httpClient.GetFromJsonAsync<List<Song>>(
                 $"Player/getplayersongs?serverId={serverId}");
+            return response ?? new List<Song>();
         }
 
         public async Task<string> GetPlayerPosition(string serverId)
         {
-            return await httpClient.GetFromJsonAsync<string>(
+            var response = await httpClient.GetFromJsonAsync<string>(
                 $"Player/getplayerposition?serverId={serverId}");
+            return response ?? "";
         }
     }
 }
