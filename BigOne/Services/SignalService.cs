@@ -10,6 +10,7 @@ namespace BigOne.Services
         Task SendResume(string groupName);
         Task SendSkip(string groupName);    
         Task SendQueueUpdated(string groupName, string trackName, string addOrRemove);    
+        Task SendStop(string groupName);
     }
     public class SignalService(
         IHubContext<PlayerHub> _hubContext
@@ -39,6 +40,11 @@ namespace BigOne.Services
         public async Task SendQueueUpdated(string groupName, string trackName, string addOrRemove)
         { 
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveQueueUpdated", trackName, addOrRemove);
+        }
+
+        public async Task SendStop(string groupName)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveStopped");
         }
     }
 }

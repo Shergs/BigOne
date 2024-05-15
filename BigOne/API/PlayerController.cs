@@ -58,21 +58,13 @@ public class PlayerController : ControllerBase
     [HttpGet("getplayerposition")]
     public async Task<IActionResult> GetPlayerPosition(string serverId)
     {
-        //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
-        //if (player == null)
-        //{
-        //    return NotFound("Player not found.");
-        //}
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return NotFound("Player not found.");
+        }
 
-        //var queue = player.Queue.Select(track => new Song
-        //{
-        //    Name = track.Title,
-        //    Url = track.Url,
-        //    Duration = track.Duration
-        //}).ToList();
-
-        //return Ok(queue);
-        //return Ok("");
-        return Ok("TestResult");
+        var position = player.Position?.Position;
+        return Ok(position.ToString());
     }
 }
