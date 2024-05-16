@@ -15,6 +15,7 @@ namespace BigOneDashboard.Models
             serverId = "";
             DiscordName = "";
             Position = "";
+            embedUrl = "";
         }
         public SaveNewSoundViewModel SaveNewSoundViewModel { get; set; }
         public EditSoundViewModel EditSoundViewModel { get; set; }
@@ -29,5 +30,6 @@ namespace BigOneDashboard.Models
         public List<Song> Songs { get; set; }
         public List<SongHistoryItem> SongHistory { get; set; }
         public string Position { get; set; }
+        public string embedUrl { get; set; }
     }
 }

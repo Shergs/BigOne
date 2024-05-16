@@ -155,6 +155,7 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.Songs = new List<Song>();
                 dashboardViewModel.SongHistory = new List<SongHistoryItem>();
                 dashboardViewModel.Position = "";
+                dashboardViewModel.embedUrl = await _youtubeService.GetEmbedFromUrl(dashboardViewModel.Song.Url);
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
 
