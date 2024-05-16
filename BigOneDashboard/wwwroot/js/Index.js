@@ -36,7 +36,7 @@ connection.on("ReceiveNowPlaying", function (name, url) {
     console.log("Name: " + name);
     console.log("URL: " + url);
     // Maybe have to create the toast message after doing other stuff, but we'll see.
-    createToast("Shaun Started Playing: " + name);
+    createToast("Shaun " + "Started Playing: " + name);
        
     // Append the toast message element to the body
     document.body.appendChild(toastMessage);
@@ -44,6 +44,7 @@ connection.on("ReceiveNowPlaying", function (name, url) {
     updateNowPlaying(name, url);
     addToQueue(name, url);
 
+    setPlayers();
     // Remove the toast message after a certain duration (e.g., 5 seconds)
 });
 
@@ -59,9 +60,10 @@ connection.on("TrackSkipped", function (message) {
     createToast("Skipped By: " + "Shaun");
 });
 
-connection.on("AddToQueue", function (message) {
+connection.on("AddToQueue", function (name, url, position) {
     console.log("AddToQueue");
-
+    // Could even make the url clickable. That would be cool.
+    createToast("Shaun " + "Added To Queue:" + name + "\nAt position: " + position);
 });
 
 connection.start().catch(function (err) {
