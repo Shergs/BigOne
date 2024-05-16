@@ -29,7 +29,7 @@
     <div id="NowPlayingCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-8">
         <div class="w-full h-full mx-auto my-8">
             <div class="flex flex-row w-full px-8 rounded-lg">
-                <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80" data-itemType="sound">
+                <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80" data-itemType="sound" id="nowPlayingPlayer">
                     <!-- Video Player -->
                     @if (string.IsNullOrEmpty(Model.embedUrl))
                         {
@@ -40,9 +40,9 @@
                             <iframe id="nowPlayingVideo" src="@Model.embedUrl" class="w-64 h-64 mx-auto rounded-lg mb-4 shadow-lg shadow-teal-50" title="Now Playing" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                         }
                     <!-- Song Title -->
-                    <h2 class="text-xl font-semibold text-center">T-Shirt</h2>
+                    <h2 id="nowPlayingTitle" class="text-xl font-semibold text-center">T-Shirt</h2>
                     <!-- Artist Name -->
-                    <p class="text-gray-600 dark:!text-white text-sm text-center">Migos</p>
+                    <p id="nowPlayingArtist" class="text-gray-600 dark:!text-white text-sm text-center">Migos</p>
                     <!-- Music Controls -->
                     <div class="mt-6 flex justify-center items-center">
                         <button class="p-3 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none">
@@ -626,7 +626,7 @@ else
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
     <script src="/js/Index.js"></script>
     <script type="text/javascript">
-        setGlobals('@Model.botUrl','@Model.serverId');
+        setGlobals('@Model.botUrl', '@Model.serverId');
     </script>
 }
 

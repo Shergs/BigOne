@@ -31,5 +31,6 @@ namespace BigOneDashboard.Models
         public List<SongHistoryItem> SongHistory { get; set; }
         public string Position { get; set; }
         public string embedUrl { get; set; }
+        public string dashboardBaseUrl { get; set; }
     }
 }

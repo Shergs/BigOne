@@ -158,6 +158,7 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.embedUrl = await _youtubeService.GetEmbedFromUrl(dashboardViewModel.Song.Url);
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
+            dashboardViewModel.dashboardBaseUrl = _configuration["AppBaseUrl"] ?? "";
 
             return dashboardViewModel;
         }
@@ -432,6 +433,12 @@ namespace BigOneDashboard.Controllers
         public async Task<IActionResult> DownloadYtMP3(string url)
         { 
             return await _youtubeService.GetMP3FromYoutube(url);
+        }
+
+        [HttpGet("get-embed")]
+        public async Task<string> GetEmbedFromUrl(string url)
+        {
+            return await _youtubeService.GetEmbedFromUrl(url);
         }
         #endregion
 
