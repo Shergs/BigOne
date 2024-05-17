@@ -28,12 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Listening for messages from the group
     connection.on("ReceiveNowPlaying", function (name, url, username) {
-        // Change the queue if we have to
-        // Change the currenttime
-        // change the total time
-        // change the video src
-        // start the video again (muted still)
-        // Parse the message with multiple parameters
         console.log("Now Playing:");
         console.log("Name: " + name);
         console.log("URL: " + url);
@@ -217,4 +211,240 @@ function setPlayers(container) {
         seconds = seconds < 10 ? "0" + seconds : seconds;
         return minutes + ":" + seconds;
     }
+}
+
+// youtube player
+var player; // This will hold the YouTube player object
+
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('nowPlayingVideo', {
+        height: '390',
+        width: '640',
+        videoId: '1VUa99-tJqs', // default video or dynamic from your model
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    // Bind controls here, for example:
+
+    // Can also load the video here. (Would be faster to load the page and everything)
+
+    player.mute();
+    document.getElementById('nowPlayingPause').addEventListener('click', togglePlayPause);
+    updateDurationDisplay();
+}
+
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+        setInterval(updateProgressBar, 1000); // Update progress every second while playing
+    }
+
+    // Clear interval when video is paused or ends
+    event.target.addEventListener('onStateChange', function (e) {
+        if (e.data !== YT.PlayerState.PLAYING) {
+            clearInterval(interval);
+        }
+    });
+}
+
+function togglePlayPause() {
+    var state = player.getPlayerState();
+    const playBtn = player.querySelector('#NowPlayingCard [data-type="play"]');
+    const pauseBtn = player.querySelector('#NowPlayingCard [data-type="pause"]')
+    if (state == YT.PlayerState.PLAYING) {
+        pauseBtn.classList.add('hidden');
+        playBtn.classList.remove('hidden');
+        player.pauseVideo();
+    } else {
+        playBtn.classList.Add('hidden');
+        pauseBtn.classList.remove('hidden');
+        player.playVideo();
+    }
+}
+
+function updateProgressBar() {
+    var currentTime = player.getCurrentTime();
+    var duration = player.getDuration();
+    var progressPercent = (currentTime / duration) * 100;
+    document.querySelector('[data-type="seekSlider"] div').style.width = progressPercent + "%";
+    document.getElementById('nowPlayingCurrentTime').textContent = formatTime(currentTime);
+}
+
+function updateDurationDisplay() {
+    var duration = player.getDuration();
+    document.getElementById('nowPlayingDuration').textContent = formatTime(duration);
+}
+
+function formatTime(time) {
+    var minutes = Math.floor(time / 60);
+    var seconds = Math.floor(time % 60);
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+    return minutes + ":" + seconds;
+}
+
+function changeVideo(videoId) {
+    player.loadVideoById(videoId);
+    // set the metadata here
+    document.getElementById('nowPlayingTitle').textContent = title;
+    document.getElementById('nowPlayingArtist').textContent = artist;
+}
+
+
+// interactions
+function toggleMute(el) {
+    const muteIcon = el.getElementById('mute');
+    const unmuteIcon = el.getElementById('unmute');
+    if (player.isMuted()) {
+        muteIcon.classList.remove('hidden');
+        unmuteIcon.classList.add('hidden');
+        player.unMute();
+    } else {
+        muteIcon.classList.add('hidden');
+        unmuteIcon.classList.remove('hidden');
+        player.mute();
+    }
+}
+
+function skipSong(nextVideoId) {
+    changeVideo(nextVideoId);
+}
+
+
+
+// Emojioneareas
+$(document).ready(function () {
+    // initialize emoji selector
+    // TODO generalize this
+    try {
+        $("#EmoteSelector").emojioneArea({
+            pickerPosition: "bottom",
+            filtersPosition: "bottom",
+            tones: false,
+            autocomplete: false,
+            inline: true,
+            darkMode: true,
+            events: {
+                keyup: function (editor, event) {
+                    let content = this.getText();
+                    let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g);
+                    if (matches && matches.length > 0) {
+                        this.setText(matches[0]);
+                    } else {
+                        this.setText('');
+                    }
+                },
+                paste: function (editor, event) {
+                    setTimeout(() => {
+                        let content = this.getText();
+                        let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g);
+                        if (matches && matches.length > 0) {
+                            this.setText(matches[0]);
+                        } else {
+                            this.setText('');
+                        }
+                    }, 100);
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error initializing EmojiOne Area:", error);
+    }
+    try {
+        $("#EditEmoteSelector").emojioneArea({
+            pickerPosition: "bottom",
+            filtersPosition: "bottom",
+            tones: false,
+            autocomplete: false,
+            inline: true,
+            darkMode: true,
+            events: {
+                keyup: function (editor, event) {
+                    let content = this.getText();
+                    let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g);
+                    if (matches && matches.length > 0) {
+                        this.setText(matches[0]);
+                    } else {
+                        this.setText('');
+                    }
+                },
+                paste: function (editor, event) {
+                    setTimeout(() => {
+                        let content = this.getText();
+                        let matches = content.match(/[\ud800-\udbff][\udc00-\udfff]/g);
+                        if (matches && matches.length > 0) {
+                            this.setText(matches[0]);
+                        } else {
+                            this.setText('');
+                        }
+                    }, 100);
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error initializing EmojiOne Area:", error);
+    }
+
+    document.getElementById('SaveNewSound').onsubmit = function () {
+        const emoteInput = $("#EmoteSelector").data("emojioneArea").getText();
+        const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
+
+        if (!isValidEmoji) {
+            alert('Please select exactly one emoji.');
+            return false;
+        }
+
+        return true;
+    };
+
+    document.getElementById('EditSound').onsubmit = function () {
+        const emoteInput = $("#EditEmoteSelector").data("emojioneArea").getText();
+        const isValidEmoji = /^[\ud800-\udbff][\udc00-\udfff]$/.test(emoteInput);
+
+        if (!isValidEmoji) {
+            alert('Please select exactly one emoji.');
+            return false;
+        }
+
+        return true;
+    };
+});
+
+// populate modals onclick
+function setModalSoundId(modalId, soundId) {
+    fetch(`/Home/GetSoundDetails?id=${soundId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.name);
+            console.log(data.emote);
+
+            var modal = document.getElementById(modalId);
+            var hidSoundId = modal.querySelector('#SoundId');
+
+            if (hidSoundId) {
+                hidSoundId.value = soundId;
+            }
+
+            if (modalId == "editSoundModal") {
+                var nameInput = document.getElementById('EditName');
+                if (nameInput) {
+                    nameInput.value = data.name;
+                }
+
+                var emoteInput = $('#EditEmoteSelector');
+                if (emoteInput.data("emojioneArea")) {
+                    emoteInput.data("emojioneArea").setText(data.emote);
+                }
+            }
+            else if (modalId == "deleteSoundModal") {
+                var soundName = document.getElementById('deleteSoundName');
+                if (soundName) {
+                    soundName.innerText = data.emote + data.name;
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching sound details:', error));
 }
