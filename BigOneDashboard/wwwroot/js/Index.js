@@ -131,6 +131,7 @@ function updateNowPlaying(name, url) {
     duration.innerText = '5:00';
 }
 
+// Add a Song to queue
 function addToQueue(name, url) {
     // Going to add the templated item here. Then make it so that the audio player stuff runs on it again. put that into a function basically then call it.
     // Just make a template with placeholders, and use that everywhere instead, do the replacing here.
@@ -140,6 +141,11 @@ function addToQueue(name, url) {
     const queue = document.getElementById('queue');
     queue.appendChild(template);
 }
+
+// Add a SongHistory to list
+//function addToHistory(name, url) {
+
+//}
 
 // Requests
 function getEmbed(apiUrl) {

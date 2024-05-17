@@ -65,7 +65,7 @@ namespace BigOneDashboard.Controllers
 
         public async Task<bool> HandleAuth()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == null || !User.Identity.IsAuthenticated)
             {
                 // Store this somewhere more persistent. Although server side session might be fine.
                 string userId = HttpContext.Session.GetString("UserId") ?? "";
@@ -80,7 +80,7 @@ namespace BigOneDashboard.Controllers
                 if (userId != "")
                 {
                     string userToken = await tokenService.GetAccessTokenAsync(userId);
-                    if (userToken == "")
+                    if (string.IsNullOrEmpty(userToken))
                     {
                         return false;
                     }
@@ -90,15 +90,15 @@ namespace BigOneDashboard.Controllers
                     string username = await DiscordAPI.GetUserInfo(userToken);
                     string botGuildsString = await DiscordAPI.GetBotGuilds(botAccessToken);
 
-                    UserData user = JsonConvert.DeserializeObject<UserData>(username);
+                    UserData user = JsonConvert.DeserializeObject<UserData>(username) ?? new UserData();
 
                     // Set session
                     HttpContext.Session.SetString("UserGuilds", userGuildsString);
                     HttpContext.Session.SetString("Username", user.Username);
                     HttpContext.Session.SetString("BotGuilds", botGuildsString);
 
-                    List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
-                    List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds"));
+                    List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds") ?? "") ?? new List<Guild>();
+                    List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds") ?? "") ?? new List<Guild> ();
                     List<Guild> availableGuilds = userGuilds.Where(x => botGuilds.Any(y => x.Id == y.Id)).ToList();
                     HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
 
@@ -114,7 +114,7 @@ namespace BigOneDashboard.Controllers
             List<Guild> currentAvailableGuilds = new List<Guild>();
             if (HttpContext.Session.GetString("AvailableGuilds") != null)
             {
-                currentAvailableGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("AvailableGuilds"));
+                currentAvailableGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("AvailableGuilds") ?? "") ?? new List<Guild>();
             }
             Guild? guild = null;
             if (serverId != null)
@@ -126,7 +126,7 @@ namespace BigOneDashboard.Controllers
 
             if (HttpContext.Session.GetString("CurrentGuild") != null)
             {
-                guild = currentAvailableGuilds.Where(x => x.Id == JsonConvert.DeserializeObject<Guild>(HttpContext.Session.GetString("CurrentGuild")).Id).FirstOrDefault();
+                guild = currentAvailableGuilds.Where(x => x.Id == JsonConvert.DeserializeObject<Guild>(HttpContext.Session.GetString("CurrentGuild") ?? "")?.Id).FirstOrDefault();
             }
 
             string? guilds = HttpContext.Session.GetString("AvailableGuilds");
@@ -149,12 +149,12 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.Guild = guild;
                 dashboardViewModel.serverId = guild.Id;
                 dashboardViewModel.Song = await _botService.GetPlayerSong(guild.Id);
-                //dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
-                //dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
-                //dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
-                dashboardViewModel.Songs = new List<Song>();
-                dashboardViewModel.SongHistory = new List<SongHistoryItem>();
-                dashboardViewModel.Position = "";
+                dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
+                dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
+                dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
+                //dashboardViewModel.Songs = new List<Song>();
+                //dashboardViewModel.SongHistory = new List<SongHistoryItem>();
+                //dashboardViewModel.Position = "";
                 if (dashboardViewModel.Song.Url != "")
                 {
                     dashboardViewModel.embedUrl = await _youtubeService.GetEmbedFromUrl(dashboardViewModel.Song.Url);
@@ -175,7 +175,7 @@ namespace BigOneDashboard.Controllers
         [HttpGet("signin-with-discord")]
         public async Task<IActionResult> DiscordSignIn()
         {
-            return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(HandleDiscordCallback)) }, _configuration["Discord:AuthScheme"]);
+            return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(HandleDiscordCallback)) }, _configuration["Discord:AuthScheme"] ?? "");
         }
 
         [HttpGet("signin-discord-callback")]
@@ -228,7 +228,7 @@ namespace BigOneDashboard.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal, authProperties);
 
             string userString = await DiscordAPI.GetUserInfo(accessToken);
-            UserData user = JsonConvert.DeserializeObject<UserData>(userString);
+            UserData user = JsonConvert.DeserializeObject<UserData>(userString) ?? new UserData();
             await StoreUser(user);
             await StoreToken(user.UserId, accessToken, refreshToken, secondsRemaining);
 
@@ -241,8 +241,8 @@ namespace BigOneDashboard.Controllers
             HttpContext.Session.SetString("UserInfo", userString);
             HttpContext.Session.SetString("BotGuilds", botGuildsString);
 
-            List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds"));
-            List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds"));
+            List<Guild> userGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("UserGuilds") ?? "") ?? new List<Guild>();
+            List<Guild> botGuilds = JsonConvert.DeserializeObject<List<Guild>>(HttpContext.Session.GetString("BotGuilds") ?? "") ?? new List<Guild>();
             List<Guild> availableGuilds = userGuilds.Where(x => botGuilds.Any(y => x.Id == y.Id)).ToList();
             HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
 

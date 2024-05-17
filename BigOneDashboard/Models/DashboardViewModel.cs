@@ -32,5 +32,6 @@ namespace BigOneDashboard.Models
         public string Position { get; set; }
         public string embedUrl { get; set; }
         public string dashboardBaseUrl { get; set; }
+        public List<Voice> voices { get; set; }
     }
 }

@@ -15,26 +15,6 @@ namespace BigOneDashboard.Areas.DiscordAuth
             _configuration = configuration;
         }
 
-        //public async Task<bool> CheckRefreshTokenAsync(string userId)
-        //{
-        //    var userToken = _context.UserTokens.FirstOrDefault(ut => ut.UserId == userId);
-
-        //    if (userToken == null)
-        //    {
-        //        throw new Exception("User token not found.");
-        //    }
-
-        //    // Check if the current access token is still valid
-        //    if (userToken.RefreshTokenExpiry > DateTime.UtcNow)
-        //    {
-        //        return true;
-        //    }
-        //    else
-        //    {
-        //        return false;
-        //    }
-        //}
-
         public async Task<string> GetAccessTokenAsync(string userId)
         {
             var userToken = await _context.UserTokens.FirstOrDefaultAsync(ut => ut.UserId == userId);
@@ -51,6 +31,7 @@ namespace BigOneDashboard.Areas.DiscordAuth
             }
             else
             {
+                // if this returns empty string, make the user log in again
                 return await RefreshAccessTokenAsync(userToken);
             }
         }
@@ -60,8 +41,8 @@ namespace BigOneDashboard.Areas.DiscordAuth
             var client = new HttpClient();
             var postData = new Dictionary<string, string>
             {
-                {"client_id", _configuration["Discord:ClientId"]},
-                {"client_secret", _configuration["Discord:ClientSecret"]},
+                {"client_id", _configuration["Discord:ClientId"] ?? ""},
+                {"client_secret", _configuration["Discord:ClientSecret"] ?? ""},
                 {"grant_type", "refresh_token"},
                 {"refresh_token", userToken.RefreshToken}
             };
@@ -78,7 +59,7 @@ namespace BigOneDashboard.Areas.DiscordAuth
             var newTokens = JsonConvert.DeserializeObject<TokenResponse>(responseContent);
 
             // Update the database with the new access token and expiry time
-            userToken.AccessToken = newTokens.AccessToken;
+            userToken.AccessToken = newTokens?.AccessToken ?? "";
             userToken.Expiry = DateTime.UtcNow.AddSeconds((double)newTokens.ExpiresInSeconds);
             _context.Update(userToken);
             await _context.SaveChangesAsync();
