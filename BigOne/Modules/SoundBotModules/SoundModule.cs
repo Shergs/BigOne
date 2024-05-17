@@ -8,15 +8,18 @@ using Discord;
 using Discord.Interactions;
 using Lavalink4NET;
 using BigOne.Util;
+using BigOne.Services;
 
 [RequireContext(ContextType.Guild)]
 public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext>
 {
     private ApplicationDbContext _applicationDbContext;
+    private readonly ISignalService _signalService;
 
-    public SoundModule(ApplicationDbContext applicationDbContext)
+    public SoundModule(ApplicationDbContext applicationDbContext, ISignalService signalService)
     {
         _applicationDbContext = applicationDbContext;
+        _signalService = signalService;
     }
 
     [SlashCommand("sound", description: "Play soundboard sound", runMode: RunMode.Async)]
@@ -67,6 +70,7 @@ public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext
                 }
             }
             await FollowupAsync("SoundBoard: " + $"{soundName}").ConfigureAwait(false);
+            await _signalService.SendSoundPlaying(Context.Guild.Id.ToString(), sound.Emote, sound.Name, Context.User.Username);
             using (var ffmpeg = CreateProcess(path))
             using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))
             {

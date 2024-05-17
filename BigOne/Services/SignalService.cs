@@ -5,46 +5,51 @@ namespace BigOne.Services
 {
     public interface ISignalService 
     {
-        Task SendNowPlaying(string groupName, string name, string url);
-        Task SendPaused(string groupName);
-        Task SendResume(string groupName);
-        Task SendSkip(string groupName);    
-        Task SendQueueUpdated(string groupName, string trackName, string addOrRemove);    
-        Task SendStop(string groupName);
+        Task SendNowPlaying(string groupName, string name, string url, string username);
+        Task SendPaused(string groupName, string username);
+        Task SendResume(string groupName, string username);
+        Task SendSkip(string groupName, string username);    
+        Task SendQueueUpdated(string groupName, string trackName, string addOrRemove, string username);    
+        Task SendStop(string groupName, string username);
+        Task SendSoundPlaying(string groupName, string username, string emoji, string name);  
     }
     public class SignalService(
         IHubContext<PlayerHub> _hubContext
         ) : ISignalService
     {
-        public async Task SendNowPlaying(string groupName, string name, string url)
+        public async Task SendNowPlaying(string groupName, string name, string url, string username)
         {
             // Correct way to send a message to a group using IHubContext
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveNowPlaying", name, url);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveNowPlaying", name, url, username);
         }
 
-        public async Task SendPaused(string groupName)
+        public async Task SendPaused(string groupName, string username)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceivePaused");
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceivePaused", username);
         }
 
-        public async Task SendResume(string groupName)
+        public async Task SendResume(string groupName, string username)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveResume");
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveResume", username);
         }
 
-        public async Task SendSkip(string groupName)
+        public async Task SendSkip(string groupName, string username)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSkip");
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSkip", username);
         }
 
-        public async Task SendQueueUpdated(string groupName, string trackName, string addOrRemove)
+        public async Task SendQueueUpdated(string groupName, string trackName, string addOrRemove, string username)
         { 
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveQueueUpdated", trackName, addOrRemove);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveQueueUpdated", trackName, addOrRemove, username);
         }
 
-        public async Task SendStop(string groupName)
+        public async Task SendStop(string groupName, string username)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveStopped");
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveStopped", username);
+        }
+        public async Task SendSoundPlaying(string groupName, string username, string emoji, string name)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSoundPlaying", username, emoji, name);
         }
     }
 }

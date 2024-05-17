@@ -171,7 +171,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
             await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), "TestName", "TestUrl");
+            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username);
         }
         else
         {
@@ -194,7 +194,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
             await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendQueueUpdated(Context.Guild.Id.ToString(), "TestName", "add");
+            await _signalService.SendQueueUpdated(Context.Guild.Id.ToString(), track.Title, "add", Context.User.Username);
         }
     }
 
@@ -243,7 +243,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
         await player.StopAsync().ConfigureAwait(false);
         await RespondAsync("Stopped playing.").ConfigureAwait(false);
-        await _signalService.SendStop(Context.Guild.Id.ToString());
+        await _signalService.SendStop(Context.Guild.Id.ToString(), Context.User.Username);
     }
 
     /// <summary>
@@ -317,7 +317,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         {
             await RespondAsync("Skipped. Stopped playing because the queue is now empty.").ConfigureAwait(false);
         }
-        await _signalService.SendSkip(Context.Guild.Id.ToString());
+        await _signalService.SendSkip(Context.Guild.Id.ToString(), Context.User.Username);
     }
 
     [SlashCommand("pause", description: "Pauses the player.", runMode: RunMode.Async)]
@@ -338,7 +338,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
         await player.PauseAsync().ConfigureAwait(false);
         await RespondAsync("Paused.").ConfigureAwait(false);
-        await _signalService.SendPaused(Context.Guild.Id.ToString());
+        await _signalService.SendPaused(Context.Guild.Id.ToString(), Context.User.Username);
     }
 
     [SlashCommand("resume", description: "Resumes the player.", runMode: RunMode.Async)]
@@ -359,7 +359,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
         await player.ResumeAsync().ConfigureAwait(false);
         await RespondAsync("Resumed.").ConfigureAwait(false);
-        await _signalService.SendResume(Context.Guild.Id.ToString());
+        await _signalService.SendResume(Context.Guild.Id.ToString(), Context.User.Username);
     }
 
     [SlashCommand("queue", description: "Get queue count.", runMode: RunMode.Async)]

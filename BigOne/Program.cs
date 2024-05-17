@@ -44,7 +44,6 @@ builder.Services.ConfigureLavalink(config =>
     config.ReadyTimeout = TimeSpan.FromSeconds(60)
 );
 builder.Services.AddLavalink();
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 builder.Services.AddSignalR();
 
@@ -58,12 +57,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllers();
 
 // Logging
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
-        builder => builder.WithOrigins(System.Configuration.ConfigurationManager.AppSettings["DashboardBaseUrl"] ?? "") // Specify the client URL
+        builder => builder.WithOrigins(System.Configuration.ConfigurationManager.AppSettings["DashboardBaseUrl"] ?? "", "https://localhost:7212") // Specify the client URL
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());

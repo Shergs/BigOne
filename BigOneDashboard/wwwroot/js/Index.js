@@ -7,67 +7,82 @@ function setGlobals(botUrl, server) {
     serverId = server;
 }
 
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl(botBaseUrl + "/playerinfo-hub?serverId=" + serverId)
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
-
-// Joining a group
-//connection.invoke("AddToGroup", serverId)
-//    .catch(function (err) {
-//        return console.error(err.toString());
-//    });
-
-// Leaving a group
-//connection.invoke("RemoveFromGroup", "GroupName")
-//    .catch(function (err) {
-//        return console.error(err.toString());
-//    });
-
-// Listening for messages from the group
-connection.on("ReceiveNowPlaying", function (name, url) {
-    // Change the queue if we have to
-    // Change the currenttime
-    // change the total time
-    // change the video src
-    // start the video again (muted still)
-    // Parse the message with multiple parameters
-    console.log("Now Playing:");
-    console.log("Name: " + name);
-    console.log("URL: " + url);
-    // Maybe have to create the toast message after doing other stuff, but we'll see.
-    createToast("Shaun " + "Started Playing: " + name);
-       
-    // Append the toast message element to the body
-    document.body.appendChild(toastMessage);
-
-    updateNowPlaying(name, url);
-    addToQueue(name, url);
-
+document.addEventListener("DOMContentLoaded", function () {
     setPlayers();
-    // Remove the toast message after a certain duration (e.g., 5 seconds)
-});
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl(botBaseUrl + "/playerinfo-hub?serverId=" + serverId)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
-connection.on("PausedPlayer", function (message) {
-    console.log("PlayerPaused");
-    // Pause the video
-    // Should pass in the discord username as well.
-    createToast("Paused By: " + "Shaun");
-});
+    // Joining a group
+    //connection.invoke("AddToGroup", serverId)
+    //    .catch(function (err) {
+    //        return console.error(err.toString());
+    //    });
 
-connection.on("TrackSkipped", function (message) {
-    console.log("track skipped");
-    createToast("Skipped By: " + "Shaun");
-});
+    // Leaving a group
+    //connection.invoke("RemoveFromGroup", "GroupName")
+    //    .catch(function (err) {
+    //        return console.error(err.toString());
+    //    });
 
-connection.on("AddToQueue", function (name, url, position) {
-    console.log("AddToQueue");
-    // Could even make the url clickable. That would be cool.
-    createToast("Shaun " + "Added To Queue:" + name + "\nAt position: " + position);
-});
+    // Listening for messages from the group
+    connection.on("ReceiveNowPlaying", function (name, url, username) {
+        // Change the queue if we have to
+        // Change the currenttime
+        // change the total time
+        // change the video src
+        // start the video again (muted still)
+        // Parse the message with multiple parameters
+        console.log("Now Playing:");
+        console.log("Name: " + name);
+        console.log("URL: " + url);
+        // Maybe have to create the toast message after doing other stuff, but we'll see.
+        createToast(username + "Started Playing: " + name);
 
-connection.start().catch(function (err) {
-    return console.error(err.toString());
+        updateNowPlaying(name, url);
+        addToQueue(name, url);
+
+        setPlayers();
+        // Remove the toast message after a certain duration (e.g., 5 seconds)
+    });
+
+    connection.on("ReceivePaused", function (username) {
+        console.log("PlayerPaused");
+        // Pause the video
+        // Should pass in the discord username as well.
+        createToast("Paused By: " + username);
+    });
+
+    connection.on("ReceiveResume", function (username) {
+        console.log("Resumed");
+        createToast("Resumed By: " + username);
+    });
+
+    connection.on("ReceiveSkipped", function (username) {
+        console.log("track skipped");
+        createToast("Skipped By: " + username);
+    });
+
+    connection.on("ReceiveStopped", function (username) {
+        console.log("track stopped");
+        createToast("Stopped By: ", username)
+    });
+    connection.on("ReceiveQueueUpdated", function (name, url, position, username) {
+        console.log("AddToQueue");
+        // Could even make the url clickable. That would be cool.
+        createToast(username + " Added To Queue:" + name + "\nAt position: " + position);
+    });
+
+    connection.on("ReceiveSoundPlaying", function (username, name, emoji) {
+        console.log("Sound Playing");
+        createToast(username + " Played Sound: " + emoji + " " + name);
+    });
+
+    connection.start().catch(function (err) {
+        return console.error(err.toString());
+    });
+
 });
 
 // If you can't have slider do anything, just have it match the videos time slider's position. There might be a way to send requests to change the time inside the song tho.
@@ -81,6 +96,8 @@ function createToast(message) {
     toastMessage.id = "toast-message";
     toastMessage.className = "fixed top-[77px] right-4 bg-blue-500 text-white px-4 py-2 rounded"; // You can adjust the classes as needed
     toastMessage.innerText = message; 
+
+    document.body.appendChild(toastMessage);
 
     setTimeout(function () {
         toastMessage.remove();
@@ -117,8 +134,11 @@ function updateNowPlaying(name, url) {
 function addToQueue(name, url) {
     // Going to add the templated item here. Then make it so that the audio player stuff runs on it again. put that into a function basically then call it.
     // Just make a template with placeholders, and use that everywhere instead, do the replacing here.
-
-    
+    const template = document.getElementById('songTemplate').content.cloneNode(true);
+    // might have to do something else with the url
+    template.innerHTML = template.innerHTML.replace('placeholder-songname', name).replace('placeholder-src', url);
+    const queue = document.getElementById('queue');
+    queue.appendChild(template);
 }
 
 // Requests
@@ -143,9 +163,7 @@ function getEmbed(apiUrl) {
 // Also going to need all the other client's actions to be sent to the other clients.
 
 
-document.addEventListener("DOMContentLoaded", function () {
-    setPlayers();
-});
+
 
 function setPlayers(container) {
     let sounds = null;
