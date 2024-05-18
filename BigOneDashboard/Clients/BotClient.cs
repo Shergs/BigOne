@@ -30,21 +30,43 @@ namespace BigOneDashboard.Clients
             }
 
             // Deserialize the response string to a Song object
-            return JsonSerializer.Deserialize<Song>(responseString);
+            try
+            {
+                // Deserialize the response string to a Song object
+                return JsonSerializer.Deserialize<Song>(responseString);
+            }
+            catch (JsonException ex)
+            {
+                // Handle or log the exception if the JSON is invalid
+                Console.WriteLine("Error deserializing the response: " + ex.Message);
+                return new Song(); // or handle differently, perhaps return null
+            }
         }
 
         public async Task<List<Song>> GetPlayerSongs(string serverId)
         {
-            var response = await httpClient.GetFromJsonAsync<List<Song>>(
-                $"Player/getplayersongs?serverId={serverId}");
-            return response ?? new List<Song>();
+            try
+            {
+                var response = await httpClient.GetFromJsonAsync<List<Song>>($"Player/getplayersongs?serverId={serverId}");
+                return response ?? new List<Song>();
+            }
+            catch (Exception e)
+            {
+                return new List<Song>();
+            }
         }
 
         public async Task<string> GetPlayerPosition(string serverId)
         {
-            var response = await httpClient.GetFromJsonAsync<string>(
-                $"Player/getplayerposition?serverId={serverId}");
-            return response ?? "";
+            try
+            {
+                var response = await httpClient.GetFromJsonAsync<string>($"Player/getplayerposition?serverId={serverId}");
+                return response ?? "";
+            }
+            catch (Exception e)
+            {
+                return "";
+            }
         }
     }
 }

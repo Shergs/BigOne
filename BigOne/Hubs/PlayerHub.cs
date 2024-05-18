@@ -8,7 +8,7 @@ namespace BigOne.Hubs
         {
             string? serverId = Context.GetHttpContext()?.Request.Query["serverId"];
             await AddToGroup(serverId ?? "");
-            await Clients.All.SendAsync("ReceiveNowPlaying", $"{Context.ConnectionId} has joined");
+            await Clients.All.SendAsync("ReceiveJoined", $"{Context.ConnectionId} has joined");
         }
 
         public async Task SendPlayerInfo(string name, string url)

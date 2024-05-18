@@ -26,6 +26,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 {
     private readonly IAudioService _audioService;
     private readonly ISignalService _signalService;
+    private readonly ApplicationDbContext _context;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -34,11 +35,12 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ISignalService signalService)
+    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
         _signalService = signalService;
+        _context = context;
     }
 
     /// <summary>
@@ -59,68 +61,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync("Disconnected.").ConfigureAwait(false);
     }
 
-    //#region TestingLavalinkRemoval
-    //[SlashCommand("playtest", description: "Plays music", runMode: RunMode.Async)]
-    //public async Task PlayTest(string query)
-    //{
-    //    await DeferAsync().ConfigureAwait(false);
-    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
-    //    var guild = (Context.User as IGuildUser)?.Guild;
-    //    var voiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
-
-    //    // Check if the user is in a voice channel
-    //    if (voiceChannel == null)
-    //    {
-    //        await FollowupAsync("You need to be in a voice channel to play music.").ConfigureAwait(false);
-    //        return;
-    //    }
-
-    //    // Connect to the voice channel and get the audio client
-    //    var audioClient = await voiceChannel.ConnectAsync();
-
-    //    // Assuming you have a method to handle the streaming part
-    //    await StreamAudioToChannel(query, audioClient);
-    //}
-
-    //private async Task StreamAudioToChannel(string query, IAudioClient audioClient)
-    //{
-    //    // Convert user query to a YouTube search and get the stream URL
-    //    var youtubeService = new YoutubeAPIService(ConfigurationManager.AppSettings["YoutubeAPIKey"]);
-    //    string videoUrl = await youtubeService.GetYouTubeVideoUrl(query);
-    //    if (string.IsNullOrEmpty(videoUrl))
-    //    {
-    //        await FollowupAsync("Could not find the video.").ConfigureAwait(false);
-    //        return;
-    //    }
-
-    //    // Setup FFmpeg to stream audio
-    //    var process = CreateProcess(videoUrl);
-    //    var output = process.StandardOutput.BaseStream;
-    //    var discordStream = audioClient.CreatePCMStream(AudioApplication.Music);
-    //    try
-    //    {
-    //        await output.CopyToAsync(discordStream);
-    //    }
-    //    finally
-    //    {
-    //        await discordStream.FlushAsync();
-    //        process.Kill();
-    //    }
-    //}
-
-    //private Process CreateProcess(string url)
-    //{
-    //    return Process.Start(new ProcessStartInfo
-    //    {
-    //        FileName = "yt-dlp",
-    //        Arguments = $"-o - {url} | ffmpeg -i pipe:0 -f s16le -ar 48000 -ac 2 pipe:1",
-    //        UseShellExecute = false,
-    //        RedirectStandardOutput = true,
-    //        RedirectStandardError = true
-    //    });
-    //}
-    //#endregion
-
     #region PlayService
     /// <summary>
     ///     Plays music asynchronously.
@@ -130,8 +70,15 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     [SlashCommand("play", description: "Plays music", runMode: RunMode.Async)]
     public async Task Play(string query)
     {
-        await DeferAsync().ConfigureAwait(false);
-
+        try
+        {
+            await DeferAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error deferring: " + ex.Message);
+            throw; // Or handle the error appropriately
+        }
         var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
 
         if (player is null)
@@ -148,6 +95,13 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             await FollowupAsync("😖 No results.").ConfigureAwait(false);
             return;
         }
+
+        SongHistoryItem songHistory = new SongHistoryItem();
+        songHistory.Timestamp = DateTime.Now;
+        songHistory.Name = track.Title;
+        songHistory.ServerId = Context.Guild.Id.ToString();
+        songHistory.Url = track.Uri.ToString();
+        _context.Add(songHistory);
         var position = await player.PlayAsync(track).ConfigureAwait(false);
 
         if (position is 0)

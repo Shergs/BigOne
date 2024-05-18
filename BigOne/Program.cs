@@ -23,11 +23,23 @@ builder.Services.AddSingleton<KeyedSingletonRegistry>();
 
 // Discord
 // General Bot services
-builder.Services.AddSingleton<DiscordSocketClient>();
+builder.Services.AddSingleton<DiscordSocketClient>((serviceProvider) => {
+    var config = new DiscordSocketConfig
+    {
+        UseInteractionSnowflakeDate = false
+    };
+    return new DiscordSocketClient(config);
+});
 builder.Services.AddSingleton<InteractionService>();
 
 // Soundbot services
-builder.Services.AddKeyedSingleton<DiscordSocketClient>("SoundBotSocketClient");
+builder.Services.AddKeyedSingleton<DiscordSocketClient>("SoundBotSocketClient", (serviceProvider, _) => {
+    var config = new DiscordSocketConfig
+    {
+        UseInteractionSnowflakeDate = false
+    };
+    return new DiscordSocketClient(config);
+});
 builder.Services.AddKeyedSingleton<InteractionService>("SoundBotInteractions", (serviceProvider,_) =>
 {
     var client = serviceProvider.GetRequiredKeyedService<DiscordSocketClient>("SoundBotSocketClient");
@@ -51,7 +63,7 @@ builder.Services.AddSignalR();
 var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? throw new InvalidOperationException("Connection string 'BigOne' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString),
-    ServiceLifetime.Singleton);
+    ServiceLifetime.Scoped);
 
 // Add controllers for API
 builder.Services.AddControllers();

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
+using System.Text.Json;
 
 [ApiController]
 [Route("[controller]")]
@@ -25,7 +26,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return Ok("");
+            return Ok(JsonSerializer.Serialize(""));
         }
 
         var track = new Song
@@ -43,7 +44,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return Ok("");
+            return Ok(JsonSerializer.Serialize(""));
         }
         
         var queue = player.Queue.Select(track => new Song
@@ -61,7 +62,7 @@ public class PlayerController : ControllerBase
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
         {
-            return Ok("");
+            return Ok(JsonSerializer.Serialize(""));
         }
 
         var position = player.Position?.Position;

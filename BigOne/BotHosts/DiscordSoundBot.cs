@@ -16,10 +16,12 @@ internal sealed class DiscordSoundBot : IHostedService
     private readonly DiscordSocketClient _discordSocketClient;
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public DiscordSoundBot(
         [FromKeyedServices("SoundBotSocketClient")] DiscordSocketClient discordSocketClient,
         [FromKeyedServices("SoundBotInteractions")] InteractionService interactionService,
+        IServiceScopeFactory serviceScopeFactory,
         IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(discordSocketClient);
@@ -28,6 +30,7 @@ internal sealed class DiscordSoundBot : IHostedService
 
         _discordSocketClient = discordSocketClient;
         _interactionService = interactionService;
+        _serviceScopeFactory = serviceScopeFactory;
         _serviceProvider = serviceProvider;
     }
 
@@ -59,8 +62,12 @@ internal sealed class DiscordSoundBot : IHostedService
 
     private Task InteractionCreated(SocketInteraction interaction)
     {
-        var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
-        return _interactionService!.ExecuteCommandAsync(interactionContext, _serviceProvider);
+        using (var scope = _serviceScopeFactory.CreateScope())
+        {
+            var scopedServiceProvider = scope.ServiceProvider;
+            var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
+            return _interactionService.ExecuteCommandAsync(interactionContext, scopedServiceProvider);
+        }
     }
 
     private async Task MessageReceivedAsync(SocketMessage message)
@@ -92,29 +99,27 @@ internal sealed class DiscordSoundBot : IHostedService
 
     private async Task ClientReady()
     {
-        //using (var scope = _serviceProvider.CreateScope())
-        //{
-            //var _interactionService = scope.ServiceProvider.GetRequiredService<InteractionService>();
-
         try
         {
-            await _interactionService.AddModuleAsync<SoundModule>(_serviceProvider).ConfigureAwait(false);
-            await _interactionService.AddModuleAsync<TTSModule>(_serviceProvider).ConfigureAwait(false);
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var scopedServiceProvider = scope.ServiceProvider;
+                await _interactionService.AddModuleAsync<SoundModule>(scopedServiceProvider).ConfigureAwait(false);
+                await _interactionService.AddModuleAsync<TTSModule>(scopedServiceProvider).ConfigureAwait(false);
 
-            // Register to Guilds for fast testing
-            await _interactionService
-                .RegisterCommandsToGuildAsync(783190942806835200)
-                .ConfigureAwait(false);
-            await _interactionService
-                .RegisterCommandsToGuildAsync(1008235979045339168)
-                .ConfigureAwait(false);
+                // Register commands with scoped provider
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(783190942806835200)
+                    .ConfigureAwait(false);
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(1008235979045339168)
+                    .ConfigureAwait(false);
+                await _interactionService
+                    .RegisterCommandsGloballyAsync()
+                    .ConfigureAwait(false);
 
-            // Register globally as well
-            await _interactionService
-                .RegisterCommandsGloballyAsync()
-                .ConfigureAwait(false);
-
-            Console.WriteLine("Bot2 - Commands registered successfully.");
+                Console.WriteLine("Bot2 - Commands registered successfully.");
+            }
         }
         catch (Exception ex)
         {

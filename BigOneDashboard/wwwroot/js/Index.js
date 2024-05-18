@@ -103,11 +103,11 @@ function createToast(message) {
 // for handling signalr updates
 function updateNowPlaying(name, url) {
     const player = document.getElementById('nowPlayingPlayer');
-    const video = player.getElementById('nowPlayingVideo');
-    const title = player.getElementById('nowPlayingTitle');
-    const artist = player.getElementById('nowPlayingArtist');
-    const currentTime = player.getElementById('currentTime');
-    const duration = player.getElementById('duration');
+    const video = player.querySelector('#nowPlayingVideo');
+    const title = player.querySelector('#nowPlayingTitle');
+    const artist = player.querySelector('#nowPlayingArtist');
+    const currentTime = player.querySelector('#currentTime');
+    const duration = player.querySelector('#duration');
 
     const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
     // Do a post here to get the video src
@@ -162,9 +162,6 @@ function getEmbed(apiUrl) {
 // Because client side and bot side are going to be different. The state just has to match from the javascript.
 // Also going to need all the other client's actions to be sent to the other clients.
 
-
-
-
 function setPlayers(container) {
     let sounds = null;
     if (container != null) {
@@ -215,25 +212,16 @@ function setPlayers(container) {
 
 // youtube player
 var player; // This will hold the YouTube player object
-
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('nowPlayingVideo', {
-        height: '390',
-        width: '640',
-        videoId: '1VUa99-tJqs', // default video or dynamic from your model
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
+function onPlayerError(event) {
+    console.error('Player Error:', event.data);
 }
 
 function onPlayerReady(event) {
     // Bind controls here, for example:
-
     // Can also load the video here. (Would be faster to load the page and everything)
-
+    console.log('in player ready');
     player.mute();
+    player.playVideo();
     document.getElementById('nowPlayingPause').addEventListener('click', togglePlayPause);
     updateDurationDisplay();
 }
@@ -244,23 +232,23 @@ function onPlayerStateChange(event) {
     }
 
     // Clear interval when video is paused or ends
-    event.target.addEventListener('onStateChange', function (e) {
-        if (e.data !== YT.PlayerState.PLAYING) {
-            clearInterval(interval);
-        }
-    });
+    //event.target.addEventListener('onStateChange', function (e) {
+    //    if (e.data !== YT.PlayerState.PLAYING) {
+    //        clearInterval(interval);
+    //    }
+    //});
 }
 
 function togglePlayPause() {
     var state = player.getPlayerState();
-    const playBtn = player.querySelector('#NowPlayingCard [data-type="play"]');
-    const pauseBtn = player.querySelector('#NowPlayingCard [data-type="pause"]')
+    const playBtn = document.getElementById('playVideo');
+    const pauseBtn = document.getElementById('pauseVideo')
     if (state == YT.PlayerState.PLAYING) {
         pauseBtn.classList.add('hidden');
         playBtn.classList.remove('hidden');
         player.pauseVideo();
     } else {
-        playBtn.classList.Add('hidden');
+        playBtn.classList.add('hidden');
         pauseBtn.classList.remove('hidden');
         player.playVideo();
     }
@@ -296,8 +284,8 @@ function changeVideo(videoId) {
 
 // interactions
 function toggleMute(el) {
-    const muteIcon = el.getElementById('mute');
-    const unmuteIcon = el.getElementById('unmute');
+    const muteIcon = el.querySelector('#mute');
+    const unmuteIcon = el.querySelector('#unmute');
     if (player.isMuted()) {
         muteIcon.classList.remove('hidden');
         unmuteIcon.classList.add('hidden');

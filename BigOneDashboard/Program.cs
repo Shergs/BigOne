@@ -24,10 +24,6 @@ builder.Services.AddHttpClient<IBotClient, BotClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["Bot:BaseUrl"]);
 });
 builder.Services.AddHttpClient<IYoutubeClient, YoutubeClient>();
-//builder.Services.AddHttpClient<IYoutubeClient, YoutubeClient>(client =>
-//{
-//    //client.BaseAddress = new Uri(builder.Configuration["APILocations:Youtube"]);
-//});
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("BigOne") ?? throw new InvalidOperationException("Connection string 'BigOne' not found.");
