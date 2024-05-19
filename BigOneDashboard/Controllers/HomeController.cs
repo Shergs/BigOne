@@ -155,12 +155,12 @@ namespace BigOneDashboard.Controllers
                 //dashboardViewModel.Songs = new List<Song>();
                 //dashboardViewModel.SongHistory = new List<SongHistoryItem>();
                 //dashboardViewModel.Position = "";
-                //if (dashboardViewModel.Song.Url != "")
-                //{
-                //    dashboardViewModel.embedUrl = await _youtubeService.GetEmbedFromUrl(dashboardViewModel.Song.Url);
-                //}
+                if (dashboardViewModel.Song.Url != "")
+                {
+                    dashboardViewModel.embedUrl = await _youtubeService.GetVideoIdFromUrl(dashboardViewModel.Song.Url);
+                }
                 // test embed
-                dashboardViewModel.embedUrl = "1VUa99-tJqs";
+                //dashboardViewModel.embedUrl = "1VUa99-tJqs";
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
             dashboardViewModel.dashboardBaseUrl = _configuration["AppBaseUrl"] ?? "";
@@ -443,7 +443,7 @@ namespace BigOneDashboard.Controllers
         [HttpGet("get-embed")]
         public async Task<string> GetEmbedFromUrl(string url)
         {
-            return await _youtubeService.GetEmbedFromUrl(url);
+            return await _youtubeService.GetVideoIdFromUrl(url);
         }
         #endregion
 

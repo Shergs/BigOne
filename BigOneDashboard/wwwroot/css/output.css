@@ -860,13 +860,13 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
 }
-.bg-gray-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
-}
 .bg-gray-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity));
+}
+.bg-gray-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
 }
 .bg-green-500 {
   --tw-bg-opacity: 1;
@@ -1124,6 +1124,27 @@ html {
     .emojionearea .emojionearea-picker .emojionearea-tab.active {
         color: white; 
     }*/
+
+.scrolling-text {
+    white-space: nowrap; /* Keep the text in a single line */
+    overflow: hidden; /* Hide overflow */
+    display: block; /* Ensures the element is block-level */
+    position: relative; /* Positioning context for the animation */
+}
+
+    .scrolling-text:hover { /* Animation triggers when the user hovers over the text */
+        animation: scroll-text 10s linear infinite;
+    }
+
+@keyframes scroll-text {
+    0% {
+        transform: translateX(100%); /* Start from just beyond the right edge */
+    }
+
+    100% {
+        transform: translateX(-100%); /* End just beyond the left edge */
+    }
+}
 
 .hover\:bg-blue-600:hover {
   --tw-bg-opacity: 1;

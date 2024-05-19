@@ -1,4 +1,5 @@
 ﻿@using Newtonsoft.Json;
+@using Humanizer;
 
 @model DashboardViewModel
 @{
@@ -34,18 +35,20 @@
                         <!-- Video Player -->
                         @if (string.IsNullOrEmpty(Model.embedUrl))
                         {
-                            <div class="w-64 h-64 bg-gray-300 items-center justify-content-center dark:!text-white" id="noVideoResults">
-                                No song playing yet.
+                            <div class="w-64 h-64 bg-gray-800 items-center justify-content-center dark:!text-white rounded-lg" id="noVideoResults">
+                                <span>No song playing yet.</span>
                             </div>
+                            <div id="nowPlayingVideo" class="w-64 h-64 mx-auto rounded-lg mb-4 shadow-lg shadow-teal-50 rounded-lg hidden"></div>
+
                         }
                         else
                         {
-                            <div id="nowPlayingVideo" class="w-64 h-64 mx-auto rounded-lg mb-4 shadow-lg shadow-teal-50"></div>
+                            <div id="nowPlayingVideo" class="w-64 h-64 mx-auto rounded-lg mb-4 shadow-lg shadow-teal-50 rounded-lg"></div>
                         }
                         <!-- Song Title -->
-                        <h2 id="nowPlayingTitle" class="text-xl font-semibold text-center">T-Shirt</h2>
+                        <h2 id="nowPlayingTitle" class="text-xl font-semibold text-center w-full truncate scrolling-text">T-Shirt</h2>
                         <!-- Artist Name -->
-                        <p id="nowPlayingArtist" class="text-gray-600 dark:!text-white text-sm text-center">Migos</p>
+                        <p id="nowPlayingArtist" class="text-gray-600 dark:!text-white text-sm text-center w-full truncate scrolling-text">Migos</p>
                         <!-- Music Controls -->
                         <div class="mt-6 flex justify-center items-center">
                             <button id="muteToggle" onclick="toggleMute(this);" class="p-3 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none">
@@ -99,61 +102,64 @@
                     @* Queue *@
                     <div class="flex flex-col w-full ml-4">
                         <div class="p-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="queue">
-                            @if (Model.Songs.Count > 0)
-                                {
-                                    foreach (Song song in Model.Songs)
-                                    {
-                                        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
-                                            <div class="flex items-center space-x-4 truncate" style="align-items:center;">
-                                                <div class="truncate text-gray-300">@song.Name</div>
-                                            </div>
-                                            <div class="flex items-center space-x-2 ml-auto">
-                                                <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
-                                                    <audio id="audio">
-                                                        <source src="@Url.Action("DownloadYtMP3", "Home", new { url = song.Url })" type="audio/mp3">
-                                                        Your browser does not support the audio element.
-                                                    </audio>
-                                                    <div class="controls flex items-center gap-4">
-                                                        <button class="" data-type="playPauseBtn">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-sky-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 384 512">
-                                                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                                                <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
-                                                            </svg>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" data-type="pause" class="size-6 text-sky-500 hover:text-sky-600 hidden" fill="currentColor" viewBox="0 0 320 512">
-                                                                <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                                                <path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z" />
-                                                            </svg>
-                                                        </button>
-                                                        <input type="range" class="hidden lg:block" data-type="seekSlider" value="0" class="flex-grow">
-                                                        <span data-type="currentTime" class="hidden xl:block w-12 text-center">0:00</span>
-                                                        <span data-type="duration" class="hidden xl:block w-12 text-center">0:00</span>
-                                                    </div>
-                                                </div>
 
-                                                <div class="ml-auto flex items-center space-x-2">
-                                                    <button type="button"  style="margin-right:16px;">
-                                                        UP
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
+                            @if (Model.Songs.Count > 0)
+                            {
+                                string hiddenOrNot = "";
+                            }
+                            else
+                            {
+                                string hiddenOrNot = "hidden";
+                            }
+                            <div id="queueContent" class="hiddenOrNot">
+                                @foreach (Song song in Model.Songs)
+                                {
+                                    <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
+                                        <div class="flex items-center space-x-4 truncate" style="align-items:center;">
+                                            <div class="truncate text-gray-300">@song.Name</div>
+                                        </div>
+                                        <div class="flex items-center space-x-2 ml-auto">
+                                            <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
+                                                <audio id="audio">
+                                                    <source src="@Url.Action("DownloadYtMP3", "Home", new { url = song.Url })" type="audio/mp3">
+                                                    Your browser does not support the audio element.
+                                                </audio>
+                                                <div class="controls flex items-center gap-4">
+                                                    <button class="" data-type="playPauseBtn">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-sky-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 384 512">
                                                             <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                                            <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                                                            <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+                                                        </svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" data-type="pause" class="size-6 text-sky-500 hover:text-sky-600 hidden" fill="currentColor" viewBox="0 0 320 512">
+                                                            <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                            <path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z" />
                                                         </svg>
                                                     </button>
-                                                    <button type="button">
-                                                        DELETE
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
-                                                            <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                                                        </svg>
-                                                    </button>
+                                                    <input type="range" class="hidden lg:block" data-type="seekSlider" value="0" class="flex-grow">
+                                                    <span data-type="currentTime" class="hidden xl:block w-12 text-center">0:00</span>
+                                                    <span data-type="duration" class="hidden xl:block w-12 text-center">0:00</span>
                                                 </div>
+                                            </div>
+
+                                            <div class="ml-auto flex items-center space-x-2">
+                                                <button type="button"  style="margin-right:16px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 384 512">
+                                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                        <path d="M214.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3V480c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128z" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 512 512">
+                                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                        <path d="M367.2 412.5L99.5 144.8C77.1 176.1 64 214.5 64 256c0 106 86 192 192 192c41.5 0 79.9-13.1 111.2-35.5zm45.3-45.3C434.9 335.9 448 297.5 448 256c0-106-86-192-192-192c-41.5 0-79.9 13.1-111.2 35.5L412.5 367.2zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                    }
+                                    </div>
                                 }
-                                else
-                                {
-                                    <span>Player isn't playing anything on this server.</span>
-                                }
+                            </div>
+                            <span id="noQueueResults">Player isn't playing anything on this server.</span>
                         </div>
                         @* History *@
                         <div class="p-4 mt-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
@@ -164,12 +170,13 @@
                                         <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
                                             <div class="flex items-center space-x-4 truncate" style="align-items:center;">
                                                 <div class="truncate text-gray-300">@songHistoryItem.Name</div>
-                                                <div class="truncate text-gray-300">@songHistoryItem.Timestamp</div>
+                                                <div class="truncate text-gray-300">discordUsername</div>
+                                                <div class="truncate text-gray-300">@songHistoryItem.Timestamp.Humanize()</div>
                                             </div>
                                             <div class="flex items-center space-x-2 ml-auto">
                                                 <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
                                                     <div class="controls flex items-center gap-4">
-                                                        Placeholder
+                                                        <a href="@songHistoryItem.Url" target="_blank">Link</a>
                                                     </div>
                                                 </div>
                                                 <div class="ml-auto flex items-center space-x-2">
@@ -491,7 +498,7 @@ else
                 <div class="ml-auto flex items-center space-x-2">
                     <button>Preview</button>
                     <button>Play to server</button>
-                    <button type="button"  style="margin-right:16px;">
+                    <button type="button" style="margin-right:16px;">
                         UP
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
                             <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
@@ -500,6 +507,35 @@ else
                     </button>
                     <button type="button">
                         DELETE
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
+                            <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="historyItemTemplate">
+        <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
+            <div class="flex items-center space-x-4 truncate" style="align-items:center;">
+                <div class="truncate text-gray-300">placeholder-name</div>
+                <div class="truncate text-gray-300">placeholder-username</div>
+            <div class="truncate text-gray-300">placeholder-timestamp</div>
+            </div>
+            <div class="flex items-center space-x-2 ml-auto">
+                <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
+                    <div class="controls flex items-center gap-4">
+                        <a href="placeholder-url" target="_blank">Link</a>
+                    </div>
+                </div>
+                <div class="ml-auto flex items-center space-x-2">
+                    <button type="button" style="margin-right:16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 512 512">
+                        </svg>
+                    </button>
+                    <button type="button">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-red-500 hover:text-red-600" fill="currentColor" viewBox="0 0 448 512">
                             <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
                             <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
@@ -540,6 +576,7 @@ else
             });
         });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
     <script src="/js/Index.js"></script>
@@ -564,6 +601,23 @@ else
             } catch (e) {
                 console.log("Error creating player" + e);
             }
+        }
+
+        function onPlayerReady(event) {
+            // Bind controls here, for example:
+            // Can also load the video here. (Would be faster to load the page and everything)
+            console.log('in player ready');
+            player.mute();
+            player.playVideo();
+            player.seekTo(@Model.Position);
+
+            // Song.Name
+            document.getElementById('nowPlayingTitle').innerText = '@Model.Song.Name';
+            // Song.Author
+            document.getElementById('nowPlayingArtist').innerText = '@Model.Song.Artist';
+
+            document.getElementById('nowPlayingPause').addEventListener('click', togglePlayPause);
+            updateDurationDisplay();
         }
     </script>
 }

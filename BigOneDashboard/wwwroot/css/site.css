@@ -85,3 +85,24 @@ html {
     .emojionearea .emojionearea-picker .emojionearea-tab.active {
         color: white; 
     }*/
+
+.scrolling-text {
+    white-space: nowrap; /* Keep the text in a single line */
+    overflow: hidden; /* Hide overflow */
+    display: block; /* Ensures the element is block-level */
+    position: relative; /* Positioning context for the animation */
+}
+
+    .scrolling-text:hover { /* Animation triggers when the user hovers over the text */
+        animation: scroll-text 10s linear infinite;
+    }
+
+@keyframes scroll-text {
+    0% {
+        transform: translateX(100%); /* Start from just beyond the right edge */
+    }
+
+    100% {
+        transform: translateX(-100%); /* End just beyond the left edge */
+    }
+}

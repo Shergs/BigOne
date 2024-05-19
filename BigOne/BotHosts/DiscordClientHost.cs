@@ -18,11 +18,13 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly DiscordSocketClient _discordSocketClient;
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public DiscordClientHost(
         DiscordSocketClient discordSocketClient,
         InteractionService interactionService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IServiceScopeFactory serviceScopeFactory)
     {
         ArgumentNullException.ThrowIfNull(discordSocketClient);
         ArgumentNullException.ThrowIfNull(interactionService);
@@ -31,6 +33,7 @@ internal sealed class DiscordClientHost : IHostedService
         _discordSocketClient = discordSocketClient;
         _interactionService = interactionService;
         _serviceProvider = serviceProvider;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -59,10 +62,26 @@ internal sealed class DiscordClientHost : IHostedService
             .ConfigureAwait(false);
     }
 
-    private Task InteractionCreated(SocketInteraction interaction)
+    private async Task InteractionCreated(SocketInteraction interaction)
     {
-        var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
-        return _interactionService!.ExecuteCommandAsync(interactionContext, _serviceProvider);
+        using (var scope = _serviceScopeFactory.CreateScope())
+        {
+            var scopedServiceProvider = scope.ServiceProvider;
+            var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
+            try
+            {
+                var result = await _interactionService.ExecuteCommandAsync(interactionContext, scopedServiceProvider).ConfigureAwait(false);
+
+                if (!result.IsSuccess)
+                    Console.WriteLine($"Command execution failed: {result.ErrorReason}");
+                else
+                    Console.WriteLine("Command executed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception during command execution: {ex.Message}");
+            }
+        }
     }
 
     private async Task MessageReceivedAsync(SocketMessage message)
@@ -94,23 +113,27 @@ internal sealed class DiscordClientHost : IHostedService
     {
         try
         {
-            await _interactionService.AddModuleAsync<MusicModule>(_serviceProvider).ConfigureAwait(false);
-            await _interactionService.AddModuleAsync<ChatModule>(_serviceProvider).ConfigureAwait(false);
-            await _interactionService.AddModuleAsync<RandomModule>(_serviceProvider).ConfigureAwait(false);
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var scopedServiceProvider = scope.ServiceProvider;
+                await _interactionService.AddModuleAsync<MusicModule>(scopedServiceProvider).ConfigureAwait(false);
+                await _interactionService.AddModuleAsync<ChatModule>(scopedServiceProvider).ConfigureAwait(false);
+                await _interactionService.AddModuleAsync<RandomModule>(scopedServiceProvider).ConfigureAwait(false);
 
-            // Register to Guilds for fast testing
-            await _interactionService
-                .RegisterCommandsToGuildAsync(783190942806835200)
-                .ConfigureAwait(false);
-            await _interactionService
-                .RegisterCommandsToGuildAsync(1008235979045339168)
-                .ConfigureAwait(false);
+                // Register to Guilds for fast testing
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(783190942806835200)
+                    .ConfigureAwait(false);
+                await _interactionService
+                    .RegisterCommandsToGuildAsync(1008235979045339168)
+                    .ConfigureAwait(false);
 
-            // Register globally as well
-            await _interactionService
-                .RegisterCommandsGloballyAsync()
-                .ConfigureAwait(false);
-            Console.WriteLine("Bot1 - Commands registered successfully.");
+                // Register globally as well
+                await _interactionService
+                    .RegisterCommandsGloballyAsync()
+                    .ConfigureAwait(false);
+                Console.WriteLine("Bot1 - Commands registered successfully.");
+            }
         }
         catch (Exception ex)
         {

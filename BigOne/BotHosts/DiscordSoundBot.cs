@@ -60,13 +60,25 @@ internal sealed class DiscordSoundBot : IHostedService
             .ConfigureAwait(false);
     }
 
-    private Task InteractionCreated(SocketInteraction interaction)
+    private async Task InteractionCreated(SocketInteraction interaction)
     {
         using (var scope = _serviceScopeFactory.CreateScope())
         {
             var scopedServiceProvider = scope.ServiceProvider;
             var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
-            return _interactionService.ExecuteCommandAsync(interactionContext, scopedServiceProvider);
+            try
+            {
+                var result = await _interactionService.ExecuteCommandAsync(interactionContext, scopedServiceProvider).ConfigureAwait(false);
+
+                if (!result.IsSuccess)
+                    Console.WriteLine($"Command execution failed: {result.ErrorReason}");
+                else
+                    Console.WriteLine("Command executed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception during command execution: {ex.Message}");
+            }
         }
     }
 

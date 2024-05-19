@@ -27,15 +27,16 @@ document.addEventListener("DOMContentLoaded", function () {
     //    });
 
     // Listening for messages from the group
-    connection.on("ReceiveNowPlaying", function (name, url, username) {
+    connection.on("ReceiveNowPlaying", function (name, url, username, timestamp) {
         console.log("Now Playing:");
         console.log("Name: " + name);
         console.log("URL: " + url);
         // Maybe have to create the toast message after doing other stuff, but we'll see.
-        createToast(username + "Started Playing: " + name);
+        createToast(username + " Started Playing: " + name);
 
         updateNowPlaying(name, url);
-        addToQueue(name, url);
+        addToHistory(name, url, timestamp, username);
+        //addToQueue(name, url);
 
         setPlayers();
         // Remove the toast message after a certain duration (e.g., 5 seconds)
@@ -62,10 +63,14 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("track stopped");
         createToast("Stopped By: ", username)
     });
-    connection.on("ReceiveQueueUpdated", function (name, url, position, username) {
+    connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp) {
         console.log("AddToQueue");
         // Could even make the url clickable. That would be cool.
-        createToast(username + " Added To Queue:" + name + "\nAt position: " + position);
+        createToast(username + " " + addOrRemove +"ed To Queue:" + name + "\nAt position: " + position);
+        addToQueue(name, url);
+        addHistoryItem(name, url, timestamp, username);
+
+        setPlayers();
     });
 
     connection.on("ReceiveSoundPlaying", function (username, name, emoji) {
@@ -112,8 +117,8 @@ function updateNowPlaying(name, url) {
     const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
     // Do a post here to get the video src
     getEmbed(apiUrl)
-        .then(embeddedUrl => {
-            video.src = embeddedUrl;
+        .then(videoId => {
+            changeVideo(videoId);
         })
         .catch(error => {
             console.error('Error setting video src:', error);
@@ -127,13 +132,23 @@ function updateNowPlaying(name, url) {
 
 // Add a Song to queue
 function addToQueue(name, url) {
-    // Going to add the templated item here. Then make it so that the audio player stuff runs on it again. put that into a function basically then call it.
-    // Just make a template with placeholders, and use that everywhere instead, do the replacing here.
+    console.log('adding to queue');
     const template = document.getElementById('songTemplate').content.cloneNode(true);
-    // might have to do something else with the url
     template.innerHTML = template.innerHTML.replace('placeholder-songname', name).replace('placeholder-src', url);
     const queue = document.getElementById('queue');
     queue.appendChild(template);
+}
+
+function addHistoryItem(name, url, timestamp, username) {
+    console.log('adding to history');
+    const tempalte = document.getElementById('historyItemTemplate').content.cloneNode(true);
+    template.innerHTML = template.innerHTML
+        .replace('placeholder-name', name)
+        .replace('placeholder-timestamp', moment(new Date(timestamp).fromNow()))
+        .replace('placeholder-url', url)
+        .replace('placeholder-username', username);
+    const history = document.getElementById('history');
+    history.appendChild(template);
 }
 
 // Add a SongHistory to list
@@ -143,87 +158,75 @@ function addToQueue(name, url) {
 
 // Requests
 function getEmbed(apiUrl) {
-    fetch(apiUrl)
+    // Return the promise chain here
+    return fetch(apiUrl)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.text();
-        })
-        .then(embeddedUrl => {
-            return embeddedUrl;
+            return response.text();  // This promise resolves to the text of the response
         })
         .catch(error => {
             console.error('Error:', error);
+            throw error;  // Re-throw to ensure the caller knows an error occurred
         });
 }
-
 // need to make something that will go thru the queue. That would be cool.
 // Because client side and bot side are going to be different. The state just has to match from the javascript.
 // Also going to need all the other client's actions to be sent to the other clients.
 
 function setPlayers(container) {
-    let sounds = null;
-    if (container != null) {
-        sounds = container.querySelectorAll('[data-itemType="sound"]');
-    } else {
-        sounds = document.querySelectorAll('[data-itemType="sound"]');
-    }
-    sounds.forEach((sound) => {
-        let playPauseBtn = sound.querySelector('[data-type="playPauseBtn"]');
-        let audio = sound.querySelector('audio');
-        let seekSlider = sound.querySelector('[data-type="seekSlider"]');
-        let currentTimeDisplay = sound.querySelector('[data-type="currentTime"]');
-        let durationDisplay = sound.querySelector('[data-type="duration"]')
+    //let sounds = null;
+    //if (container != null) {
+    //    sounds = container.querySelectorAll('[data-itemType="sound"]');
+    //} else {
+    //    sounds = document.querySelectorAll('[data-itemType="sound"]');
+    //}
+    //sounds.forEach((sound) => {
+    //    let playPauseBtn = sound.querySelector('[data-type="playPauseBtn"]');
+    //    let audio = sound.querySelector('audio');
+    //    let seekSlider = sound.querySelector('[data-type="seekSlider"]');
+    //    let currentTimeDisplay = sound.querySelector('[data-type="currentTime"]');
+    //    let durationDisplay = sound.querySelector('[data-type="duration"]')
 
-        audio.addEventListener("loadedmetadata", function () {
-            seekSlider.max = audio.duration;
-            durationDisplay.textContent = formatTime(audio.duration);
-        });
-        audio.addEventListener("timeupdate", function () {
-            seekSlider.value = audio.currentTime;
-            currentTimeDisplay.textContent = formatTime(audio.currentTime);
-        });
-        playPauseBtn.addEventListener("click", function () {
-            const pauseBtn = playPauseBtn.querySelector('[data-type="pause"]');
-            const playBtn = playPauseBtn.querySelector('[data-type="play"]');
-            if (audio.paused) {
-                audio.play();
-                pauseBtn.classList.remove('hidden');
-                playBtn.classList.add('hidden');
-            } else {
-                audio.pause();
-                playBtn.classList.remove('hidden');
-                pauseBtn.classList.add('hidden');
-            }
-        });
-        seekSlider.addEventListener("input", function () {
-            audio.currentTime = seekSlider.value;
-        });
-    });
+    //    audio.addEventListener("loadedmetadata", function () {
+    //        seekSlider.max = audio.duration;
+    //        durationDisplay.textContent = formatTime(audio.duration);
+    //    });
+    //    audio.addEventListener("timeupdate", function () {
+    //        seekSlider.value = audio.currentTime;
+    //        currentTimeDisplay.textContent = formatTime(audio.currentTime);
+    //    });
+    //    playPauseBtn.addEventListener("click", function () {
+    //        const pauseBtn = playPauseBtn.querySelector('[data-type="pause"]');
+    //        const playBtn = playPauseBtn.querySelector('[data-type="play"]');
+    //        if (audio.paused) {
+    //            audio.play();
+    //            pauseBtn.classList.remove('hidden');
+    //            playBtn.classList.add('hidden');
+    //        } else {
+    //            audio.pause();
+    //            playBtn.classList.remove('hidden');
+    //            pauseBtn.classList.add('hidden');
+    //        }
+    //    });
+    //    seekSlider.addEventListener("input", function () {
+    //        audio.currentTime = seekSlider.value;
+    //    });
+    //});
 
-    function formatTime(seconds) {
-        let minutes = Math.floor(seconds / 60);
-        seconds = Math.floor(seconds % 60);
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-        return minutes + ":" + seconds;
-    }
+    //function formatTime(seconds) {
+    //    let minutes = Math.floor(seconds / 60);
+    //    seconds = Math.floor(seconds % 60);
+    //    seconds = seconds < 10 ? "0" + seconds : seconds;
+    //    return minutes + ":" + seconds;
+    //}
 }
 
 // youtube player
 var player; // This will hold the YouTube player object
 function onPlayerError(event) {
     console.error('Player Error:', event.data);
-}
-
-function onPlayerReady(event) {
-    // Bind controls here, for example:
-    // Can also load the video here. (Would be faster to load the page and everything)
-    console.log('in player ready');
-    player.mute();
-    player.playVideo();
-    document.getElementById('nowPlayingPause').addEventListener('click', togglePlayPause);
-    updateDurationDisplay();
 }
 
 function onPlayerStateChange(event) {
@@ -275,10 +278,21 @@ function formatTime(time) {
 }
 
 function changeVideo(videoId) {
+    const noResults = document.getElementById('noVideoResults');
+    const videoPlayer = document.getElementById('nowPlayingVideo');
+    const noResultsQueue = document.getElementById('noQueueResults');
+    const queueContent = document.getElementById('queueContent');
+
+    noResults.classList.add('hidden');
+    videoPlayer.classList.remove('hidden');
+    noResultsQueue.classList.add('hidden');
+    queueContext.classList.remove('hidden');
+
     player.loadVideoById(videoId);
-    // set the metadata here
-    document.getElementById('nowPlayingTitle').textContent = title;
-    document.getElementById('nowPlayingArtist').textContent = artist;
+
+
+    //document.getElementById('nowPlayingTitle').textContent = title;
+    //document.getElementById('nowPlayingArtist').textContent = artist;
 }
 
 

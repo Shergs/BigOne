@@ -29,10 +29,15 @@ public class PlayerController : ControllerBase
             return Ok(JsonSerializer.Serialize(""));
         }
 
+        if (player.CurrentTrack == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
         var track = new Song
         {
             Name = player.CurrentTrack.Title,
-            Url = player.CurrentTrack.Uri.ToString()
+            Url = player.CurrentTrack.Uri.ToString(),
+            Artist = player.CurrentTrack.Author
         };
 
         return Ok(track);
@@ -51,6 +56,7 @@ public class PlayerController : ControllerBase
         {
             Name = track.Track.Title,
             Url = track.Track.Uri.ToString(),
+            Artist = track.Track.Author
         }).ToList();
 
         return Ok(queue);
@@ -66,6 +72,6 @@ public class PlayerController : ControllerBase
         }
 
         var position = player.Position?.Position;
-        return Ok(position.ToString());
+        return Ok((int)Math.Floor((decimal)position?.TotalSeconds));
     }
 }

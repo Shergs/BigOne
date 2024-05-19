@@ -7,7 +7,7 @@ namespace BigOneDashboard.Clients
     {
         Task<Song> GetPlayerSong(string serverId);
         Task<List<Song>> GetPlayerSongs(string serverId);
-        Task<string> GetPlayerPosition(string serverId);    
+        Task<int> GetPlayerPosition(string serverId);    
     }
     public class BotClient(
         HttpClient httpClient
@@ -33,7 +33,8 @@ namespace BigOneDashboard.Clients
             try
             {
                 // Deserialize the response string to a Song object
-                return JsonSerializer.Deserialize<Song>(responseString);
+                Song song = JsonSerializer.Deserialize<Song>(responseString);
+                return song;
             }
             catch (JsonException ex)
             {
@@ -56,16 +57,16 @@ namespace BigOneDashboard.Clients
             }
         }
 
-        public async Task<string> GetPlayerPosition(string serverId)
+        public async Task<int> GetPlayerPosition(string serverId)
         {
             try
             {
-                var response = await httpClient.GetFromJsonAsync<string>($"Player/getplayerposition?serverId={serverId}");
-                return response ?? "";
+                var response = await httpClient.GetFromJsonAsync<int>($"Player/getplayerposition?serverId={serverId}");
+                return response;
             }
             catch (Exception e)
             {
-                return "";
+                return 0;
             }
         }
     }

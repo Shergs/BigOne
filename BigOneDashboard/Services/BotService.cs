@@ -10,7 +10,7 @@ namespace BigOneDashboard.Services
         Task<Song> GetPlayerSong(string serverId);
         Task<List<Song>> GetPlayerSongs(string serverId);
         Task<List<SongHistoryItem>> GetPlayerHistory(string serverId);
-        Task<string> GetPlayerPosition(string serverId);
+        Task<int> GetPlayerPosition(string serverId);
     }
     public class BotService(
         IBotClient botClient,
@@ -40,7 +40,7 @@ namespace BigOneDashboard.Services
             return await botRepository.GetPlayerHistory(serverId);
         }
 
-        public async Task<string> GetPlayerPosition(string serverId)
+        public async Task<int> GetPlayerPosition(string serverId)
         {
             return await botClient.GetPlayerPosition(serverId);
         }

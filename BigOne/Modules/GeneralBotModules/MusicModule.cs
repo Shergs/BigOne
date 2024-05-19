@@ -102,6 +102,8 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         songHistory.ServerId = Context.Guild.Id.ToString();
         songHistory.Url = track.Uri.ToString();
         _context.Add(songHistory);
+        await _context.SaveChangesAsync();
+
         var position = await player.PlayAsync(track).ConfigureAwait(false);
 
         if (position is 0)
@@ -125,7 +127,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
             await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username);
+            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username, DateTime.Now.ToString());
         }
         else
         {
@@ -148,7 +150,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
             await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendQueueUpdated(Context.Guild.Id.ToString(), track.Title, "add", Context.User.Username);
+            await _signalService.SendQueueUpdated(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), position.ToString(), "add", Context.User.Username, DateTime.Now.ToString());
         }
     }
 

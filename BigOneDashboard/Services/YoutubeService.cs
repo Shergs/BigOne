@@ -7,6 +7,7 @@ namespace BigOneDashboard.Services
     public interface IYoutubeService
     {
         Task<IActionResult> GetMP3FromYoutube(string url);
+        Task<string> GetVideoIdFromUrl(string url);
         Task<string> GetEmbedFromUrl(string url);
     }
 
@@ -70,16 +71,27 @@ namespace BigOneDashboard.Services
             }
         }
 
-        public async Task<string> GetEmbedFromUrl(string url)
+        public async Task<string> GetVideoIdFromUrl(string url)
         {
             var videoId = youtubeClient.GetVideoIdFromUrl(url);
             if (string.IsNullOrEmpty(videoId))
             {
-                return null;
+                return "";
             }
 
-            var embedUrl = $"https://www.youtube.com/embed/{videoId}";
+            return await Task.FromResult(videoId);
+        }
+
+        public async Task<string> GetEmbedFromUrl(string url)
+        {
+            var videoId = youtubeClient.GetVideoIdFromUrl(url);
+            if (string.IsNullOrEmpty(videoId)) 
+            {
+                return "";
+            }
+
+            string embedUrl = $"https://youtube.com/embed{videoId}";
             return await Task.FromResult(embedUrl);
-        }    
+        }
     }
 }
