@@ -2,6 +2,7 @@
 using BigOneDashboard.Clients;
 using BigOneDashboard.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using BigOneDashboard.Services;
 
 namespace BigOneDashboard.Services
 {
@@ -14,7 +15,9 @@ namespace BigOneDashboard.Services
     }
     public class BotService(
         IBotClient botClient,
-        IBotRepository botRepository) : IBotService
+        IBotRepository botRepository,
+        IYoutubeService youtubeService
+        ) : IBotService
     {
         //public async Task<IActionResult> DownloadYtMP3(string url)
         //{
@@ -31,8 +34,12 @@ namespace BigOneDashboard.Services
 
         public async Task<List<Song>> GetPlayerSongs(string serverId)
         {
-            // Make the endpoint in the bot for these
-            return await botClient.GetPlayerSongs(serverId);
+            List<Song> songs = await botClient.GetPlayerSongs(serverId);
+            foreach (Song song in songs) 
+            {
+                song.VideoId = await youtubeService.GetVideoIdFromUrl(song.Url);
+            }
+            return songs;
         }
 
         public async Task<List<SongHistoryItem>> GetPlayerHistory(string serverId)

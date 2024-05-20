@@ -8,16 +8,19 @@ using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 using System.Text.Json;
+using BigOne.Services;
 
 [ApiController]
 [Route("[controller]")]
 public class PlayerController : ControllerBase
 {
     private readonly IAudioService _audioService;
+    private readonly ISignalService _signalService;
 
-    public PlayerController(IAudioService audioService)
+    public PlayerController(IAudioService audioService, ISignalService signalService)
     {
         _audioService = audioService;
+        _signalService = signalService;
     }
 
     [HttpGet("getplayersong")]
@@ -76,7 +79,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("resume")]
-    public async Task<IActionResult> Resume([FromQuery] string serverId)
+    public async Task<IActionResult> Resume([FromQuery] string serverId, [FromQuery] string username)
     {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
@@ -85,10 +88,13 @@ public class PlayerController : ControllerBase
         }
 
         await player.ResumeAsync();
+        await _signalService.SendResume(serverId, username);
+
+        return Ok();
     }
 
     [HttpPost("pause")]
-    public async Task<IActionResult> Pause([FromQuery] string serverId)
+    public async Task<IActionResult> Pause([FromQuery] string serverId, [FromQuery] string username)
     {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
@@ -97,11 +103,13 @@ public class PlayerController : ControllerBase
         }
 
         await player.PauseAsync().ConfigureAwait(false);
+        await _signalService.SendPaused(serverId, username);
+        
         return Ok();
     }
 
     [HttpPost("skip")]
-    public async Task<IActionResult> Skip([FromQuery] string serverId)
+    public async Task<IActionResult> Skip([FromQuery] string serverId, [FromQuery] string username)
     {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
@@ -110,10 +118,12 @@ public class PlayerController : ControllerBase
         }
 
         await player.SkipAsync().ConfigureAwait(false);
+        await _signalService.SendSkip(serverId, username);
+
         return Ok();
     }
 
-    [HttpPost("position")]
+    [HttpPost("seek")]
     public async Task<IActionResult> SetPosition([FromQuery] string serverId, [FromQuery] int seconds)
     {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
@@ -127,4 +137,12 @@ public class PlayerController : ControllerBase
         await player.SeekAsync(timeSpan).ConfigureAwait(false);
         return Ok();
     }
+
+    //[HttpPost("playsound")]
+    //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
+    //{
+    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+        
+
+    //}
 }

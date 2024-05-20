@@ -5,7 +5,7 @@ namespace BigOne.Services
 {
     public interface ISignalService 
     {
-        Task SendNowPlaying(string groupName, string name, string url, string username, string timestamp);
+        Task SendNowPlaying(string groupName, string name, string url, string username, string timestamp, string artist);
         Task SendPaused(string groupName, string username);
         Task SendResume(string groupName, string username);
         Task SendSkip(string groupName, string username);
@@ -17,10 +17,9 @@ namespace BigOne.Services
         IHubContext<PlayerHub> _hubContext
         ) : ISignalService
     {
-        public async Task SendNowPlaying(string groupName, string name, string url, string username, string timestamp)
+        public async Task SendNowPlaying(string groupName, string name, string url, string username, string timestamp, string artist)
         {
-            // Correct way to send a message to a group using IHubContext
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveNowPlaying", name, url, username, timestamp);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveNowPlaying", name, url, username, timestamp, artist);
         }
 
         public async Task SendPaused(string groupName, string username)
@@ -35,7 +34,7 @@ namespace BigOne.Services
 
         public async Task SendSkip(string groupName, string username)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSkip", username);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSkipped", username);
         }
 
         public async Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp)

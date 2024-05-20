@@ -17,4 +17,6 @@ public class Song
     public string DiscordUsername { get; set; }
     [JsonPropertyName("artist")]
     public string Artist { get; set; }
+    [JsonPropertyName("videoid")]
+    public string VideoId { get; set; }
 }

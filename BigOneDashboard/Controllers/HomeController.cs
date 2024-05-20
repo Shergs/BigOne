@@ -161,6 +161,8 @@ namespace BigOneDashboard.Controllers
                 }
                 // test embed
                 //dashboardViewModel.embedUrl = "1VUa99-tJqs";
+                //dashboardViewModel.VoiceChannels
+                //dashboardViewModel.Voices
             }
             dashboardViewModel.botUrl = _configuration["Bot:BaseUrl"] ?? "";
             dashboardViewModel.dashboardBaseUrl = _configuration["AppBaseUrl"] ?? "";

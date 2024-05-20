@@ -101,6 +101,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         songHistory.Name = track.Title;
         songHistory.ServerId = Context.Guild.Id.ToString();
         songHistory.Url = track.Uri.ToString();
+        songHistory.DiscordUsername = Context.User.Username;
         _context.Add(songHistory);
         await _context.SaveChangesAsync();
 
@@ -127,7 +128,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
 
             await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username, DateTime.Now.ToString());
+            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username, DateTime.Now.ToString(), track.Author);
         }
         else
         {

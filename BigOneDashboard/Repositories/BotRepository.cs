@@ -14,7 +14,7 @@ namespace BigOneDashboard.Repositories
     {
         public async Task<List<SongHistoryItem>> GetPlayerHistory(string serverId)
         {
-            return await context.SongHistory.Where(song => song.ServerId == serverId && song.Timestamp > DateTime.Now.AddDays(-1)).ToListAsync();
+            return await context.SongHistory.Where(song => song.ServerId == serverId && song.Timestamp > DateTime.Now.AddDays(-1)).OrderByDescending(x => x.Timestamp).ToListAsync();
         }
 
     }
