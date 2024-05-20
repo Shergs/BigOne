@@ -118,7 +118,9 @@
                             <div id="queueContent" class="@isQueueContentHidden">
                                 @foreach (Song song in Model.Songs)
                                 {
-                                    <div id="queueItemContainer" data-url="@song.Url" class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
+                                    @* Use partial here *@
+                                    @await Html.PartialAsync("_ServerSearchPartial", song)
+                                    @* <div id="queueItemContainer" data-url="@song.Url" class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound">
                                         <div class="flex items-center space-x-4 truncate" style="align-items:center;">
                                             <div class="truncate text-gray-300">@song.Name</div>
                                         </div>
@@ -160,7 +162,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> *@
                                 }
                             </div>
                             <span id="noQueueResults" class="@isNoResultsQueue">Player doesn't have queued songs on this server.</span>
@@ -178,7 +180,10 @@
                             <div id="historyContent" class="@isHistoryContentHidden">
                                 @foreach (SongHistoryItem songHistoryItem in Model.SongHistory)
                                 {
-                                    <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
+                                    @* Use partial here *@
+                                    @await Html.PartialAsync("_ServerSearchPartial", songHistoryItem)
+@* 
+                                    <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" >
                                         <div class="flex items-center space-x-4 truncate" style="align-items:center;">
                                             <div class="truncate text-gray-300">@songHistoryItem.Name</div>
                                             <div class="truncate text-gray-300">@songHistoryItem.DiscordUsername</div>
@@ -203,7 +208,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> *@
                                 }
                             </div>
                             <span id="noResultsHistory" class="@isNoResultsHistory">No song history found for ths server.</span>
@@ -288,6 +293,8 @@
                     <div class="p-4 w-full max-h-[400px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
                         @foreach (Sound sound in Model.Sounds)
                         {
+                            @await Html.PartialAsync("_ServerSearchPartial", sound)
+@* 
                             <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
                                 <div class="flex items-center space-x-4 truncate" style="align-items:center;">
                                     <div class="truncate">@sound.Emote</div>
@@ -331,7 +338,7 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </div> *@
                         }
                     </div>
                 </div>
@@ -501,7 +508,9 @@ else
 }
 
 <template id="songTemplate">
-    <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
+    @* Use partial here *@
+    @await Html.PartialAsync("_ServerSearchPartial", null)
+    @* <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" >
         <div class="flex items-center space-x-4 truncate" style="align-items:center;">
             <div class="truncate text-gray-300" id="songName">placeholder-songname</div>
         </div>
@@ -543,11 +552,13 @@ else
                 </button>
             </div>
         </div>
-    </div>
+    </div> *@
 </template>
 
 <template id="historyItemTemplate">
-    <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
+    @* Use Partial Here *@
+    @await Html.PartialAsync("_ServerSearchPartial", null)
+    @* <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" >
         <div class="flex items-center space-x-4 truncate" style="align-items:center;">
             <div class="truncate text-gray-300" id="placeholder-name">placeholder-name</div>
             <div class="truncate text-gray-300" id="placeholder-username">placeholder-username</div>
@@ -572,7 +583,7 @@ else
                 </button>
             </div>
         </div>
-    </div>
+    </div> *@
 </template>
 
 @section Scripts {
