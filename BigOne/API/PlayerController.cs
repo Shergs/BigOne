@@ -74,4 +74,57 @@ public class PlayerController : ControllerBase
         var position = player.Position?.Position;
         return Ok((int)Math.Floor((decimal)position?.TotalSeconds));
     }
+
+    [HttpPost("resume")]
+    public async Task<IActionResult> Resume([FromQuery] string serverId)
+    {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        await player.ResumeAsync();
+    }
+
+    [HttpPost("pause")]
+    public async Task<IActionResult> Pause([FromQuery] string serverId)
+    {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        await player.PauseAsync().ConfigureAwait(false);
+        return Ok();
+    }
+
+    [HttpPost("skip")]
+    public async Task<IActionResult> Skip([FromQuery] string serverId)
+    {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        await player.SkipAsync().ConfigureAwait(false);
+        return Ok();
+    }
+
+    [HttpPost("position")]
+    public async Task<IActionResult> SetPosition([FromQuery] string serverId, [FromQuery] int seconds)
+    {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+        await player.SeekAsync(timeSpan).ConfigureAwait(false);
+        return Ok();
+    }
 }
