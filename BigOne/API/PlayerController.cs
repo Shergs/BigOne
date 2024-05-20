@@ -14,6 +14,7 @@ using BigOne.Services;
 [Route("[controller]")]
 public class PlayerController : ControllerBase
 {
+    //Going to make a player service and make that a dependency here instead.
     private readonly IAudioService _audioService;
     private readonly ISignalService _signalService;
 
@@ -54,12 +55,13 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-        
+
         var queue = player.Queue.Select(track => new Song
         {
             Name = track.Track.Title,
             Url = track.Track.Uri.ToString(),
-            Artist = track.Track.Author
+            Artist = track.Track.Author,
+            QueuePosition = player.Queue.IndexOf(track)
         }).ToList();
 
         return Ok(queue);
@@ -138,11 +140,79 @@ public class PlayerController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("moveupinqueue")]
+    public async Task<IActionResult> MoveUpInQueue([FromQuery] string serverId, [FromQuery] int index, [FromQuery] string username)
+    {
+        //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        //if (player == null)
+        //{
+        //    return Ok(JsonSerializer.Serialize(""));
+        //}
+
+        //var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
+
+        //// Check if the index is within the range and not the first item already.
+        //if (index < 1 || index >= queue.Count)
+        //{
+        //    return Ok(JsonSerializer.Serialize(""));
+        //}
+
+        //// Swap the tracks.
+        //var itemToMoveUp = queue[index];
+        //queue[index] = queue[index - 1];
+        //queue[index - 1] = itemToMoveUp;
+
+        //// Clear the current queue and enqueue the modified list.
+        //player.Queue.Clear();
+        //foreach (var track in queue)
+        //{
+        //    player.Queue.Enqueue(track);
+        //}
+
+        await _signalService.SendMoveUpInQueue(serverId, username, index.ToString());
+        
+        return Ok();
+    }
+
+    [HttpPost("deletefromqueue")]
+    public async Task<IActionResult> DeleteFromQueue([FromQuery] string serverId, [FromQuery] int index, [FromQuery] string username)
+    {
+        //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        //if (player == null)
+        //{
+        //    return Ok(JsonSerializer.Serialize(""));
+        //}
+
+        //var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
+
+        //// Check if the index is within the range and not the first item already.
+        //if (index < 1 || index >= queue.Count)
+        //{
+        //    return Ok(JsonSerializer.Serialize(""));
+        //}
+
+        //// Swap the tracks.
+        //var itemToMoveUp = queue[index];
+        //queue[index] = queue[index - 1];
+        //queue[index - 1] = itemToMoveUp;
+
+        //// Clear the current queue and enqueue the modified list.
+        //player.Queue.Clear();
+        //foreach (var track in queue)
+        //{
+        //    player.Queue.Enqueue(track);
+        //}
+
+        await _signalService.SendDeleteFromQueue(serverId, username, index.ToString());
+
+        return Ok();
+    }
+
     //[HttpPost("playsound")]
     //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
     //{
     //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
-        
+
 
     //}
 }

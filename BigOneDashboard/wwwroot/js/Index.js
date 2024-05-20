@@ -83,6 +83,18 @@ document.addEventListener("DOMContentLoaded", function () {
         createToast(username + " Played Sound: " + emoji + " " + name);
     });
 
+    connection.on("ReceiveMoveUpInQueue", function (username, position) {
+        console.log("Move up in queue");
+        createToast(username + "Moved song up in queue at postion: " + position)
+        updateMoveUpInQueue(position);
+    });
+
+    connection.on("ReceiveDeleteFromQueue", function (username, position) {
+        console.log("Delete from queue");
+        createToast(username + "Deleted song from queue at position: " + position);
+        updateDeleteFromQueue(position);
+    });
+
     connection.start().catch(function (err) {
         return console.error(err.toString());
     });
@@ -157,10 +169,11 @@ function addToQueue(name, url) {
 
     console.log('adding to queue');
     const templateContent = document.getElementById('songTemplate').content.cloneNode(true);
+    const queueCount = queueContent.children.count; 
 
-    // Access and replace content directly within the cloned template
     templateContent.querySelector("#songName").textContent = name;
     templateContent.querySelector("#audioSource").src = url;
+    templateContent.querySelector("#queueItemContainer").attributes["data-queueposition"] = queueCount.toString();
 
     queueContent.appendChild(templateContent);
 }
@@ -350,11 +363,39 @@ function seekClick(event) {
     //const position = Math.floor(player.getCurrentTime());
 
     const apiUrl = `/Player/seek?serverId=${encodeURIComponent(serverId)}&position=${encodeURIComponent(newTime)}`;
-    botPost(apiUrl)
+    botPost(apiUrl);
 }
 
 function seekVideo(newTime) {
     player.seekTo(newTime, true);
+}
+
+function moveUpInQueue(position) {
+    const apiUrl = `/Player/moveupinqueue?serverId=${encodeURIComponent(serverId)}&position=${encodeURIComponent(position)}&username=${encodeURIComponent(username)}`;
+    botPost(apiUrl);
+}
+
+function updateMoveUpInQueue(position) {
+    const queueContent = document.getElementById('queueContent');
+    const queueItemContainer = document.querySelector('[data-queueposition="' + postiion + '"]');
+    const queueCount = queueContent.children.length;
+    // swap the element with the one before it.
+    if (queueCount > 1){
+        // do the swap here. Just swap with the one before it.
+    }
+}
+
+function deleteFromQueue(position) {
+    const apiUrl = `/Player/deletefromqueue?serverId=${encodeURIComponent(serverId)}&position=${encodeURIComponent(position)}&username=${encodeURIComponent(username)}`;
+    botPost(apiUrl);
+}
+
+function updateDeleteFromQueue(position) {
+    const queueContent = document.getElementById('queueContent');
+    const queueItemContainer = document.querySelector('[data-queueposition="' + postiion + '"]');
+    const queueCount = queueContent.children.length;
+
+    queueItemContainer.remove();
 }
 
 function botPost(apiUrl) {

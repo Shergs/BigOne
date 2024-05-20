@@ -19,4 +19,6 @@ public class Song
     public string Artist { get; set; }
     [JsonPropertyName("videoid")]
     public string VideoId { get; set; }
+    [JsonPropertyName("queuePosition")]
+    public int QueuePosition { get; set; }
 }

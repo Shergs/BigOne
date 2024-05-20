@@ -11,7 +11,9 @@ namespace BigOne.Services
         Task SendSkip(string groupName, string username);
         Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp);
         Task SendStop(string groupName, string username);
-        Task SendSoundPlaying(string groupName, string username, string emoji, string name);  
+        Task SendSoundPlaying(string groupName, string username, string emoji, string name);
+        Task SendMoveUpInQueue(string groupName, string username, string position);
+        Task SendDeleteFromQueue(string groupName, string username, string position);
     }
     public class SignalService(
         IHubContext<PlayerHub> _hubContext
@@ -49,6 +51,16 @@ namespace BigOne.Services
         public async Task SendSoundPlaying(string groupName, string username, string emoji, string name)
         {
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSoundPlaying", username, emoji, name);
+        }
+
+        public async Task SendMoveUpInQueue(string groupName, string username, string position)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveMoveUpInQueue", username, position);
+        }
+
+        public async Task SendDeleteFromQueue(string groupName, string username, string position)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveDeleteFromQueue", username, position);
         }
     }
 }
