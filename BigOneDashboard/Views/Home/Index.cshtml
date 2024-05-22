@@ -431,6 +431,7 @@ else
     <script>
         var playing = false;
         var initialPlay = false;
+        var lastKnownTime = -1;
         function onYouTubeIframeAPIReady() {
             console.log('in youtubeIFrameReady');
             try {
@@ -469,7 +470,7 @@ else
 
             document.getElementById('nowPlayingPause').addEventListener('click', togglePlayPause);
             document.getElementById('nowPlayingSkip').addEventListener('click', skipClick)
-            document.getElementById('customSeekBar').addEventListener('click', seekClick(event));
+            document.getElementById('customSeekBar').addEventListener('click', seekClick);
             updateDurationDisplay();
         }
     </script>

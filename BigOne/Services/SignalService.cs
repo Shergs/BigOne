@@ -15,6 +15,7 @@ namespace BigOne.Services
         Task SendMoveUpInQueue(string groupName, string username, string position);
         Task SendMoveDownInQueue(string groupName, string username, string position);
         Task SendDeleteFromQueue(string groupName, string username, string position);
+        Task SendSeekVideo(string groupName, string username, string position);
     }
     public class SignalService(
         IHubContext<PlayerHub> _hubContext
@@ -67,6 +68,11 @@ namespace BigOne.Services
         public async Task SendDeleteFromQueue(string groupName, string username, string position)
         {
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveDeleteFromQueue", username, position);
+        }
+
+        public async Task SendSeekVideo(string groupName, string username, string position)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSeekVideo", username, position);
         }
     }
 }

@@ -87,20 +87,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     connection.on("ReceiveMoveUpInQueue", function (username, position) {
         console.log("Move up in queue");
-        createToast(username + "Moved song up in queue at postion: " + position)
+        createToast(username + " Moved song up in queue at postion: " + position)
         updateMoveUpInQueue(position);
     });
 
     connection.on("ReceiveMoveDownInQueue", function (username, position) {
         console.log("Move up in queue");
-        createToast(username + "Moved song down in queue at postion: " + position)
+        createToast(username + " Moved song down in queue at postion: " + position)
         updateMoveDownInQueue(position);
     });
 
     connection.on("ReceiveDeleteFromQueue", function (username, position) {
         console.log("Delete from queue");
-        createToast(username + "Deleted song from queue at position: " + position);
+        createToast(username + " Deleted song from queue at position: " + position);
         updateDeleteFromQueue(position);
+    });
+
+    connection.on("ReceiveSeekVideo", function (username, position) {
+        console.log("Video seek");
+        createToast(username + " Seeked to seconds: " + position);
+        seekVideo(position);
     });
 
     connection.start().catch(function (err) {
@@ -160,7 +166,7 @@ function addToQueue(name, url) {
     const queueCount = queueContent.children.count; 
 
     templateContent.querySelector("#songName").textContent = name;
-    templateContent.querySelector("#audioSource").src = url;
+    //templateContent.querySelector("#audioSource").src = url;
     templateContent.querySelector("#queueItemContainer").attributes["data-queueposition"] = queueCount.toString();
 
     queueContent.appendChild(templateContent);
@@ -358,15 +364,13 @@ function seekClick(event) {
     var seekBarRect = seekBar.getBoundingClientRect();
     var clickPosition = (event.clientX - seekBarRect.left) / seekBarRect.width;
     var newTime = Math.floor(clickPosition * player.getDuration());
-
-    //const position = Math.floor(player.getCurrentTime());
-
-    const apiUrl = `/Player/seek?serverId=${encodeURIComponent(serverId)}&position=${encodeURIComponent(newTime)}`;
-    botPost(apiUrl);
+    const apiUrl = `/Player/seek?serverId=${encodeURIComponent(serverId)}&seconds=${encodeURIComponent(newTime)}&username=${encodeURIComponent(username)}`;
+    botPost(apiUrl);   
 }
 
 function seekVideo(newTime) {
     player.seekTo(newTime, true);
+    player.playVideo();
 }
 
 function moveUpInQueue(position) {
@@ -453,12 +457,25 @@ function botPost(apiUrl) {
 }
 
 function updateProgressBar() {
-    var currentTime = player.getCurrentTime();
-    var duration = player.getDuration();
-    var progressPercent = (currentTime / duration) * 100;
-    document.querySelector('[data-type="seekSlider"] div').style.width = progressPercent + "%";
+    const currentTime = player.getCurrentTime();
+    if (lastKnownTime != -1 && Math.abs(lastKnownTime - currentTime) > 5) {
+        const apiUrl = `/Player/seek?serverId=${encodeURIComponent(serverId)}&seconds=${encodeURIComponent(Math.floor(currentTime))}&username=${encodeURIComponent(username)}`;
+        botPost(apiUrl); 
+    }
+
+    const duration = player.getDuration();
+    const progressPercent = (currentTime / duration) * 100;
+    document.querySelector('[data-type="seekSlider"] div').style.width = `${progressPercent}%`;
     document.getElementById('nowPlayingCurrentTime').textContent = formatTime(currentTime);
+
+    lastKnownTime = currentTime;
 }
+
+//function formatTime(time) {
+//    const minutes = Math.floor(time / 60);
+//    const seconds = Math.floor(time % 60);
+//    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+//}
 
 function updateDurationDisplay() {
     var duration = player.getDuration();

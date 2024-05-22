@@ -126,7 +126,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("seek")]
-    public async Task<IActionResult> SetPosition([FromQuery] string serverId, [FromQuery] int seconds)
+    public async Task<IActionResult> SetPosition([FromQuery] string serverId, [FromQuery] int seconds, [FromQuery] string username)
     {
         VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
         if (player == null)
@@ -137,6 +137,8 @@ public class PlayerController : ControllerBase
         TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
 
         await player.SeekAsync(timeSpan).ConfigureAwait(false);
+        await _signalService.SendSeekVideo(serverId, username, seconds.ToString());
+
         return Ok();
     }
 
@@ -219,6 +221,14 @@ public class PlayerController : ControllerBase
     }
 
     //[HttpPost("playsound")]
+    //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
+    //{
+    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+
+
+    //}
+
+    //[HttpPost("playsong")]
     //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
     //{
     //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
