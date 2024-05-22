@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
+    // See if this needs to be imlpemented or if it's doing a full page refresh when switching to the other servers.
+    // Prob won't have to actually implement this, but maybe.
     // Joining a group
     //connection.invoke("AddToGroup", serverId)
     //    .catch(function (err) {
@@ -89,6 +91,12 @@ document.addEventListener("DOMContentLoaded", function () {
         updateMoveUpInQueue(position);
     });
 
+    connection.on("ReceiveMoveDownInQueue", function (username, position) {
+        console.log("Move up in queue");
+        createToast(username + "Moved song down in queue at postion: " + position)
+        updateMoveDownInQueue(position);
+    });
+
     connection.on("ReceiveDeleteFromQueue", function (username, position) {
         console.log("Delete from queue");
         createToast(username + "Deleted song from queue at position: " + position);
@@ -100,10 +108,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
-
-// If you can't have slider do anything, just have it match the videos time slider's position. There might be a way to send requests to change the time inside the song tho.
-// Idk why that wouldn't be built into lavalink and lavalink4net.
-// Might need to make a custom player.
 
 // Toast message
 function createToast(message) {
@@ -120,8 +124,6 @@ function createToast(message) {
     }, 5000);
 }
 
-
-
 // for handling signalr updates
 function updateNowPlaying(name, url, artistName) {
     const player = document.getElementById('nowPlayingPlayer');
@@ -130,8 +132,6 @@ function updateNowPlaying(name, url, artistName) {
     const artist = player.querySelector('#nowPlayingArtist');
     const playBtn = player.querySelector('#playVideo');
     const pauseBtn = player.querySelector('#pauseVideo')
-    //const currentTime = player.querySelector('#currentTime');
-    //const duration = player.querySelector('#duration');
 
     const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
     // Do a post here to get the video src
@@ -147,20 +147,8 @@ function updateNowPlaying(name, url, artistName) {
 
     playBtn.classList.add('hidden');
     pauseBtn.classList.remove('hidden');
-
-    //currentTime.innerText = '0:00';
-    //// Have to pass in duration as well.
-    //duration.innerText = '5:00';
 }
 
-// Add a Song to queue
-//function addToQueue(name, url) {
-//    console.log('adding to queue');
-//    const templateContent = document.getElementById('songTemplate').content.cloneNode(true);
-//    template.innerHTML = template.innerHTML.replace('placeholder-songname', name).replace('placeholder-src', url);
-//    const queue = document.getElementById('queue');
-//    queue.appendChild(template);
-//}
 function addToQueue(name, url) {
     const noResultsQueue = document.getElementById('noQueueResults');
     const queueContent = document.getElementById('queueContent');
@@ -209,9 +197,6 @@ function getEmbed(apiUrl) {
             throw error;  // Re-throw to ensure the caller knows an error occurred
         });
 }
-// need to make something that will go thru the queue. That would be cool.
-// Because client side and bot side are going to be different. The state just has to match from the javascript.
-// Also going to need all the other client's actions to be sent to the other clients.
 
 function setPlayers(container) {
     let sounds = null;
@@ -270,6 +255,10 @@ function onPlayerError(event) {
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.PLAYING) {
         setInterval(updateProgressBar, 1000); // Update progress every second while playing
+        if (initialPlay == false) {
+            initialPlay = true;
+            return;
+        }
         if (playing == false) {
             playing = true;
             const apiUrl = `/Player/resume?serverId=${encodeURIComponent(serverId)}&username=${encodeURIComponent(username)}`;
@@ -285,7 +274,17 @@ function onPlayerStateChange(event) {
         }
     }
 
-
+    const queueContent = document.getElementById('queueContent');
+    queueCount = queueContent.children.length;
+    if (event.data == YT.PlayerState.ENDED) {
+        if (queueCount == 0) {
+            initialPlay = false;
+        } else {
+            const queuedVideoId = queueContent.children[0].getAttribute('data-videoid');
+            changeVideo(queuedVideoId);
+        }
+        updateDeleteFromQueue(0);
+    }
 
     // Clear interval when video is paused or ends
     //event.target.addEventListener('onStateChange', function (e) {
@@ -340,7 +339,7 @@ function skipSong() {
     } else {
         const queueItem = queue.querySelector('#queueItemContainer');
         const videoId = queueItem.attributes["data-videoid"];
-        player.changeVideo(videoId);
+        changeVideo(videoId);
         player.playVideo();
         queueItem.remove();
         if (queueCount == 1) {
@@ -371,17 +370,44 @@ function seekVideo(newTime) {
 }
 
 function moveUpInQueue(position) {
-    const apiUrl = `/Player/moveupinqueue?serverId=${encodeURIComponent(serverId)}&position=${encodeURIComponent(position)}&username=${encodeURIComponent(username)}`;
+    const apiUrl = `/Player/moveupinqueue?serverId=${encodeURIComponent(serverId)}&index=${encodeURIComponent(position)}&username=${encodeURIComponent(username)}`;
+    botPost(apiUrl);
+}
+
+function moveDownInQueue(position) {
+    const apiUrl = `/Player/movedowninqueue?serverId=${encodeURIComponent(serverId)}&index=${encodeURIComponent(position)}&username=${encodeURIComponent(username)}`;
     botPost(apiUrl);
 }
 
 function updateMoveUpInQueue(position) {
     const queueContent = document.getElementById('queueContent');
-    const queueItemContainer = document.querySelector('[data-queueposition="' + postiion + '"]');
     const queueCount = queueContent.children.length;
-    // swap the element with the one before it.
-    if (queueCount > 1){
-        // do the swap here. Just swap with the one before it.
+
+    if (queueCount > 1 && position > 1) {  
+        const current = document.querySelector(`[data-queueposition="${position}"]`);
+        const prev = document.querySelector(`[data-queueposition="${position - 1}"]`);
+
+        if (current && prev) {  
+            queueContent.insertBefore(current, prev);
+            current.setAttribute('data-queueposition', position - 1);
+            prev.setAttribute('data-queueposition', position);
+        }
+    }
+}
+
+function updateMoveDownInQueue(position) {
+    const queueContent = document.getElementById('queueContent');
+    const queueCount = queueContent.children.length;
+
+    if (queueCount > 1 && position < queueCount) { 
+        const current = document.querySelector(`[data-queueposition="${position}"]`);
+        const next = document.querySelector(`[data-queueposition="${parseInt(position) + 1}"]`);
+
+        if (current && next) { 
+            queueContent.insertBefore(next, current);
+            current.setAttribute('data-queueposition', parseInt(position) + 1);
+            next.setAttribute('data-queueposition', position);
+        }
     }
 }
 
@@ -392,10 +418,17 @@ function deleteFromQueue(position) {
 
 function updateDeleteFromQueue(position) {
     const queueContent = document.getElementById('queueContent');
-    const queueItemContainer = document.querySelector('[data-queueposition="' + postiion + '"]');
-    const queueCount = queueContent.children.length;
-
+    const queueItemContainer = document.querySelector('[data-queueposition="' + position + '"]');
+    if (!queueItemContainer) {
+        console.error("No element found with position:", position);
+        return; // Exit if no element is found
+    }
     queueItemContainer.remove();
+
+    // Update positions: start from the deleted position to the end of the queue
+    for (let i = position - 1; i < queueContent.children.length; i++) {
+        queueContent.children[i].setAttribute('data-queueposition', i + 1);
+    }
 }
 
 function botPost(apiUrl) {
@@ -451,7 +484,6 @@ function changeVideo(videoId) {
     //queueContent.classList.remove('hidden');
 
     player.loadVideoById(videoId);
-
 
     //document.getElementById('nowPlayingTitle').textContent = title;
     //document.getElementById('nowPlayingArtist').textContent = artist;

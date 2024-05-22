@@ -39,7 +39,7 @@ namespace BigOneData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ApplicationUsers");
+                    b.ToTable("ApplicationUsers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -269,7 +269,7 @@ namespace BigOneData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SongHistory");
+                    b.ToTable("SongHistory", (string)null);
                 });
 
             modelBuilder.Entity("Sound", b =>
@@ -298,7 +298,7 @@ namespace BigOneData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Sounds");
+                    b.ToTable("Sounds", (string)null);
                 });
 
             modelBuilder.Entity("UserToken", b =>
@@ -326,7 +326,7 @@ namespace BigOneData.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserTokens");
+                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

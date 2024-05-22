@@ -143,66 +143,76 @@ public class PlayerController : ControllerBase
     [HttpPost("moveupinqueue")]
     public async Task<IActionResult> MoveUpInQueue([FromQuery] string serverId, [FromQuery] int index, [FromQuery] string username)
     {
-        //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
-        //if (player == null)
-        //{
-        //    return Ok(JsonSerializer.Serialize(""));
-        //}
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
 
-        //var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
+        var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
 
-        //// Check if the index is within the range and not the first item already.
-        //if (index < 1 || index >= queue.Count)
-        //{
-        //    return Ok(JsonSerializer.Serialize(""));
-        //}
+        // Check if the index is within the range and not the first item already.
+        if (index < 1 || index >= queue.Count)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
 
-        //// Swap the tracks.
-        //var itemToMoveUp = queue[index];
-        //queue[index] = queue[index - 1];
-        //queue[index - 1] = itemToMoveUp;
+        // Swap the tracks.
+        var itemToMoveUp = queue[index];
+        queue[index] = queue[index - 1];
+        queue[index - 1] = itemToMoveUp;
 
-        //// Clear the current queue and enqueue the modified list.
-        //player.Queue.Clear();
-        //foreach (var track in queue)
-        //{
-        //    player.Queue.Enqueue(track);
-        //}
+        // Clear the current queue and enqueue the modified list.
+        await player.Queue.RemoveAllAsync(item => true);
+        await player.Queue.AddRangeAsync(queue);   
 
         await _signalService.SendMoveUpInQueue(serverId, username, index.ToString());
         
         return Ok();
     }
 
+    [HttpPost("movedowninqueue")]
+    public async Task<IActionResult> MoveDownInQueue([FromQuery] string serverId, [FromQuery] int index, [FromQuery] string username)
+    {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
+
+        // Check if the index is within the range and not the first item already.
+        if (index < 1 || index + 1 >= queue.Count)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+
+        // Swap the tracks.
+        var itemToMoveDown = queue[index];
+        queue[index] = queue[index + 1];
+        queue[index + 1] = itemToMoveDown;
+
+        // Clear the current queue and enqueue the modified list.
+        await player.Queue.RemoveAllAsync(item => true);
+        await player.Queue.AddRangeAsync(queue);
+
+        await _signalService.SendMoveDownInQueue(serverId, username, index.ToString());
+
+        return Ok();
+    }
+
+
     [HttpPost("deletefromqueue")]
     public async Task<IActionResult> DeleteFromQueue([FromQuery] string serverId, [FromQuery] int index, [FromQuery] string username)
     {
-        //VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
-        //if (player == null)
-        //{
-        //    return Ok(JsonSerializer.Serialize(""));
-        //}
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
 
-        //var queue = player.Queue.ToList(); // Convert the queue to a list for easier manipulation.
-
-        //// Check if the index is within the range and not the first item already.
-        //if (index < 1 || index >= queue.Count)
-        //{
-        //    return Ok(JsonSerializer.Serialize(""));
-        //}
-
-        //// Swap the tracks.
-        //var itemToMoveUp = queue[index];
-        //queue[index] = queue[index - 1];
-        //queue[index - 1] = itemToMoveUp;
-
-        //// Clear the current queue and enqueue the modified list.
-        //player.Queue.Clear();
-        //foreach (var track in queue)
-        //{
-        //    player.Queue.Enqueue(track);
-        //}
-
+        await player.Queue.RemoveAtAsync(index);
         await _signalService.SendDeleteFromQueue(serverId, username, index.ToString());
 
         return Ok();

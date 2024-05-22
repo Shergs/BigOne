@@ -1,17 +1,16 @@
-﻿@page
-@model Sound
+﻿@model Sound?
 @{
 }
 
 <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" data-itemType="sound">
     <div class="flex items-center space-x-4 truncate" style="align-items:center;">
-        <div class="truncate">@Model.Emote</div>
-        <div class="truncate text-gray-300">@Model.Name</div>
+        <div class="truncate">@Model?.Emote</div>
+        <div class="truncate text-gray-300">@Model?.Name</div>
     </div>
     <div class="flex items-center space-x-2 ml-auto">
         <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
             <audio id="audio">
-                <source src="@Url.Action("GetSound", "Home", new { soundName = Model.Name, filePath = Model.FilePath })" type="audio/mp3">
+                <source src="@Url.Action("GetSound", "Home", new { soundName = Model?.Name, filePath = Model?.FilePath })" type="audio/mp3">
                 Your browser does not support the audio element.
             </audio>
             <div class="controls flex items-center gap-4">

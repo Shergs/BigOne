@@ -13,6 +13,7 @@ namespace BigOne.Services
         Task SendStop(string groupName, string username);
         Task SendSoundPlaying(string groupName, string username, string emoji, string name);
         Task SendMoveUpInQueue(string groupName, string username, string position);
+        Task SendMoveDownInQueue(string groupName, string username, string position);
         Task SendDeleteFromQueue(string groupName, string username, string position);
     }
     public class SignalService(
@@ -56,6 +57,11 @@ namespace BigOne.Services
         public async Task SendMoveUpInQueue(string groupName, string username, string position)
         {
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveMoveUpInQueue", username, position);
+        }
+
+        public async Task SendMoveDownInQueue(string groupName, string username, string position)
+        {
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveMoveDownInQueue", username, position);
         }
 
         public async Task SendDeleteFromQueue(string groupName, string username, string position)

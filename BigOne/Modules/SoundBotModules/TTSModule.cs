@@ -189,11 +189,11 @@ public sealed class TTSModule : InteractionModuleBase<SocketInteractionContext>
                         await FollowupAsync("Sound Failed to save in database, sound of the same name and server already exists");
                     }
                     Sound sound = new Sound();
-                    sound.Name = name;
-                    sound.FilePath = $"{name.Replace(" ", "_")}.mp3";
-                    sound.Emote = "";
-                    sound.ServerId = Context.Guild.Id.ToString();
-                    _context.Sounds.Add(sound);
+                    //sound.Name = name;
+                    //sound.FilePath = $"{name.Replace(" ", "_")}.mp3";
+                    //sound.Emote = "";
+                    //sound.ServerId = Context.Guild.Id.ToString();
+                    //_context.Sounds.Add(sound);
                     await _context.SaveChangesAsync();
 
                     await FollowupAsync("Text to speech playing.").ConfigureAwait(false);
