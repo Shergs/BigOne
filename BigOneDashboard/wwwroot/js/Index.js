@@ -273,6 +273,9 @@ function onPlayerStateChange(event) {
     }
 
     if (event.data == YT.PlayerState.PAUSED) {
+        // if the tab isn't visible, then make it not do this post, and hide the video player, and require
+        // that the next thing that they do is 'Sync with server' with a button where the video player is supposed
+        // to be. 
         if (playing == true) {
             playing = false;
             const apiUrl = `/Player/pause?serverId=${encodeURIComponent(serverId)}&username=${encodeURIComponent(username)}`;
