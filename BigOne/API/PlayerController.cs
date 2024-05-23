@@ -220,19 +220,16 @@ public class PlayerController : ControllerBase
         return Ok();
     }
 
-    //[HttpPost("playsound")]
-    //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
-    //{
-    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+    [HttpPost("playsound")]
+    public async Task<IActionResult> PlaySoumd([FromQuery] string serverId, [FromQuery] string soundId)
+    {
+        //Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+        return Ok();
+    }
 
-
-    //}
-
-    //[HttpPost("playsong")]
-    //public async Task<IActionResult> PlaySoud([FromQuery] string serverId, [FromQuery] string soundId)
-    //{
-    //    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
-
-
-    //}
+    [HttpPost("playsong")]
+    public async Task<IActionResult> PlaySong([FromQuery] string serverId, [FromQuery] string username, [FromQuery] string queryString)
+    {
+        return Ok();
+    }
 }
