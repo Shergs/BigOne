@@ -1,5 +1,7 @@
 ﻿
 
+using System.Threading.Channels;
+
 namespace BigOneDashboard.Models
 {
     public class DashboardViewModel
@@ -15,6 +17,7 @@ namespace BigOneDashboard.Models
             serverId = "";
             DiscordName = "";
             embedUrl = "";
+            VoiceChannels = new Dictionary<string, List<GuildChannel>>();
         }
         public SaveNewSoundViewModel SaveNewSoundViewModel { get; set; }
         public EditSoundViewModel EditSoundViewModel { get; set; }
@@ -32,6 +35,6 @@ namespace BigOneDashboard.Models
         public string embedUrl { get; set; }
         public string dashboardBaseUrl { get; set; }
         public List<Voice> Voices { get; set; }
-        public Dictionary<string, string> VoiceChannels { get; set; }
+        public List<GuildChannel> VoiceChannels { get; set; }
     }
 }

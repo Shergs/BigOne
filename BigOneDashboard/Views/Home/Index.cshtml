@@ -91,10 +91,7 @@
                                 </svg>
                             </button>
                         </div>
-                        <!-- Progress Bar -->
-                        @* <input type="range" class="hidden lg:block mt-6 bg-gray-200 h-2 rounded-full" data-type="seekSlider" value="0" class="flex-grow"> *@
-
-                         <div class="mt-6 bg-gray-200 h-2 rounded-full hover:bg-gray-300" id="customSeekBar" data-type="seekSlider">
+                         <div class="mt-6 bg-gray-200 h-2 rounded-full hover:bg-gray-400 cursor-pointer" id="customSeekBar" data-type="seekSlider">
                             <div class="bg-teal-500 h-2 rounded-full w-1/2 hover:bg-teal-600"></div>
                         </div> 
                         <!-- Time Information -->
@@ -199,10 +196,13 @@
                             <button id="dropdown-button" type="button" class="text-white dark:!text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Select Channel</button>
                             <div id="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
                                 <!-- Dropdown content here -->
-                                @* @foreach (Guild guild in Model.AvailableGuilds)
+                                @if (Model.VoiceChannels.Count > 0)
                                 {
-                                <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md dark:text-gray-300 dark:hover:text-blue-500 dark:hover:bg-blue-300" data-dropdown-element="server" href="@Url.Action("Index","Home", new {Area = "", serverId = guild.Id})">@guild.Name</a>
-                                } *@
+                                    @foreach (GuildChannel voiceChannel in Model.VoiceChannels)
+                                    {
+                                        <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md dark:text-gray-300 dark:hover:text-blue-500 dark:hover:bg-blue-300" data-dropdown-element="server" value="@voiceChannel.Id">@voiceChannel.Name</a>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>

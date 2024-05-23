@@ -21,6 +21,7 @@ using BigOneDashboard.Areas.DiscordAuth;
 using Google.Apis.Http;
 using System.Globalization;
 using BigOneDashboard.Services;
+using Google.Cloud.TextToSpeech.V1;
 
 namespace BigOneDashboard.Controllers
 {
@@ -32,8 +33,11 @@ namespace BigOneDashboard.Controllers
         private readonly IBotService _botService;
         private readonly IYoutubeService _youtubeService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IConfiguration configuration
-            , IBotService botService, IYoutubeService youtubeService)
+        public HomeController(ILogger<HomeController> logger,
+            ApplicationDbContext context,
+            IConfiguration configuration,
+            IBotService botService, 
+            IYoutubeService youtubeService)
         {
             _logger = logger;
             _context = context;
@@ -102,6 +106,13 @@ namespace BigOneDashboard.Controllers
                     List<Guild> availableGuilds = userGuilds.Where(x => botGuilds.Any(y => x.Id == y.Id)).ToList();
                     HttpContext.Session.SetString("AvailableGuilds", JsonConvert.SerializeObject(availableGuilds));
 
+                    Dictionary<string, List<GuildChannel>> voiceChannels = new Dictionary<string, List<GuildChannel>>();
+                    foreach (Guild guild in availableGuilds)
+                    {
+                        List<GuildChannel> vcsForGuild = await DiscordAPI.GetGuildChannels(botAccessToken, guild.Id) ?? new List<GuildChannel>();
+                        voiceChannels.Add(guild.Id, vcsForGuild.Where(channel => channel.Type == 2).ToList());
+                    }
+                    HttpContext.Session.SetString("GuildChannels", JsonConvert.SerializeObject(voiceChannels));
                     return true;
                 }
                 return false;
@@ -135,6 +146,17 @@ namespace BigOneDashboard.Controllers
             {
                 availableGuilds = JsonConvert.DeserializeObject<List<Guild>>(guilds);
             }
+            string? channels = HttpContext.Session.GetString("VoiceChannels");
+            Dictionary<string,List<GuildChannel>>? allChannels = null;
+            List<GuildChannel>? voiceChannels = null;
+            if (channels != null && availableGuilds != null)
+            { 
+                allChannels = JsonConvert.DeserializeObject<Dictionary<string,List<GuildChannel>>>(channels);
+                if (allChannels?.ContainsKey(guild?.Id ?? "") ?? false)
+                {
+                    voiceChannels = allChannels[guild?.Id ?? ""].Where(channel => channel.Type == 2).ToList();
+                }
+            }
 
             List<Sound> sounds = guild != null ? await _context.Sounds.Where(x => x.ServerId == guild.Id).ToListAsync() : new List<Sound>();
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
@@ -144,6 +166,8 @@ namespace BigOneDashboard.Controllers
             dashboardViewModel.DeleteSoundViewModel = guild != null ? new DeleteSoundViewModel(guild.Id) : new DeleteSoundViewModel();
             dashboardViewModel.DiscordName = HttpContext.Session.GetString("Username") ?? "";
             dashboardViewModel.AvailableGuilds = availableGuilds ?? new List<Guild>();
+            dashboardViewModel.VoiceChannels = voiceChannels ?? new List<GuildChannel>();
+            dashboardViewModel.Voices = GetVoices();
             if (guild != null)
             {
                 dashboardViewModel.Guild = guild;
@@ -679,6 +703,41 @@ namespace BigOneDashboard.Controllers
                 TempData["Message"] = $"Failed To Save TTS.";
                 TempData["MessageType"] = "Error";
                 return View("Index", await HydrateDashboardViewModel(model.serverId));
+            }
+        }
+
+        public List<Voice> GetVoices()
+        {
+            // Create a client
+            TextToSpeechClient client = TextToSpeechClient.Create();
+
+            // Build the request
+            ListVoicesRequest request = new ListVoicesRequest { };
+
+            // Get the list of voices
+            ListVoicesResponse response = client.ListVoices(request);
+
+            List<Voice> voices = new List<Voice>();
+            // Display only the standard voices
+            foreach (var voice in response.Voices.Where(v => !v.Name.Contains("WaveNet")))
+            {
+                voices.Add(new Voice { Name = voice.Name, Gender = GetGenderName(voice.SsmlGender) });
+            }
+            return voices;
+        }
+
+        private static string GetGenderName(SsmlVoiceGender gender)
+        {
+            switch (gender)
+            {
+                case SsmlVoiceGender.Female:
+                    return "Female";
+                case SsmlVoiceGender.Male:
+                    return "Male";
+                case SsmlVoiceGender.Neutral:
+                    return "Neutral";
+                default:
+                    return "Unknown Gender";
             }
         }
         #endregion

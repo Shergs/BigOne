@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using BigOneData.Migrations;
 using System.Text.Json;
 using Humanizer.Configuration;
+using System.Threading.Channels;
 
 namespace BigOneDashboard.SharedAPI
 {
@@ -33,7 +34,7 @@ namespace BigOneDashboard.SharedAPI
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", token);
-               return await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
+                return await client.GetStringAsync("https://discord.com/api/v9/users/@me/guilds");
             }
         }
 
@@ -54,6 +55,17 @@ namespace BigOneDashboard.SharedAPI
                     };
                     return JsonConvert.SerializeObject(userData);
                 }
+            }
+        }
+
+        public static async Task<List<GuildChannel>?> GetGuildChannels(string token, string guildId)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", token);
+                var result = await client.GetStringAsync($"https://discord.com/api/v9/guilds/{guildId}/channels");
+                List<GuildChannel>? channels = JsonConvert.DeserializeObject<List<GuildChannel>>(result);
+                return channels ?? new List<GuildChannel>();
             }
         }
     }
