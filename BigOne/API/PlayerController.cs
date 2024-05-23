@@ -221,15 +221,21 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("playsound")]
-    public async Task<IActionResult> PlaySoumd([FromQuery] string serverId, [FromQuery] string soundId)
+    public async Task<IActionResult> PlaySoumd([FromQuery] string serverId, [FromQuery] string soundId, [FromQuery] string voiceChannelId)
     {
         //Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
         return Ok();
     }
 
     [HttpPost("playsong")]
-    public async Task<IActionResult> PlaySong([FromQuery] string serverId, [FromQuery] string username, [FromQuery] string queryString)
+    public async Task<IActionResult> PlaySong([FromQuery] string serverId, [FromQuery] string username, [FromQuery] string queryString, [FromQuery] string voiceChannelId)
     {
+        VoteLavalinkPlayer? player = await _audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+        if (player == null)
+        {
+            return Ok(JsonSerializer.Serialize(""));
+        }
+        
         return Ok();
     }
 }
