@@ -17,7 +17,7 @@ namespace BigOneDashboard.Models
             serverId = "";
             DiscordName = "";
             embedUrl = "";
-            VoiceChannels = new Dictionary<string, List<GuildChannel>>();
+            VoiceChannels = new List<GuildChannel>();
         }
         public SaveNewSoundViewModel SaveNewSoundViewModel { get; set; }
         public EditSoundViewModel EditSoundViewModel { get; set; }

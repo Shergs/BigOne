@@ -49,7 +49,7 @@ namespace BigOneDashboard.Services
 
         public async Task<int> GetPlayerPosition(string serverId)
         {
-            return int.TryParse(await botClient.GetPlayerPosition(serverId), out int result) ? result : 0;
+            return await botClient.GetPlayerPosition(serverId);
             //return await botClient.GetPlayerPosition(serverId);
         }
     }

@@ -163,7 +163,7 @@ function addToQueue(name, url) {
 
     console.log('adding to queue');
     const templateContent = document.getElementById('songTemplate').content.cloneNode(true);
-    const queueCount = queueContent.children.count; 
+    const queueCount = queueContent.children.length; 
 
     templateContent.querySelector("#songName").textContent = name;
     //templateContent.querySelector("#audioSource").src = url;

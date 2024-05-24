@@ -101,7 +101,7 @@
                         </div>
                     </div>
                     @* Queue *@
-                    <div class="flex flex-col w-full ml-4">
+                    <div class="flex flex-col w-full ml-4"> @*need to do a width calc full - 80px*@
                         <div class="p-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="queue">
 
                             @if (Model.Songs.Count > 0)
@@ -192,15 +192,16 @@
                             <h2 class="text-2xl font-bold">Soundboard</h2>
                             <p><strong>Server:</strong> @Model.Guild.Name</p>
                         </div>
-                        <div class="relative group">
-                            <button id="dropdown-button" type="button" class="text-white dark:!text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Select Channel</button>
-                            <div id="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
+                        <div class="relative group" data-type="dropdown-container">
+                            <button data-type="dropdown-button" type="button" class="text-white dark:!text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Select Channel</button>
+                            <div data-type="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
+                                <input data-type="search-input" class="block w-full px-4 py-2 border rounded-md dark:!text-white !border-gray-900 focus:outline-none dark:!bg-gray-900" type="text" placeholder="Search items" autocomplete="off">
                                 <!-- Dropdown content here -->
                                 @if (Model.VoiceChannels.Count > 0)
                                 {
                                     @foreach (GuildChannel voiceChannel in Model.VoiceChannels)
                                     {
-                                        <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md dark:text-gray-300 dark:hover:text-blue-500 dark:hover:bg-blue-300" data-dropdown-element="server" value="@voiceChannel.Id">@voiceChannel.Name</a>
+                                        <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md dark:text-gray-300 dark:hover:text-blue-500 dark:hover:bg-blue-300" data-dropdown-element="voicechannel" value="@voiceChannel.Id">@voiceChannel.Name</a>
                                     }
                                 }
                             </div>
@@ -225,12 +226,20 @@
                             <h2 class="text-2xl font-bold">Text To Speech</h2>
                             <p><strong>Server:</strong> @Model.Guild.Name</p>
                         </div>
-                        <div class="relative group">
-                            <button id="dropdown-button" type="button" class="text-white dark:!text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <div class="relative group" data-type="dropdown-container">
+                            <button data-type="dropdown-button" type="button" class="text-white dark:!text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                 Select Voice
                             </button>
-                            <div id="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
+                            <div data-type="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
+                                <input data-type="search-input" class="block w-full px-4 py-2 border rounded-md dark:!text-white !border-gray-900 focus:outline-none dark:!bg-gray-900" type="text" placeholder="Search items" autocomplete="off">
                                 <!-- Dropdown content here -->
+                                @if (Model.Voices.Count > 0)
+                                {
+                                    @foreach (Voice voice in Model.Voices)
+                                    {
+                                        <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md dark:text-gray-300 dark:hover:text-blue-500 dark:hover:bg-blue-300" data-dropdown-element="voicechannel" value="@voice.Name">@voice.Name</a>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>
@@ -473,6 +482,51 @@ else
             document.getElementById('customSeekBar').addEventListener('click', seekClick);
             updateDurationDisplay();
         }
+    </script>
+    <script>
+        // Generalized dropdown initialize
+        const dropdowns = document.querySelectorAll('[data-type="dropdown-container"]');
+        function toggleDropdownList(el) {
+            el.classList.toggle('hidden');
+        }
+        dropdowns.forEach((dropdownContainer) => {
+            const dropdownMenu = dropdownContainer.querySelector('[data-type="dropdown-menu"]');
+            const searchInput = dropdownContainer.querySelector('[data-type="search-input"]');
+            const dropdownButton = dropdownContainer.querySelector('[data-type="dropdown-button"]');
+
+            dropdownButton.addEventListener('click', () => {
+                toggleDropdownList(dropdownMenu);
+            });
+
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const items = dropdownMenu.querySelectorAll('a');
+
+                items.forEach((item) => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            dropdownButton.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (document.activeElement != searchInput && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
+                        toggleDropdownList(dropdownMenu);
+                    }
+                }, 0);
+            });
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (document.activeElement != dropdownButton && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
+                        toggleDropdown(dropdownMenu);
+                    }
+                }, 0);
+            });
+        });
     </script>
 }
 

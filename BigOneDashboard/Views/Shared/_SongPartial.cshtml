@@ -3,10 +3,10 @@
 }
 
 <div id="queueItemContainer" data-queueposition="(@Model != null ? Model.QueuePosition.ToString() : "placeholder-queueposition")" data-videoid="@(Model != null ? Model.VideoId : "placeholder-videoid")" data-url="@(Model != null ? Model.Url : "placeholder-url")" class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
-    <div class="flex items-center space-x-4 truncate" style="align-items:center;">
+    <div class="flex items-center space-x-4 truncate w-[33%]" style="align-items:center;">
         <div class="truncate text-gray-300" id="songName">@(Model != null ? Model.Name : "placeholder-songname")</div>
     </div>
-    <div class="flex items-center space-x-2 ml-auto">
+    <div class="flex items-center space-x-2"> @*ml-auto*@
         <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
             <audio id="audio">
                 <source id="audioSrc" src="@(Model != null ? Url.Action("DownloadYtMP3", "Home", new { url = Model.Url }) : "placeholder-src")" type="audio/mp3">
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div class="ml-auto flex items-center space-x-2">
+        <div class="ml-auto flex-2 flex items-center space-x-2">
             <button type="button" style="margin-right:16px;" onclick="moveUpInQueue(@(Model != null ? Model.QueuePosition : "placeholder-queueposition"))">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-blue-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 384 512">
                     <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->

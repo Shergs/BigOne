@@ -112,7 +112,7 @@ namespace BigOneDashboard.Controllers
                         List<GuildChannel> vcsForGuild = await DiscordAPI.GetGuildChannels(botAccessToken, guild.Id) ?? new List<GuildChannel>();
                         voiceChannels.Add(guild.Id, vcsForGuild.Where(channel => channel.Type == 2).ToList());
                     }
-                    HttpContext.Session.SetString("GuildChannels", JsonConvert.SerializeObject(voiceChannels));
+                    HttpContext.Session.SetString("VoiceChannels", JsonConvert.SerializeObject(voiceChannels));
                     return true;
                 }
                 return false;
@@ -167,7 +167,7 @@ namespace BigOneDashboard.Controllers
             dashboardViewModel.DiscordName = HttpContext.Session.GetString("Username") ?? "";
             dashboardViewModel.AvailableGuilds = availableGuilds ?? new List<Guild>();
             dashboardViewModel.VoiceChannels = voiceChannels ?? new List<GuildChannel>();
-            dashboardViewModel.Voices = GetVoices();
+            dashboardViewModel.Voices = await GetVoices();
             if (guild != null)
             {
                 dashboardViewModel.Guild = guild;
@@ -706,26 +706,39 @@ namespace BigOneDashboard.Controllers
             }
         }
 
-        public List<Voice> GetVoices()
+        public async Task<List<Voice>> GetVoices()
         {
-            // Create a client
-            TextToSpeechClient client = TextToSpeechClient.Create();
+            string apiKey = _configuration["Google:APIKey"];
+            string apiUrl = $"https://texttospeech.googleapis.com/v1/voices?key={apiKey}";
 
-            // Build the request
-            ListVoicesRequest request = new ListVoicesRequest { };
-
-            // Get the list of voices
-            ListVoicesResponse response = client.ListVoices(request);
-
-            List<Voice> voices = new List<Voice>();
-            // Display only the standard voices
-            foreach (var voice in response.Voices.Where(v => !v.Name.Contains("WaveNet")))
+            using (HttpClient client = new HttpClient())
             {
-                voices.Add(new Voice { Name = voice.Name, Gender = GetGenderName(voice.SsmlGender) });
+                HttpResponseMessage response = await client.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    using (JsonDocument doc = JsonDocument.Parse(responseContent))
+                    {
+                        List<Voice> voices = new List<Voice>();
+                        foreach (JsonElement voice in doc.RootElement.GetProperty("voices").EnumerateArray())
+                        {
+                            voices.Add(new Voice
+                            {
+                                Name = voice.GetProperty("name").GetString(),
+                                //Gender = GetGenderName(voice.GetProperty("ssmlGender").GetString())
+                            });
+                        }
+                        return voices;
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Error from API: " + errorContent);
+                    return new List<Voice>();
+                }
             }
-            return voices;
         }
-
         private static string GetGenderName(SsmlVoiceGender gender)
         {
             switch (gender)
