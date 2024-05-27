@@ -27,6 +27,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     private readonly IAudioService _audioService;
     private readonly ISignalService _signalService;
     private readonly ApplicationDbContext _context;
+    private readonly IPlayerService _playerService;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -35,12 +36,13 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context)
+    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
         _signalService = signalService;
         _context = context;
+        _playerService = playerService;
     }
 
     /// <summary>
@@ -79,6 +81,11 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             Console.WriteLine("Error deferring: " + ex.Message);
             throw; // Or handle the error appropriately
         }
+
+        Embed embed = await _playerService.PlayAsync();
+
+        await FollowupAsync(embed: embed).ConfigureAwait(false);
+
         var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
 
         if (player is null)

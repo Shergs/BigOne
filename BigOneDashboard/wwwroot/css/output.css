@@ -720,6 +720,9 @@ video {
 .w-80 {
   width: 20rem;
 }
+.w-\[33\%\] {
+  width: 33%;
+}
 .w-auto {
   width: auto;
 }
