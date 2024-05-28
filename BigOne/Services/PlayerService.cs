@@ -13,19 +13,20 @@ namespace BigOne.Services
 {
     public interface IPlayerService 
     {
-        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, DiscordSocketClient botClient, string chatChannelId = "", Func<Embed, Task> followUpAction = null);
+        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task> followUpAction = null);
         Task PlaySoundAsync();
     }
     public class PlayerService(
         IAudioService audioService,
         ISignalService signalService,
         IEmbedService embedService,
-        ApplicationDbContext context
+        ApplicationDbContext context,
+        DiscordSocketClient discordSocketClient
         ) : IPlayerService
     {
-        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, DiscordSocketClient botClient, string chatChannelId = "", Func<Embed, Task> followUpAction = null)
+        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task> followUpAction = null)
         {
-            var guild = botClient.GetGuild(ulong.Parse(serverId));
+            var guild = discordSocketClient.GetGuild(ulong.Parse(serverId));
             SocketTextChannel? textChannel = null;
 
             if (!string.IsNullOrEmpty(chatChannelId))

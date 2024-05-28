@@ -9,6 +9,7 @@ using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 using System.Text.Json;
 using BigOne.Services;
+using Discord.WebSocket;
 
 [ApiController]
 [Route("[controller]")]
@@ -17,11 +18,14 @@ public class PlayerController : ControllerBase
     //Going to make a player service and make that a dependency here instead.
     private readonly IAudioService _audioService;
     private readonly ISignalService _signalService;
+    private readonly IPlayerService _playerService;
+    //private readonly DiscordSocketClient _discordSocketClient;
 
-    public PlayerController(IAudioService audioService, ISignalService signalService)
+    public PlayerController(IAudioService audioService, ISignalService signalService, IPlayerService playerService)
     {
         _audioService = audioService;
         _signalService = signalService;
+        _playerService = playerService;
     }
 
     [HttpGet("getplayersong")]
@@ -221,7 +225,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("playsound")]
-    public async Task<IActionResult> PlaySoumd([FromQuery] string serverId, [FromQuery] string soundId, [FromQuery] string voiceChannelId)
+    public async Task<IActionResult> PlaySound([FromQuery] string serverId, [FromQuery] string soundId, [FromQuery] string voiceChannelId)
     {
         //Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
         return Ok();
@@ -235,7 +239,9 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-        
+
+        await _playerService.PlayAsync(serverId, queryString, username, voiceChannelId);
+
         return Ok();
     }
 }

@@ -28,7 +28,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     private readonly ISignalService _signalService;
     private readonly ApplicationDbContext _context;
     private readonly IPlayerService _playerService;
-    private readonly DiscordSocketClient _discordSocketClient;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -37,14 +36,13 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService, DiscordSocketClient discordSocketClient)
+    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
         _signalService = signalService;
         _context = context;
         _playerService = playerService;
-        _discordSocketClient = discordSocketClient;
     }
 
     /// <summary>
@@ -97,7 +95,6 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
                 query,
                 user.Username.ToString(),
                 user.VoiceChannel.Id.ToString(),
-                _discordSocketClient,
                 Context.Channel.Id.ToString(),
                 followUpAction);
         }
