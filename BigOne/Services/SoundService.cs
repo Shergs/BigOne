@@ -9,12 +9,14 @@ namespace BigOne.Services
     public class SoundService(
         ISignalService signalService,
         IEmbedService embedService,
-        [FromKeyedServices("SoundBotSocketClient")] DiscordSocketClient discordSocketClient
+        [FromKeyedServices("SoundBotSocketClient")] DiscordSocketClient discordSocketClient,
+        ApplicationDbContext context
         ) : ISoundService
     {
         public async Task PlaySound()
-        { 
-            
+        {
+            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+
         }
     }
 }

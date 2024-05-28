@@ -19,13 +19,15 @@ public class PlayerController : ControllerBase
     private readonly IAudioService _audioService;
     private readonly ISignalService _signalService;
     private readonly IPlayerService _playerService;
+    private readonly ISoundService _soundService;
     //private readonly DiscordSocketClient _discordSocketClient;
 
-    public PlayerController(IAudioService audioService, ISignalService signalService, IPlayerService playerService)
+    public PlayerController(IAudioService audioService, ISignalService signalService, IPlayerService playerService, ISoundService soundService)
     {
         _audioService = audioService;
         _signalService = signalService;
         _playerService = playerService;
+        _soundService = soundService;
     }
 
     [HttpGet("getplayersong")]
@@ -227,7 +229,6 @@ public class PlayerController : ControllerBase
     [HttpPost("playsound")]
     public async Task<IActionResult> PlaySound([FromQuery] string serverId, [FromQuery] string soundId, [FromQuery] string voiceChannelId)
     {
-        //Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
         return Ok();
     }
 
@@ -235,7 +236,6 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> PlaySong([FromQuery] string serverId, [FromQuery] string username, [FromQuery] string queryString, [FromQuery] string voiceChannelId)
     {
         await _playerService.PlayAsync(serverId, queryString, username, voiceChannelId);
-
         return Ok();
     }
 }
