@@ -3,8 +3,8 @@
 namespace BigOne.Services
 {
     public interface ISoundService
-    { 
-    
+    {
+        Task PlaySound();
     }
     public class SoundService(
         ISignalService signalService,
@@ -12,6 +12,9 @@ namespace BigOne.Services
         [FromKeyedServices("SoundBotSocketClient")] DiscordSocketClient discordSocketClient
         ) : ISoundService
     {
-
+        public async Task PlaySound()
+        { 
+            
+        }
     }
 }
