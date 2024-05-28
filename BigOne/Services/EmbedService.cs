@@ -5,7 +5,7 @@ namespace BigOne.Services
     public interface IEmbedService
     {
         Embed GetErrorEmbed(string message);
-        Embed GetPlayerEmbed(string title, string uri, string author, string source);
+        Embed GetPlayerEmbed(string title, string uri, string author, string source, bool addToQueue = false);
     }
     public class EmbedService(
         ) : IEmbedService

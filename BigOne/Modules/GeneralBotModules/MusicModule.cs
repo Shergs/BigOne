@@ -28,6 +28,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     private readonly ISignalService _signalService;
     private readonly ApplicationDbContext _context;
     private readonly IPlayerService _playerService;
+    private readonly DiscordSocketClient _discordSocketClient;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -36,13 +37,14 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService)
+    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService, DiscordSocketClient discordSocketClient)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
         _signalService = signalService;
         _context = context;
         _playerService = playerService;
+        _discordSocketClient = discordSocketClient;
     }
 
     /// <summary>
@@ -79,86 +81,25 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         catch (Exception ex)
         {
             Console.WriteLine("Error deferring: " + ex.Message);
-            throw; // Or handle the error appropriately
+            throw;
         }
 
-        Embed embed = await _playerService.PlayAsync();
-
-        await FollowupAsync(embed: embed).ConfigureAwait(false);
-
-        var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
-
-        if (player is null)
+        Func<Embed, Task> followUpAction = async (embed) =>
         {
-            return;
-        }
-
-        var track = await _audioService.Tracks
-            .LoadTrackAsync(query, TrackSearchMode.YouTube)
-            .ConfigureAwait(false);
-
-        if (track is null)
-        {
-            await FollowupAsync("😖 No results.").ConfigureAwait(false);
-            return;
-        }
-
-        SongHistoryItem songHistory = new SongHistoryItem();
-        songHistory.Timestamp = DateTime.Now;
-        songHistory.Name = track.Title;
-        songHistory.ServerId = Context.Guild.Id.ToString();
-        songHistory.Url = track.Uri.ToString();
-        songHistory.DiscordUsername = Context.User.Username;
-        _context.Add(songHistory);
-        await _context.SaveChangesAsync();
-
-        var position = await player.PlayAsync(track).ConfigureAwait(false);
-
-        if (position is 0)
-        {
-            var currentTrack = player.CurrentItem;
-            if (currentTrack is null)
-            {
-                await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-                return;
-            }
-            var embedBuilder = new EmbedBuilder()
-                            .WithColor(Color.Blue)
-                            .WithDescription($"🔈Now playing: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})\n" +
-                                $"Link: {currentTrack.Track!.Uri}") // Make the title a clickable link
-                            .AddField("Artist", currentTrack.Track!.Author, inline: true)
-                            .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-                            .WithFooter(footer => footer.Text = "Play some more songs.")
-                            .WithCurrentTimestamp();
-
-            var embed = embedBuilder.Build();
-
-            await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
             await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendNowPlaying(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), Context.User.Username, DateTime.Now.ToString(), track.Author);
-        }
-        else
+        };
+
+        var user = Context.User as SocketGuildUser;
+        if (user.VoiceChannel != null)
         {
-            var currentTrack = player.CurrentItem;
-            if (currentTrack is null)
-            {
-                await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-                return;
-            }
-            var embedBuilder = new EmbedBuilder()
-                            .WithColor(Color.Blue)
-                            .WithDescription($"🔈Added to Queue: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})" +
-                                $"Link: {currentTrack.Track!.Uri}")
-                            .AddField("Artist", currentTrack.Track!.Author, inline: true)
-                            .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-                            .WithFooter(footer => footer.Text = "Play some more songs.")
-                            .WithCurrentTimestamp();
-
-            var embed = embedBuilder.Build();
-
-            await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
-            await FollowupAsync(embed: embed).ConfigureAwait(false);
-            await _signalService.SendQueueUpdated(Context.Guild.Id.ToString(), track.Title, track.Uri.ToString(), position.ToString(), "add", Context.User.Username, DateTime.Now.ToString());
+            await _playerService.PlayAsync(
+                Context.Guild.Id.ToString(),
+                query,
+                user.Username.ToString(),
+                user.VoiceChannel.Id.ToString(),
+                _discordSocketClient,
+                Context.Channel.Id.ToString(),
+                followUpAction);
         }
     }
 

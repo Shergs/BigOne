@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Google.Api;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
@@ -12,7 +13,7 @@ namespace BigOne.Services
 {
     public interface IPlayerService 
     {
-        Task<Embed> PlayAsync(string serverId, string query);
+        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, DiscordSocketClient botClient, string chatChannelId = "", Func<Embed, Task> followUpAction = null);
         Task PlaySoundAsync();
     }
     public class PlayerService(
@@ -22,39 +23,30 @@ namespace BigOne.Services
         ApplicationDbContext context
         ) : IPlayerService
     {
-        public async Task<Embed> PlayAsync(string serverId, string query, string username, string voiceChannelId)
+        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, DiscordSocketClient botClient, string chatChannelId = "", Func<Embed, Task> followUpAction = null)
         {
-            //await audioService.Players.JoinAsync(
-            //    ulong.Parse(serverId),
-            //    ulong.Parse(voiceChannelId),
-            //    playerFactory: CreatePlayer,
-            //    options: new VoteLavalinkPlayerOptions()
-            //    );
-            //VoteLavalinkPlayer? player = await audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+            var guild = botClient.GetGuild(ulong.Parse(serverId));
+            SocketTextChannel? textChannel = null;
 
-            // Attempt to get the existing player first
-            //VoteLavalinkPlayer player = await audioService.Players.GetPlayerAsync<VoteLavalinkPlayer>(ulong.Parse(serverId));
+            if (!string.IsNullOrEmpty(chatChannelId))
+            {
+                if (ulong.TryParse(chatChannelId, out ulong channelId))
+                {
+                    textChannel = guild.GetTextChannel(channelId);
+                }
+            }
+            else
+            {
+                textChannel = guild.Channels
+                    .OfType<SocketTextChannel>() 
+                    .FirstOrDefault(x => x.Name == "bot-commands");
+            }
 
-            //// If no player is found, join a new channel
-            //if (player is null)
-            //{
-            //    player = await audioService.Players.JoinAsync<VoteLavalinkPlayer, VoteLavalinkPlayerOptions>(
-            //        ulong.Parse(serverId),
-            //        ulong.Parse(voiceChannelId),
-            //        playerFactory: PlayerFactory.Vote,
-            //        options: new VoteLavalinkPlayerOptions() // Ensure these options are correctly set up
-            //    );
-            //}
-
-            //if (player.VoiceChannelId != ulong.Parse(voiceChannelId))
-            //{ 
-
-            //}
-
-            //if (player is null)
-            //{
-            //    return embedService.GetErrorEmbed("😖 Player not found");
-            //}
+            if (textChannel == null)
+            {
+                Console.WriteLine("Response channel not found or is not a text channel");
+                return;
+            }
 
             VoteLavalinkPlayer player = await GetPlayerAsync(serverId, voiceChannelId);
 
@@ -64,7 +56,15 @@ namespace BigOne.Services
 
             if (track is null)
             {
-                return embedService.GetErrorEmbed("😖 No results.");
+                if (followUpAction != null)
+                {
+                    await followUpAction(embedService.GetErrorEmbed("😖 No results."));
+                }
+                else
+                {
+                    await textChannel.SendMessageAsync(embed: embedService.GetErrorEmbed("😖 No results.")).ConfigureAwait(false);
+                }
+                return;
             }
 
             SongHistoryItem songHistory = new SongHistoryItem();
@@ -81,11 +81,6 @@ namespace BigOne.Services
             if (position is 0)
             {
                 var currentTrack = player.CurrentItem;
-                //if (currentTrack is null)
-                //{
-                //    await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-                //    return;
-                //}
 
                 Embed embed = embedService.GetPlayerEmbed(
                     currentTrack.Track!.Title,
@@ -94,19 +89,15 @@ namespace BigOne.Services
                     currentTrack.Track!.SourceName
                     );
 
-                //var embedBuilder = new EmbedBuilder()
-                //                .WithColor(Color.Blue)
-                //                .WithDescription($"🔈Now playing: [{currentTrack.Track!.Title}]({currentTrack.Track!.Uri})\n" +
-                //                    $"Link: {currentTrack.Track!.Uri}") // Make the title a clickable link
-                //                .AddField("Artist", currentTrack.Track!.Author, inline: true)
-                //                .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-                //                .WithFooter(footer => footer.Text = "Play some more songs.")
-                //                .WithCurrentTimestamp();
-
-                //var embed = embedBuilder.Build();
-
-                await Context.Channel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
-                await FollowupAsync(embed: embed).ConfigureAwait(false);
+                if (followUpAction != null)
+                {
+                    await followUpAction(embedService.GetErrorEmbed($"🔈Playing: {currentTrack.Track!.Uri}"));
+                }
+                else
+                {
+                    await textChannel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+                }
+                await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
                 await signalService.SendNowPlaying(serverId, track.Title, track.Uri.ToString(), username, DateTime.Now.ToString(), track.Author);
             }
             else
@@ -114,30 +105,26 @@ namespace BigOne.Services
                 var currentTrack = player.CurrentItem;
                 if (currentTrack is null)
                 {
-                    await RespondAsync($"🔈Playing: {track.Uri}").ConfigureAwait(false);
-                    return;
+                    
                 }
 
                 Embed embed = embedService.GetPlayerEmbed(
                     track.Title,
                     track.Uri.ToString(),
                     track.Author,
-                    track.SourceName
+                    track.SourceName,
+                    addToQueue: true
                     );
 
-                //var embedBuilder = new EmbedBuilder()
-                //                .WithColor(Color.Blue)
-                //                .WithDescription($"🔈Added to Queue: [{track.Title}]({currentTrack.Track!.Uri})" +
-                //                    $"Link: {currentTrack.Track!.Uri}")
-                //                .AddField("Artist", currentTrack.Track!.Author, inline: true)
-                //                .AddField("Source", currentTrack.Track!.SourceName, inline: true)
-                //                .WithFooter(footer => footer.Text = "Play some more songs.")
-                //                .WithCurrentTimestamp();
-
-                //var embed = embedBuilder.Build();
-
-                await Context.Channel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
-                await FollowupAsync(embed: embed).ConfigureAwait(false);
+                if (followUpAction != null)
+                {
+                    await followUpAction(embedService.GetErrorEmbed($"Queing: {currentTrack.Track!.Uri}"));
+                }
+                else
+                {
+                    await textChannel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+                }
+                await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
                 await signalService.SendQueueUpdated(serverId, track.Title, track.Uri.ToString(), position.ToString(), "add", username, DateTime.Now.ToString());
             }
         }
@@ -147,8 +134,11 @@ namespace BigOne.Services
             var retrieveOptions = new PlayerRetrieveOptions(
                 ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
 
+            var options = new VoteLavalinkPlayerOptions();
+            var optionsWrapper = Microsoft.Extensions.Options.Options.Create(options);
+
             var result = await audioService.Players
-                .RetrieveAsync(ulong.Parse(serverId), ulong.Parse(voiceChannelId), playerFactory: PlayerFactory.Vote, retrieveOptions)
+                .RetrieveAsync(ulong.Parse(serverId), ulong.Parse(voiceChannelId), playerFactory: PlayerFactory.Vote, optionsWrapper, retrieveOptions: retrieveOptions)
                 .ConfigureAwait(false);
 
             if (!result.IsSuccess)
@@ -160,7 +150,7 @@ namespace BigOne.Services
                     _ => "Unknown error.",
                 };
 
-                await FollowupAsync(errorMessage).ConfigureAwait(false);
+                //await FollowupAsync(errorMessage).ConfigureAwait(false);
                 return null;
             }
 
