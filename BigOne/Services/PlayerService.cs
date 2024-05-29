@@ -13,8 +13,7 @@ namespace BigOne.Services
 {
     public interface IPlayerService 
     {
-        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task> followUpAction = null);
-        Task PlaySoundAsync();
+        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null);
     }
     public class PlayerService(
         IAudioService audioService,
@@ -24,7 +23,7 @@ namespace BigOne.Services
         DiscordSocketClient discordSocketClient
         ) : IPlayerService
     {
-        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task> followUpAction = null)
+        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null)
         {
             var guild = discordSocketClient.GetGuild(ulong.Parse(serverId));
             SocketTextChannel? textChannel = null;
@@ -49,7 +48,7 @@ namespace BigOne.Services
                 return;
             }
 
-            VoteLavalinkPlayer player = await GetPlayerAsync(serverId, voiceChannelId);
+            VoteLavalinkPlayer? player = await GetPlayerAsync(serverId, voiceChannelId);
 
             var track = await audioService.Tracks
                 .LoadTrackAsync(query, TrackSearchMode.YouTube)
@@ -156,11 +155,6 @@ namespace BigOne.Services
             }
 
             return result.Player;
-        }
-
-        public async Task PlaySoundAsync()
-        { 
-            
         }
     }
 }

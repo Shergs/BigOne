@@ -15,19 +15,24 @@ public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext
 {
     private ApplicationDbContext _applicationDbContext;
     private readonly ISignalService _signalService;
+    private readonly ISoundService _soundService;
 
-    public SoundModule(ApplicationDbContext applicationDbContext, ISignalService signalService)
+    public SoundModule(ApplicationDbContext applicationDbContext, ISignalService signalService, ISoundService soundService)
     {
         _applicationDbContext = applicationDbContext;
         _signalService = signalService;
+        _soundService = soundService;
     }
 
     [SlashCommand("sound", description: "Play soundboard sound", runMode: RunMode.Async)]
     public async Task Sound(string soundName)
     {
         await DeferAsync().ConfigureAwait(false);
-        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
         var voiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
+
+        await _soundService.PlaySoundAsync(Context.Guild.Id.ToString(), soundName, voiceChannel.Id.ToString(), Context.User.Username);
+        
+        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
         IAudioClient audioClient = null;
         if (voiceChannel == null)
         {
