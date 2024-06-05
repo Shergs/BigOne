@@ -81,7 +81,6 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-
         var position = player.Position?.Position;
         return Ok((int)Math.Floor((decimal)position?.TotalSeconds));
     }
@@ -94,10 +93,7 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-
-        await player.ResumeAsync();
-        await _signalService.SendResume(serverId, username);
-
+        await _playerService.ResumeAsync(serverId, username, player.VoiceChannelId.ToString());
         return Ok();
     }
 
@@ -109,10 +105,7 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-
-        await player.PauseAsync().ConfigureAwait(false);
-        await _signalService.SendPaused(serverId, username);
-        
+        await _playerService.PauseAsync(serverId, username, player.VoiceChannelId.ToString());
         return Ok();
     }
 
@@ -124,10 +117,7 @@ public class PlayerController : ControllerBase
         {
             return Ok(JsonSerializer.Serialize(""));
         }
-
-        await player.SkipAsync().ConfigureAwait(false);
-        await _signalService.SendSkip(serverId, username);
-
+        await _playerService.SkipAsync(serverId, username, player.VoiceChannelId.ToString());
         return Ok();
     }
 
