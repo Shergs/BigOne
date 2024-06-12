@@ -259,7 +259,7 @@ function onPlayerError(event) {
 }
 
 function onPlayerStateChange(event) {
-    if (event.data == YT.PlayerState.PLAYING) {
+    if (event.data == YT.PlayerState.PLAYING && documentHidden == false) {
         setInterval(updateProgressBar, 1000); // Update progress every second while playing
         if (initialPlay == false) {
             initialPlay = true;
@@ -272,7 +272,7 @@ function onPlayerStateChange(event) {
         }
     }
 
-    if (event.data == YT.PlayerState.PAUSED) {
+    if (event.data == YT.PlayerState.PAUSED && documentHidden == false) {
         // if the tab isn't visible, then make it not do this post, and hide the video player, and require
         // that the next thing that they do is 'Sync with server' with a button where the video player is supposed
         // to be. 
@@ -706,4 +706,15 @@ dropdowns.forEach((dropdownContainer) => {
             }
         }, 0);
     });
+});
+
+var documentHidden = false;
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        documentHidden = true;
+        console.log('Tab is not active');
+    } else {
+        documentHidden = false;
+        console.log('Tab is active');
+    }
 });
