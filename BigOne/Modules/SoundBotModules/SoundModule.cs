@@ -46,18 +46,18 @@ public sealed class SoundModule : InteractionModuleBase<SocketInteractionContext
 
 
 
-        List<Sound> sounds = _applicationDbContext.Sounds.Where(x => x.ServerId == Context.Guild.Id.ToString()).ToList();
-        if (sounds.Count == 0)
-        {
-            await FollowupAsync("No sounds found for server").ConfigureAwait(false);
-            return;
-        }
-        string result = "";
-        for (int i = 0; i < sounds.Count; i++)
-        {
-            result += $"{i}. {sounds[i].Emote}{sounds[i].Name}\n";
-        }
-        await FollowupAsync(result).ConfigureAwait(false);
+        //List<Sound> sounds = _applicationDbContext.Sounds.Where(x => x.ServerId == Context.Guild.Id.ToString()).ToList();
+        //if (sounds.Count == 0)
+        //{
+        //    await FollowupAsync("No sounds found for server").ConfigureAwait(false);
+        //    return;
+        //}
+        //string result = "";
+        //for (int i = 0; i < sounds.Count; i++)
+        //{
+        //    result += $"{i}. {sounds[i].Emote}{sounds[i].Name}\n";
+        //}
+        //await FollowupAsync(result).ConfigureAwait(false);
     }
 
     public Process CreateProcess(string path)

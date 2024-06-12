@@ -83,6 +83,7 @@ namespace BigOne.Services
             if (textChannel == null && followUpAction == null)
             {
                 Console.WriteLine("Response channel not found or is not a text channel");
+                await followUpAction(embedService.GetErrorEmbed("Response channel not found or is not a text channel"));
                 return;
             }
 
@@ -93,10 +94,26 @@ namespace BigOne.Services
                 return;
             }
 
-            (string, MessageComponent) messageComponent = embedService.GetSoundboardWithButtons(sounds, serverId);
+            //(Embed, MessageComponent) messageComponent = embedService.GetSoundboardWithButtons(sounds, serverId);
 
-            await followUpAction(embedService.GetMessageEmbed("Soundboard", "Soundboard for this server:"));
-            await textChannel.SendMessageAsync(text: messageComponent.Item1, components: messageComponent.Item2);
+            ////await followUpAction(embedService.GetMessageEmbed("Soundboard", "Soundboard for this server:"));
+            //if (followUpAction != null)
+            //{
+            //    await followUpAction(messageComponent.Item1);
+            //}
+            //else
+            //{
+            //    await textChannel.SendMessageAsync(embed: messageComponent.Item1, components: messageComponent.Item2);
+            //}
+            Embed embed = embedService.GetSoundboard(sounds, serverId);
+            if (followUpAction != null)
+            {
+                await followUpAction(embed);
+            }
+            else
+            {
+                await textChannel.SendMessageAsync(embed: embed);
+            }
         }
 
         private Process CreateProcess(string path)
