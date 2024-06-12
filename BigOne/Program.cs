@@ -47,9 +47,13 @@ builder.Services.AddKeyedSingleton<InteractionService>("SoundBotInteractions", (
 });
 
 builder.Services.AddSingleton<ISignalService, SignalService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<ISoundService, SoundService>();
+builder.Services.AddSingleton<IEmbedService, EmbedService>();
 builder.Services.AddSingleton<ConversationService>();
 builder.Services.AddHostedService<DiscordClientHost>();
 builder.Services.AddHostedService<DiscordSoundBot>();
+
 
 // Lavalink
 builder.Services.ConfigureLavalink(config =>

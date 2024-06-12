@@ -720,14 +720,26 @@ video {
 .w-80 {
   width: 20rem;
 }
+.w-\[12\%\] {
+  width: 12%;
+}
+.w-\[15\%\] {
+  width: 15%;
+}
 .w-\[33\%\] {
   width: 33%;
+}
+.w-\[60\%\] {
+  width: 60%;
 }
 .w-auto {
   width: auto;
 }
 .w-full {
   width: 100%;
+}
+.max-w-\[33\%\] {
+  max-width: 33%;
 }
 .max-w-screen-xl {
   max-width: 1280px;

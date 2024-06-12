@@ -28,6 +28,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     private readonly ISignalService _signalService;
     private readonly ApplicationDbContext _context;
     private readonly IPlayerService _playerService;
+    private readonly IEmbedService _embedService;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MusicModule"/> class.
@@ -36,13 +37,14 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService)
+    public MusicModule(IAudioService audioService, ISignalService signalService, ApplicationDbContext context, IPlayerService playerService, IEmbedService embedService)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         _audioService = audioService;
         _signalService = signalService;
         _context = context;
         _playerService = playerService;
+        _embedService = embedService;
     }
 
     /// <summary>
@@ -82,9 +84,9 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             throw;
         }
 
-        Func<Embed, Task> followUpAction = async (embed) =>
+        Func<EmbedService.EmbedMessage, Task> followUpAction = async (EmbedService.EmbedMessage embed) =>
         {
-            await FollowupAsync(embed: embed).ConfigureAwait(false);
+            await FollowupAsync(embed: embed.Embed, components: embed.MessageComponent).ConfigureAwait(false);
         };
 
         var user = Context.User as SocketGuildUser;
@@ -97,6 +99,10 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
                 user.VoiceChannel.Id.ToString(),
                 Context.Channel.Id.ToString(),
                 followUpAction);
+        }
+        else
+        {
+            await FollowupAsync(embed: _embedService.GetErrorEmbed("You must join a voice channel first!")).ConfigureAwait(false);
         }
     }
 

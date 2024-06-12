@@ -4,10 +4,10 @@
 }
 
 <div class="flex items-center p-4 w-full border border-gray-600 rounded-[16px] shadow-sm dark:bg-gray-700 mb-4 justify-between" @* data-itemType="sound" *@>
-    <div class="flex items-center space-x-4 truncate" style="align-items:center;">
-        <div class="truncate text-gray-300" id="placeholder-name">@(Model != null ? Model.Name : "placeholder-name")</div>
-        <div class="truncate text-gray-300" id="placeholder-username">@(Model != null ? Model.DiscordUsername : "placeholder-username")</div>
-        <div class="truncate text-gray-300" id="placeholder-timestamp">@(Model != null ? Model.Timestamp.Humanize() : "placeholder-timestamp")</div>
+    <div class="flex items-center space-x-4 truncate w-[60%]" style="align-items:center;">
+        <div class="truncate text-gray-300 w-[33%]" id="placeholder-name">@(Model != null ? Model.Name : "placeholder-name")</div>
+        <div class="truncate text-gray-300 w-[15%]" id="placeholder-username">@(Model != null ? Model.DiscordUsername : "placeholder-username")</div>
+        <div class="truncate text-gray-300 w-[12%]" id="placeholder-timestamp">@(Model != null ? Model.Timestamp.Humanize() : "placeholder-timestamp")</div>
     </div>
     <div class="flex items-center space-x-2 ml-auto">
         <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">

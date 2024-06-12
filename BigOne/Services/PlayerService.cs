@@ -13,7 +13,7 @@ namespace BigOne.Services
 {
     public interface IPlayerService 
     {
-        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null);
+        Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<EmbedService.EmbedMessage, Task>? followUpAction = null);
         Task PauseAsync(string serverId, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null);
         Task ResumeAsync(string serverId, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null);
         Task SkipAsync(string serverId, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null);
@@ -27,7 +27,7 @@ namespace BigOne.Services
         DiscordSocketClient discordSocketClient
         ) : IPlayerService
     {
-        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null)
+        public async Task PlayAsync(string serverId, string query, string username, string voiceChannelId, string chatChannelId = "", Func<EmbedService.EmbedMessage, Task>? followUpAction = null)
         {
             var guild = discordSocketClient.GetGuild(ulong.Parse(serverId));
             SocketTextChannel? textChannel = null;
@@ -62,7 +62,7 @@ namespace BigOne.Services
             {
                 if (followUpAction != null)
                 {
-                    await followUpAction(embedService.GetErrorEmbed("😖 No results."));
+                    await followUpAction(new EmbedService.EmbedMessage { Embed = embedService.GetErrorEmbed("😖 No results."), MessageComponent = null });
                 }
                 else
                 {
@@ -95,13 +95,12 @@ namespace BigOne.Services
 
                 if (followUpAction != null)
                 {
-                    await followUpAction(embedService.GetErrorEmbed($"🔈Playing: {currentTrack.Track!.Uri}"));
+                    await followUpAction(new EmbedService.EmbedMessage { Embed = embed.Item1, MessageComponent = embed.Item2 });
                 }
                 else
                 {
-                    await textChannel.SendMessageAsync($"🔈Playing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+                    await textChannel.SendMessageAsync(embed: embed.Item1, components: embed.Item2).ConfigureAwait(false);
                 }
-                await textChannel.SendMessageAsync(text: $"🔈Playing: {currentTrack.Track!.Uri}", embed: embed.Item1, components: embed.Item2).ConfigureAwait(false);
                 await signalService.SendNowPlaying(serverId, track.Title, track.Uri.ToString(), username, DateTime.Now.ToString(), track.Author);
             }
             else
@@ -122,13 +121,12 @@ namespace BigOne.Services
 
                 if (followUpAction != null)
                 {
-                    await followUpAction(embedService.GetErrorEmbed($"Queing: {currentTrack.Track!.Uri}"));
+                    await followUpAction(new EmbedService.EmbedMessage { Embed = embed, MessageComponent = null });
                 }
                 else
                 {
-                    await textChannel.SendMessageAsync($"Queing: {currentTrack.Track!.Uri}").ConfigureAwait(false);
+                    await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);  
                 }
-                await textChannel.SendMessageAsync(text: $"🔈Queing: {currentTrack.Track!.Uri}", embed: embed).ConfigureAwait(false);
                 await signalService.SendQueueUpdated(serverId, track.Title, track.Uri.ToString(), position.ToString(), "add", username, DateTime.Now.ToString());
             }
         }

@@ -40,7 +40,7 @@ namespace BigOne.Services
                 .WithButton("Previous", "previous_button", ButtonStyle.Danger)
                 .Build();
 
-            return (embed, components);
+            return (embed, CreatePlayerControls());
         }
 
         public (string, MessageComponent) GetSoundboardWithButtons(List<Sound> sounds, string serverId)
@@ -94,6 +94,12 @@ namespace BigOne.Services
                 .Build();
 
             return buttons;
+        }
+
+        public class EmbedMessage
+        {
+            public Embed? Embed;
+            public MessageComponent? MessageComponent;
         }
     }
 }

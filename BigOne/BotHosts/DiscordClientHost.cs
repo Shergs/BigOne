@@ -119,6 +119,7 @@ internal sealed class DiscordClientHost : IHostedService
                 await _interactionService.AddModuleAsync<MusicModule>(scopedServiceProvider).ConfigureAwait(false);
                 await _interactionService.AddModuleAsync<ChatModule>(scopedServiceProvider).ConfigureAwait(false);
                 await _interactionService.AddModuleAsync<RandomModule>(scopedServiceProvider).ConfigureAwait(false);
+                await _interactionService.AddModuleAsync<PlayerControlsModule>(scopedServiceProvider).ConfigureAwait(false);
 
                 // Register to Guilds for fast testing
                 await _interactionService
