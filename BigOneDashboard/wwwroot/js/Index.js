@@ -116,11 +116,16 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Toast message
-function createToast(message) {
+function createToast(message, error) {
+    let backgroundColor = "bg-blue-500";
+    if (error != null) {
+        backgroundColor = "bg-red-500";
+    }
+
     // Create the main toast container
     var toastMessage = document.createElement("div");
     toastMessage.id = "toast-message";
-    toastMessage.className = "fixed top-[77px] right-4 bg-blue-500 text-white px-4 py-2 rounded opacity-100 transition-opacity";
+    toastMessage.className = "fixed top-[77px] right-4" + backgroundColor + "text-white px-4 py-2 rounded opacity-100 transition-opacity";
     toastMessage.innerHTML = `<span>${message}</span>
                               <div class="w-full bg-gray-400 rounded h-1 mt-2 overflow-hidden">
                                   <div class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"></div>
@@ -740,7 +745,7 @@ function sendPlaySong() {
     const query = document.getElementById('newSongQuery').value;
 
     if (query == '' || selectedVoiceChannelId == '') {
-        createToast('Could not play song. Information was entered incorrectly.');
+        createToast('Could not play song. Information was entered incorrectly.', true);
         return;
     }
 
@@ -754,7 +759,7 @@ function sendPlaySound(name) {
     const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim(;
 
     if (dropdownSelection == '') {
-        createToast('Must have a Voice Channel selected');
+        createToast('Must have a Voice Channel selected', true);
         return;
     }
 
