@@ -25,6 +25,9 @@
 {
     <div id="toast-message" class="fixed top-[77px] right-4 @(messageType == "Success" ? "bg-green-500" : "bg-red-500") text-white px-4 py-2 rounded">
         @message
+        <div class="w-full bg-gray-400 rounded h-1 mt-2">
+            <div id="toast-progress" class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"></div>
+        </div>
     </div>
 }
 
@@ -430,13 +433,21 @@ else
     
 
     <script>
-        // Remove the toast message after 5 seconds
-        setTimeout(() => {
-            const toast = document.getElementById('toast-message');
-            if (toast) { 
-                toast.remove();
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(() => {
+                const toast = document.getElementById('toast-message');
+                if (toast) {
+                    toast.classList.add('opacity-0');
+                    setTimeout(() => { toast.remove(); }, 500); 
+                }
+            }, 5000);
+
+            const progressBar = document.getElementById('toast-progress');
+            if (progressBar) {
+                progressBar.style.transition = 'width 5000ms linear';
+                progressBar.style.width = '0%';
             }
-        }, 5000);
+        });
     </script>
     <script>
         $(document).ready(function () {
