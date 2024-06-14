@@ -217,7 +217,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("playsound")]
-    public async Task<IActionResult> PlaySound([FromQuery] string serverId, [FromQuery] string soundName, [FromQuery] string voiceChannelId, [FromQuery] string username)
+    public async Task<IActionResult> PlaySound([FromQuery] string serverId, [FromQuery] string username, [FromQuery] string soundName, [FromQuery] string voiceChannelId)
     {
         await _soundService.PlaySoundAsync(serverId, soundName, voiceChannelId, username);
         return Ok();

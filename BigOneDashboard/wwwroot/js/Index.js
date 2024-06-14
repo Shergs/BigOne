@@ -718,3 +718,48 @@ document.addEventListener('visibilitychange', function () {
         console.log('Tab is active');
     }
 });
+
+function sendPlaySong() {
+    const container = document.getElementById('playSongToServer');
+    const dropdown = container.querySelector('[data-type="dropdown-container"]');
+    const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim();
+    const query = document.getElementById('newSongQuery').value;
+
+    if (query == '' || selectedVoiceChannelId == '') {
+        createToast('Could not play song. Information was entered incorrectly.');
+        return;
+    }
+
+    const apiUrl = `/Player/playsong?serverId=${encodeURIComponent(serverId)}&username=${encodeURIComponent(username)}&queryString=${encodeURIComponent(query)}&voiceChannelId=${encodeURIComponent(dropdownSelection)}`;
+    botPost(apiUrl);
+}
+
+function sendPlaySound(name) {
+    const contianer = document.getElementById('SoundboardCard');
+    const dropdown = contianer.querySelector('dropdown-container');
+    const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim(;
+
+    if (dropdownSelection == '') {
+        createToast('Must have a Voice Channel selected');
+        return;
+    }
+
+    const apiUrl = `/Player/playsound?serverId=${encodeURIComponent(serverId)}&username=${encodeURIComponent(username)}&soundName=${encodeURIComponent(name)}&voiceChannelId=${encodeURIComponent(dropdownSelection)}`;
+    botPost(apiUrl);
+}
+
+// Initialize general dropdown selections
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdownContainers = document.querySelectorAll('[data-dropdown-element="dropdown-container"]');
+    dropdownContainers.forEach(container => {
+        const dropdownItems = document.querySelectorAll('[data-type="selection"]');
+        const selected = container.querySelector('[data-type="selected"]');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function (event) {
+                event.preventDefault();
+                const itemVal = this.getAttribute('data-value');
+                selected.value = itemVal;
+            });
+        });
+    });
+});
