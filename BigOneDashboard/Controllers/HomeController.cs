@@ -2,23 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using BigOneDashboard.Data;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
-using AspNet.Security.OAuth.Discord;
 using Newtonsoft.Json;
-using System.Net.Http.Headers;
-using Microsoft.Extensions.Configuration;
-using BigOneData.Migrations;
 using System.Text.Json;
 using BigOneDashboard.SharedAPI;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text;
-using Azure.Core;
 using BigOneDashboard.Areas.DiscordAuth;
-using Google.Apis.Http;
 using System.Globalization;
 using BigOneDashboard.Services;
 using Google.Cloud.TextToSpeech.V1;
@@ -176,9 +167,6 @@ namespace BigOneDashboard.Controllers
                 dashboardViewModel.Songs = await _botService.GetPlayerSongs(guild.Id);
                 dashboardViewModel.SongHistory = await _botService.GetPlayerHistory(guild.Id);
                 dashboardViewModel.Position = await _botService.GetPlayerPosition(guild.Id);
-                //dashboardViewModel.Songs = new List<Song>();
-                //dashboardViewModel.SongHistory = new List<SongHistoryItem>();
-                //dashboardViewModel.Position = "";
                 if (dashboardViewModel.Song.Url != "")
                 {
                     dashboardViewModel.embedUrl = await _youtubeService.GetVideoIdFromUrl(dashboardViewModel.Song.Url);

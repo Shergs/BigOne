@@ -22,14 +22,14 @@ namespace BigOneDashboard.Services
                 return BadRequest("Invalid YouTube URL");
             }
 
-            var downloadFolder = Path.Combine("Downloads", videoId);
+            var downloadFolder = Path.Combine("Downloads");
             Directory.CreateDirectory(downloadFolder);
             var filePath = Path.Combine(downloadFolder, $"{videoId}.mp3");
 
             if (System.IO.File.Exists(filePath))
             {
                 // Return JSON with the file URL if it already exists
-                var mp3Url = $"/downloads/{videoId}/{videoId}.mp3";
+                var mp3Url = $"/downloads/{videoId}.mp3";
                 return new JsonResult(new { audioUrl = mp3Url });
             }
 

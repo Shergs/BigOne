@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.Audio;
 using Discord.WebSocket;
-using Google.Api;
-using BigOne.Util;
 using System.Diagnostics;
 
 namespace BigOne.Services

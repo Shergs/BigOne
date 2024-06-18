@@ -10,6 +10,7 @@ function setGlobals(botUrl, server, user) {
 
 document.addEventListener("DOMContentLoaded", function () {
     setPlayers();
+    setYTAudioPlayers();
     const connection = new signalR.HubConnectionBuilder()
         .withUrl(botBaseUrl + "/playerinfo-hub?serverId=" + serverId)
         .configureLogging(signalR.LogLevel.Information)
@@ -223,7 +224,7 @@ function getEmbed(apiUrl) {
         });
 }
 
-function setPlayers(container) {
+function setPlayers() {
     let sounds = null;
     if (container != null) {
         sounds = container.querySelectorAll('[data-itemType="sound"]');
@@ -257,6 +258,32 @@ function setPlayers(container) {
                 playBtn.classList.remove('hidden');
                 pauseBtn.classList.add('hidden');
             }
+            //if (audio.paused) {
+            //    if (audio.src === "placeholder-src" || !audio.src) {
+            //        const ytUrl = sound.getAttribute('data-yt-url'); 
+            //        fetch(`/Home/DownloadYtMP3?url=${encodeURIComponent(ytUrl)}`)
+            //            .then(response => response.json())
+            //            .then(data => {
+            //                audio.src = data.audioUrl;
+            //                audio.load();
+            //                audio.play();
+            //                pauseBtn.classList.remove('hidden');
+            //                playBtn.classList.add('hidden');
+            //            })
+            //            .catch(error => {
+            //                console.error('Error loading the audio:', error);
+            //                // Optionally show an error message to the user
+            //            });
+            //    } else {
+            //        audio.play();
+            //        pauseBtn.classList.remove('hidden');
+            //        playBtn.classList.add('hidden');
+            //    }
+            //} else {
+            //    audio.pause();
+            //    playBtn.classList.remove('hidden');
+            //    pauseBtn.classList.add('hidden');
+            //}
         });
         seekSlider.addEventListener("input", function () {
             audio.currentTime = seekSlider.value;
@@ -269,6 +296,34 @@ function setPlayers(container) {
         seconds = seconds < 10 ? "0" + seconds : seconds;
         return minutes + ":" + seconds;
     }
+}
+
+function setYTAudioPlayers() {
+    const ytAudioPlayerContainers = document.querySelector('[data-type="youtube-player"]');
+    ytAudioPlayerContainers.forEach((container) => {
+        const videoId = container.getAttribute('data-videoid');
+        new YT.Player(container.id, {
+            height: '0',
+            width: '0',
+            videoId: videoId, 
+            playerVars: {
+                'autoplay': 0,
+                'controls': 0
+            },
+            events: {
+                'onReady': songPlayerReady,
+                'onStateChange': songPlayerStateChanged,
+            }
+        });
+    });
+}
+
+function songPlayerReady() {
+
+}
+
+function songPlayerStateChanged() {
+    
 }
 
 // youtube player

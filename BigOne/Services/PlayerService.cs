@@ -1,13 +1,9 @@
 ﻿using Discord;
-using Discord.Interactions;
 using Discord.WebSocket;
-using Google.Api;
 using Lavalink4NET;
-using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BigOne.Services
 {

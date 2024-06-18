@@ -1,15 +1,11 @@
 ﻿namespace BigOne.API;
 using Microsoft.AspNetCore.Mvc;
 using Lavalink4NET;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Lavalink4NET.Players;
-using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 using System.Text.Json;
 using BigOne.Services;
-using Discord.WebSocket;
 
 [ApiController]
 [Route("[controller]")]

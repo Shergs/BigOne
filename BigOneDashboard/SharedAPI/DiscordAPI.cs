@@ -1,20 +1,7 @@
 ﻿using BigOneDashboard.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using BigOneDashboard.Data;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
-using AspNet.Security.OAuth.Discord;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Configuration;
-using BigOneData.Migrations;
 using System.Text.Json;
-using Humanizer.Configuration;
-using System.Threading.Channels;
 
 namespace BigOneDashboard.SharedAPI
 {
