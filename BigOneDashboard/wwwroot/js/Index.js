@@ -311,15 +311,62 @@ function setYTAudioPlayers() {
                 'controls': 0
             },
             events: {
-                'onReady': songPlayerReady,
+                'onReady': (event) => songPlayerReady(event, container),
                 'onStateChange': songPlayerStateChanged,
             }
         });
+        container.player = player;
     });
 }
 
-function songPlayerReady() {
+function songPlayerReady(event, container) {
+    const controls = container.parentNode.querySelector('.controls');
+    const playPauseBtn = controls.querySelector('[data-type="playPauseBtn"]');
+    const playIcon = playPauseBtn.querySelector('[data-type="play"]');
+    const pauseIcon = playPauseBtn.querySelector('[data-type="pause"]');
+    const seekSlider = controls.querySelector('[data-type="seekSlider"]');
+    const currentTimeDisplay = controls.querySelector('[data-type="currentTime"]');
+    const durationDisplay = controls.querySelector('[data-type="duration"]');
 
+    // Update duration when the player is ready
+    durationDisplay.textContent = formatTime(event.target.getDuration());
+
+    playPauseBtn.addEventListener('click', () => {
+        if (event.target.getPlayerState() === YT.PlayerState.PLAYING) {
+            event.target.pauseVideo();
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        } else {
+            event.target.playVideo();
+            pauseIcon.classList.remove('hidden');
+            playIcon.classList.add('hidden');
+        }
+    });
+
+    event.target.addEventListener('onStateChange', function (e) {
+        if (e.data === YT.PlayerState.PLAYING) {
+            const updateTime = () => {
+                const currentTime = event.target.getCurrentTime();
+                seekSlider.value = currentTime;
+                currentTimeDisplay.textContent = formatTime(currentTime);
+                if (!event.target.paused) {
+                    requestAnimationFrame(updateTime);
+                }
+            };
+            requestAnimationFrame(updateTime);
+        }
+    });
+
+    seekSlider.addEventListener('input', () => {
+        event.target.seekTo(seekSlider.value);
+    });
+}
+
+function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    let seconds = Math.floor(time % 60);
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    return minutes + ":" + seconds;
 }
 
 function songPlayerStateChanged() {
