@@ -258,6 +258,7 @@ function setPlayers() {
                 playBtn.classList.remove('hidden');
                 pauseBtn.classList.add('hidden');
             }
+            // For the song preview (download) implementation
             //if (audio.paused) {
             //    if (audio.src === "placeholder-src" || !audio.src) {
             //        const ytUrl = sound.getAttribute('data-yt-url'); 
