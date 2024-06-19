@@ -300,7 +300,7 @@ function setPlayers() {
 }
 
 function setYTAudioPlayers() {
-    const ytAudioPlayerContainers = document.querySelector('[data-type="youtube-player"]');
+    const ytAudioPlayerContainers = document.querySelectorAll('[data-type="youtube-player"]');
     ytAudioPlayerContainers.forEach((container) => {
         const videoId = container.getAttribute('data-videoid');
         new YT.Player(container.id, {
@@ -329,8 +329,9 @@ function songPlayerReady(event, container) {
     const currentTimeDisplay = controls.querySelector('[data-type="currentTime"]');
     const durationDisplay = controls.querySelector('[data-type="duration"]');
 
-    // Update duration when the player is ready
+    // Set maximum value for the seekSlider based on video duration
     durationDisplay.textContent = formatTime(event.target.getDuration());
+    seekSlider.max = event.target.getDuration();
 
     playPauseBtn.addEventListener('click', () => {
         if (event.target.getPlayerState() === YT.PlayerState.PLAYING) {
@@ -367,6 +368,7 @@ function formatTime(time) {
     const minutes = Math.floor(time / 60);
     let seconds = Math.floor(time % 60);
     seconds = seconds < 10 ? '0' + seconds : seconds;
+    return minutes + ":" + seconds;
     return minutes + ":" + seconds;
 }
 
