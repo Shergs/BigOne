@@ -126,10 +126,10 @@ function createToast(message, error) {
     // Create the main toast container
     var toastMessage = document.createElement("div");
     toastMessage.id = "toast-message";
-    toastMessage.className = "fixed top-[77px] right-4" + backgroundColor + "text-white px-4 py-2 rounded opacity-100 transition-opacity";
+    toastMessage.className = "fixed top-[85px] right-4 " + backgroundColor + " text-white px-4 py-2 rounded opacity-100 transition-opacity";
     toastMessage.innerHTML = `<span>${message}</span>
                               <div class="w-full bg-gray-400 rounded h-1 mt-2 overflow-hidden">
-                                  <div class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"></div>
+                                  <div class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"><</div>
                               </div>`;
 
     document.body.appendChild(toastMessage);
@@ -224,7 +224,7 @@ function getEmbed(apiUrl) {
         });
 }
 
-function setPlayers() {
+function setPlayers(container) {
     let sounds = null;
     if (container != null) {
         sounds = container.querySelectorAll('[data-itemType="sound"]');
@@ -816,20 +816,22 @@ dropdowns.forEach((dropdownContainer) => {
         });
     });
 
-    dropdownButton.addEventListener('blur', () => {
-        setTimeout(() => {
-            if (document.activeElement != searchInput && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
-                toggleDropdownList(dropdownMenu);
-            }
-        }, 0);
-    });
-    searchInput.addEventListener('blur', () => {
-        setTimeout(() => {
-            if (document.activeElement != dropdownButton && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)) {
-                toggleDropdown(dropdownMenu);
-            }
-        }, 0);
-    });
+    //dropdownButton.addEventListener('blur', () => {
+    //    setTimeout(() => {
+    //        if (document.activeElement != searchInput && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)
+    //            && !Array.from(document.querySelectorAll('[data-type="selection"]')).includes(document.activeElement)) {
+    //            toggleDropdownList(dropdownMenu);
+    //        }
+    //    }, 0);
+    //});
+    //searchInput.addEventListener('blur', () => {
+    //    setTimeout(() => {
+    //        if (document.activeElement != dropdownButton && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)
+    //            && !Array.from(document.querySelectorAll('[data-type="selection"]')).includes(document.activeElement)) {
+    //            toggleDropdown(dropdownMenu);
+    //        }
+    //    }, 0);
+    //});
 });
 
 var documentHidden = false;
@@ -849,7 +851,7 @@ function sendPlaySong() {
     const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim();
     const query = document.getElementById('newSongQuery').value;
 
-    if (query == '' || selectedVoiceChannelId == '') {
+    if (query == '' || dropdownSelection == '') {
         createToast('Could not play song. Information was entered incorrectly.', true);
         return;
     }
@@ -859,9 +861,9 @@ function sendPlaySong() {
 }
 
 function sendPlaySound(name) {
-    const contianer = document.getElementById('SoundboardCard');
-    const dropdown = contianer.querySelector('dropdown-container');
-    const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim(;
+    const container = document.getElementById('SoundboardCard');
+    const dropdown = container.querySelector('[data-type="dropdown-container"]');
+    const dropdownSelection = dropdown.querySelector('[data-type="selected"]').value.trim();
 
     if (dropdownSelection == '') {
         createToast('Must have a Voice Channel selected', true);
@@ -874,16 +876,25 @@ function sendPlaySound(name) {
 
 // Initialize general dropdown selections
 document.addEventListener('DOMContentLoaded', function () {
-    const dropdownContainers = document.querySelectorAll('[data-dropdown-element="dropdown-container"]');
+    const dropdownContainers = document.querySelectorAll('[data-type="dropdown-container"]');
     dropdownContainers.forEach(container => {
-        const dropdownItems = document.querySelectorAll('[data-type="selection"]');
-        const selected = container.querySelector('[data-type="selected"]');
-        dropdownItems.forEach(item => {
-            item.addEventListener('click', function (event) {
+        container.addEventListener('click', function (event) {
+            if (event.target.matches('[data-type="selection"]')) {
+                console.log('in dropdown item click');
                 event.preventDefault();
-                const itemVal = this.getAttribute('data-value');
+                const item = event.target;
+                const itemVal = item.getAttribute('data-value');
+                const selected = container.querySelector('[data-type="selected"]');
+                const dropdownButton = container.querySelector('[data-type="dropdown-button"]');
                 selected.value = itemVal;
-            });
+                dropdownButton.textContent = item.textContent;
+            }
         });
     });
 });
+
+function openSongToServer() {
+    document.getElementById('playSongToServer').classList.toggle('hidden');
+    document.getElementById('playSongPlus').classList.toggle('hidden');
+    document.getElementById('playSongMinus').classList.toggle('hidden');
+}

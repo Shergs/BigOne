@@ -106,30 +106,40 @@
                     @* Queue *@
                     <div class="flex flex-col w-full w-[calc(100%-80px)] ml-4">
                         <div id="playSongToServer" class="hidden flex items-center space-x-2">
-                            <input id="newSongQuery" type="text" class="flex-grow p-2 border border-gray-300 rounded-md" placeholder="Enter song name or URL">
+                            <input id="newSongQuery" type="text" class="!text-gray-900 flex-grow p-2 border border-gray-300 rounded-md" placeholder="Enter song name or URL">
                             <div class="relative group" data-type="dropdown-container">
                                 <button data-type="dropdown-button" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Select Channel</button>
-                                <div id="newSongServerSelect" data-type="dropdown-menu" class="hidden absolute z-10 w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none dark:bg-gray-800">
-                                    <input data-type="search-input" class="block w-full px-4 py-2 border rounded-md text-gray-900 focus:outline-none" type="text" placeholder="Search items" autocomplete="off">
+                                <div id="newSongServerSelect" data-type="dropdown-menu" class="hidden absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 dark:!bg-gray-900 dark:!text-white">
+                                    <input data-type="search-input" class="block w-full px-4 py-2 border rounded-md dark:!text-white !border-gray-900 focus:outline-none dark:!bg-gray-900" type="text" placeholder="Search items" autocomplete="off">
                                     @if (Model.VoiceChannels.Count > 0)
                                     {
                                         @foreach (GuildChannel voiceChannel in Model.VoiceChannels)
                                         {
-                                            <a href="#" class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer dark:text-gray-200 dark:hover:bg-gray-600"
+                                            <div class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer dark:text-gray-200 dark:hover:bg-gray-600"
                                                data-type="selection"
-                                               data-value="@voiceChannel.Id">@voiceChannel.Name</a>
+                                               data-value="@voiceChannel.Id">@voiceChannel.Name</div>
                                         }
                                     }
                                 </div>
                                 <input type="hidden" data-type="selected" value="" />
                             </div>
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="sendPlaySong();">
-                                Play
+                            <button class="text-white font-bold py-2 px-4 rounded" onclick="sendPlaySong();">
+                                <svg xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-sky-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 384 512">
+                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                    <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+                                </svg>
                             </button>
                         </div>
-                        <div id="expandCollapsePlaySongToServer" class="bg-green-500 text-green-400">
-                            <button class="text-green bg-green" onclick="">
-                                PLUS
+                        <div id="expandCollapsePlaySongToServer" class="flex-end">
+                            <button class="text-green bg-green" onclick="openSongToServer();">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="playSongPlus" data-type="expand" class="size-6 text-green-500 hover:text-green-600" fill="currentColor" viewBox="0 0 384 512">
+                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                    <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" />
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" id="playSongMinus" data-type="collapse" class="size-6 text-red-500 hover:text-red-600 hidden" fill="currentColor" viewBox="0 0 384 512">
+                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                    <path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
+                                </svg>
                             </button>
                         </div>
                         <div class="p-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="queue">

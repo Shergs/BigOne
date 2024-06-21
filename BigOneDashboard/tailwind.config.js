@@ -3,6 +3,7 @@ module.exports = {
         './Pages/**/*.cshtml',
         './Views/**/*.cshtml',
         './wwwroot/js/**/*.js',
+        './wwwroot/js/*.js',
         './Views/*.cshtml',
         "./node_modules/flowbite/**/*.js"
     ],

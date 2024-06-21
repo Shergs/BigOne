@@ -21,13 +21,21 @@ namespace BigOne.Services
         {
             var guild = discordSocketClient.GetGuild(ulong.Parse(serverId));
             var channel = discordSocketClient.GetChannel(ulong.Parse(voiceChannelId)) as IVoiceChannel;
-            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Users\\sherg\\source\\repos\\BigOne\\BigOne\\opus.dll\"");
+            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";C:\\Workspace_Git\\BigOneStuff\\Project_stuff\\OpusRequirements");
             IAudioClient audioClient = null;
-            audioClient = await channel.ConnectAsync();
-            try 
+            try
+            {
+                audioClient = await channel.ConnectAsync();
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine("Error connecting sound bot to voice channel: " + ex.Message);
+                return;
+            }
+            try
             {
                 Sound? sound = context.Sounds.Where(x => x.Name.ToLower() == soundName.ToLower()).FirstOrDefault();
-                string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\Sounds\\{sound.FilePath.Replace(" ", "_")}";
+                string path = $"C:\\Workspace_Git\\BigOne\\BigOne\\BigOne\\Sounds\\{sound?.FilePath.Replace(" ", "_")}";
                 if (!File.Exists(path))
                 {
                     // Going to just do the thing here 
@@ -44,14 +52,17 @@ namespace BigOne.Services
                     }
                 }
 
+                await signalService.SendSoundPlaying(serverId, sound?.Emote ?? "", sound?.Name ?? "", username);
                 using (var ffmpeg = CreateProcess(path))
-                using (var stream = audioClient.CreatePCMStream(AudioApplication.Mixed))
+                using (var stream = audioClient.CreatePCMStream(AudioApplication.Music))
                 {
                     try { await ffmpeg.StandardOutput.BaseStream.CopyToAsync(stream); }
                     finally { await stream.FlushAsync(); }
                 }
-            
-                await signalService.SendSoundPlaying(serverId, sound.Emote, sound.Name, username);
+            }
+            catch (Exception ex)
+            { 
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -120,7 +131,7 @@ namespace BigOne.Services
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "ffmpeg",
+                    FileName = "C:\\Workspace_Git\\BigOneStuff\\Project_stuff\\ffmpeg\\bin\\ffmpeg.exe",
                     Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -ar 48000 -f s16le -acodec pcm_s16le pipe:1",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
