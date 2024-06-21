@@ -158,7 +158,9 @@ namespace BigOneDashboard.Controllers
             dashboardViewModel.DiscordName = HttpContext.Session.GetString("Username") ?? "";
             dashboardViewModel.AvailableGuilds = availableGuilds ?? new List<Guild>();
             dashboardViewModel.VoiceChannels = voiceChannels ?? new List<GuildChannel>();
-            dashboardViewModel.Voices = await GetVoices();
+
+            // Disabling voice dropdown for now
+            //dashboardViewModel.Voices = await GetVoices();
             if (guild != null)
             {
                 dashboardViewModel.Guild = guild;

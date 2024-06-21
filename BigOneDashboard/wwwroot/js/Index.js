@@ -118,38 +118,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Toast message
 function createToast(message, error) {
+    console.log('creating toast');
     let backgroundColor = "bg-blue-500";
     if (error != null) {
         backgroundColor = "bg-red-500";
     }
 
-    // Create the main toast container
     var toastMessage = document.createElement("div");
     toastMessage.id = "toast-message";
-    toastMessage.className = "fixed top-[85px] right-4 " + backgroundColor + " text-white px-4 py-2 rounded opacity-100 transition-opacity";
+    toastMessage.className = `fixed top-[85px] right-4 ${backgroundColor} text-white px-4 py-2 rounded opacity-100 transition-opacity z-50`;
     toastMessage.innerHTML = `<span>${message}</span>
                               <div class="w-full bg-gray-400 rounded h-1 mt-2 overflow-hidden">
-                                  <div class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"><</div>
+                                  <div class="bg-white h-1 rounded transition-all duration-5000 ease-linear" style="width: 100%;"></div>
                               </div>`;
 
     document.body.appendChild(toastMessage);
 
-    const progressBar = toastMessage.querySelector('div.bg-white');
-    if (progressBar) {
-        setTimeout(() => {
-            progressBar.style.width = '0%'; 
-        }, 100); 
-    }
+    setTimeout(() => {
+        const progressBar = toastMessage.querySelector('div.bg-white');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+        }
+    }, 100);
 
-
-    setTimeout(function () {
-        toastMessage.style.opacity = '0'; 
+    setTimeout(() => {
+        toastMessage.style.opacity = '0';
         setTimeout(() => {
-            toastMessage.remove(); 
-        }, 500); 
+            toastMessage.remove();
+        }, 500);
     }, 5000);
 }
-
 // for handling signalr updates
 function updateNowPlaying(name, url, artistName) {
     const player = document.getElementById('nowPlayingPlayer');
