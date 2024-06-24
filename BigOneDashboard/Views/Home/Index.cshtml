@@ -36,9 +36,9 @@
     <div class="px-2 py-4 md:px-4 tw-pt-8 grid auto-rows-[42px] gap-5" style="grid-template-columns: repeat(12, minmax(0, 128px));">
         @* Now Playing *@
         <div id="NowPlayingCard" class="dark:bg-gray-600 dark:!text-white border border-gray-400 rounded-[16px] shadow-lg background-gray-400 col-span-12 row-span-7">
-            <div class="w-full h-full mx-auto my-8">
+            <div class="w-full h-full mx-auto !mt-5">
                 <div class="flex flex-row w-full px-8 rounded-lg">
-                    <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80" @* data-itemType="sound" *@ id="nowPlayingPlayer">
+                    <div class="bg-white dark:!bg-gray-700 border border-gray-400 px-8 pt-8 rounded-lg shadow-md w-80" id="nowPlayingPlayer">
                         <!-- Video Player -->
                         @if (string.IsNullOrEmpty(Model.embedUrl))
                         {
@@ -55,7 +55,7 @@
                         <!-- Song Title -->
                         <h2 id="nowPlayingTitle" class="text-xl font-semibold text-center w-full truncate scrolling-text">T-Shirt</h2>
                         <!-- Artist Name -->
-                        <p id="nowPlayingArtist" class="text-gray-600 dark:!text-white text-sm text-center w-full truncate scrolling-text">Migos</p>
+                        <p id="nowPlayingArtist" class="text-gray-600 dark:!text-white text-sm text-center truncate w-full scrolling-text">Migos</p>
                         <!-- Music Controls -->
                         <div class="mt-6 flex justify-center items-center">
                             <button id="muteToggle" onclick="toggleMute(this);" class="p-3 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none">
@@ -70,7 +70,7 @@
                                 </svg>
                             </button>
                             <button class="p-4 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none mx-4" id="nowPlayingPause" data-type="playPauseBtn">
-                                <svg id="pauseVideo" data-type="pause" width="64px" height="64px" viewBox="0 0 24 24" class="w-6 h-6 text-gray-600 dark:!text-white hidden" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg id="pauseVideo" data-type="pause" width="64px" height="64px" viewBox="0 0 24 24" class="w-6 h-6 text-gray-600 dark:!text-white @(string.IsNullOrEmpty(Model.embedUrl) ? "" : "hidden")" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                                     <g id="SVGRepo_iconCarrier">
@@ -78,7 +78,7 @@
                                         <path d="M14 6C14 4.11438 14 3.17157 14.5858 2.58579C15.1716 2 16.1144 2 18 2C19.8856 2 20.8284 2 21.4142 2.58579C22 3.17157 22 4.11438 22 6V18C22 19.8856 22 20.8284 21.4142 21.4142C20.8284 22 19.8856 22 18 22C16.1144 22 15.1716 22 14.5858 21.4142C14 20.8284 14 19.8856 14 18V6Z" fill="#000000"></path>
                                     </g>
                                 </svg>
-                                <svg id="playVideo" data-type="play" width="64px" height="64px" xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-gray-600" viewBox="0 0 384 512">
+                                <svg id="playVideo" data-type="play" width="64px" height="64px" xmlns="http://www.w3.org/2000/svg" data-type="play" class="size-6 text-gray-600 @(string.IsNullOrEmpty(Model.embedUrl) ? "hidden" : "")" viewBox="0 0 384 512">
                                     <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
                                     <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" fill="#000000" />
                                 </svg>
@@ -104,7 +104,7 @@
                         </div>
                     </div>
                     @* Queue *@
-                    <div class="flex flex-col w-full w-[calc(100%-80px)] ml-4">
+                    <div class="flex flex-col max-h-full w-[calc(100%-80px)] ml-4 h-[540px]">
                         <div id="playSongToServer" class="hidden flex items-center space-x-2">
                             <input id="newSongQuery" type="text" class="!text-gray-900 flex-grow p-2 border border-gray-300 rounded-md" placeholder="Enter song name or URL">
                             <div class="relative group" data-type="dropdown-container">
@@ -130,20 +130,27 @@
                                 </svg>
                             </button>
                         </div>
-                        <div id="expandCollapsePlaySongToServer" class="flex-end">
-                            <button class="text-green bg-green" onclick="openSongToServer();">
-                                <svg xmlns="http://www.w3.org/2000/svg" id="playSongPlus" data-type="expand" class="size-6 text-green-500 hover:text-green-600" fill="currentColor" viewBox="0 0 384 512">
-                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                    <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" />
-                                </svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" id="playSongMinus" data-type="collapse" class="size-6 text-red-500 hover:text-red-600 hidden" fill="currentColor" viewBox="0 0 384 512">
-                                    <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                                    <path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
-                                </svg>
-                            </button>
+                        <div class="flex p-2 space-x-2">
+                            <div id="expandCollapsePlaySongToServer" class="flex-end">
+                                <button class="text-green bg-green" onclick="openSongToServer();">
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="playSongPlus" data-type="expand" class="size-10 text-green-500 hover:text-green-600" fill="currentColor" viewBox="0 0 384 512">
+                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                        <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="playSongMinus" data-type="collapse" class="size-10 text-red-500 hover:text-red-600 hidden" fill="currentColor" viewBox="0 0 384 512">
+                                        <!--!Font Awesome Free 6.5.2 by fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                        <path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="pl-2">
+                                <button class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" onclick="toggleQueueHistory();" id="toggleQueueHistory">
+                                    See History
+                                </button>
+                            </div>
                         </div>
-                        <div class="p-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="queue">
-
+                        <div class="p-4 w-full h-full border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="queue">
+                            <span class="font-bold text-white pb-2">Queue</span>
                             @if (Model.Songs.Count > 0)
                             {
                                 isNoResultsQueue = "hidden";
@@ -161,7 +168,8 @@
                             <span id="noQueueResults" class="@isNoResultsQueue">Player doesn't have queued songs on this server.</span>
                         </div>
                         @* History *@
-                        <div class="p-4 mt-4 w-full max-h-[290px] border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll">
+                        <div class="hidden p-4 w-full h-full border border-gray-600 rounded-[16px] shadow-sm overflow-y-auto smoothScroll" id="history">
+                            <span class="font-bold text-white pb-2">Player History</span>
                             @if (Model.SongHistory.Count > 0)
                             {
                                 isNoResultsHistory = "hidden";
@@ -535,6 +543,17 @@ else
             document.getElementById('customSeekBar').addEventListener('click', seekClick);
             updateDurationDisplay();
         }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const scrollingTextElements = document.querySelectorAll('.scrolling-text');
+
+            scrollingTextElements.forEach(element => {
+                if (element.scrollWidth > element.clientWidth) { // Check if the text width is greater than its container
+                    element.style.animation = "scroll-text 10s linear infinite";
+                }
+            });
+        });
     </script>
 }
 

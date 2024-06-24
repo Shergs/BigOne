@@ -583,10 +583,11 @@ function botPost(apiUrl) {
 
 function updateProgressBar() {
     const currentTime = player.getCurrentTime();
-    if (lastKnownTime != -1 && Math.abs(lastKnownTime - currentTime) > 5) {
+    if (lastKnownTime != -1 && Math.abs(lastKnownTime - currentTime) > 5 && !refreshing) {
         const apiUrl = `/Player/seek?serverId=${encodeURIComponent(serverId)}&seconds=${encodeURIComponent(Math.floor(currentTime))}&username=${encodeURIComponent(username)}`;
         botPost(apiUrl); 
     }
+    refreshing = false;
 
     const duration = player.getDuration();
     const progressPercent = (currentTime / duration) * 100;
@@ -646,10 +647,6 @@ function toggleMute(el) {
         player.mute();
     }
 }
-
-//function skipSong(nextVideoId) {
-//    changeVideo(nextVideoId);
-//}
 
 // Emojioneareas
 $(document).ready(function () {
@@ -833,6 +830,7 @@ dropdowns.forEach((dropdownContainer) => {
 });
 
 var documentHidden = false;
+var refreshing = false;
 document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
         documentHidden = true;
@@ -840,8 +838,28 @@ document.addEventListener('visibilitychange', function () {
     } else {
         documentHidden = false;
         console.log('Tab is active');
+        getPlayerPosition(serverId).then(position => {
+            refreshing = true;
+            player.seekTo(position, true);
+        }).catch(error => {
+            console.error('Failed to fetch player position:', error);
+        });
     }
 });
+
+async function getPlayerPosition(serverId) {
+    try {
+        const response = await fetch(botBaseUrl + `/Player/getplayerposition?serverId=${serverId}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const position = await response.json();
+        return position;
+    } catch (error) {
+        console.error('Error fetching player position:', error);
+        throw error;
+    }
+}
 
 function sendPlaySong() {
     const container = document.getElementById('playSongToServer');
@@ -895,4 +913,17 @@ function openSongToServer() {
     document.getElementById('playSongToServer').classList.toggle('hidden');
     document.getElementById('playSongPlus').classList.toggle('hidden');
     document.getElementById('playSongMinus').classList.toggle('hidden');
+}
+
+function toggleQueueHistory() {
+    const button = document.getElementById('toggleQueueHistory');
+    const queue = document.getElementById('queue');
+    if (queue.classList.contains('hidden')) {
+        button.textContent = 'See History';
+    }
+    else {
+        button.textContent = 'See Queue';
+    }
+    document.getElementById('queue').classList.toggle('hidden');
+    document.getElementById('history').classList.toggle('hidden');
 }

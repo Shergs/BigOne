@@ -93,16 +93,13 @@ html {
     position: relative; /* Positioning context for the animation */
 }
 
-    .scrolling-text:hover { /* Animation triggers when the user hovers over the text */
-        animation: scroll-text 10s linear infinite;
-    }
-
+/* Define the scrolling animation, but don't apply it directly */
 @keyframes scroll-text {
     0% {
-        transform: translateX(100%); /* Start from just beyond the right edge */
+        transform: translateX(0); /* Start from the original position */
     }
 
     100% {
-        transform: translateX(-100%); /* End just beyond the left edge */
+        transform: translateX(-50%); /* Move to the left half the length of the text */
     }
 }

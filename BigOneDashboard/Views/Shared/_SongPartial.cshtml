@@ -8,7 +8,7 @@
     <div class="flex items-center space-x-4 truncate w-[33%]" style="align-items:center;">
         <div class="truncate text-gray-300" id="songName">@(Model != null ? Model.Name : "placeholder-songname")</div>
     </div>
-    <div class="flex items-center space-x-2"> @*ml-auto*@
+    <div class="flex items-center space-x-2 ml-[-120px]"> @*ml-auto*@
         <div class="audio-player bg-gray-200 dark:bg-gray-700 px-4 ">
             <div data-type="ytContainer" class="audio-player bg-gray-200 dark:bg-gray-700 px-4">
                 <div data-type="youtube-player" data-videoid="@videoId" data-queueposition="@queuePosition" id="@(videoId)@(queuePosition)"></div>
