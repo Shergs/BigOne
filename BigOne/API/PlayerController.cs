@@ -58,12 +58,14 @@ public class PlayerController : ControllerBase
             return Ok(JsonSerializer.Serialize(""));
         }
 
-        var queue = player.Queue.Select(track => new Song
+        var test = player.Queue;
+
+        var queue = player.Queue.Select((track, index) => new Song
         {
             Name = track.Track.Title,
             Url = track.Track.Uri.ToString(),
             Artist = track.Track.Author,
-            QueuePosition = player.Queue.IndexOf(track)
+            QueuePosition = index
         }).ToList();
 
         return Ok(queue);

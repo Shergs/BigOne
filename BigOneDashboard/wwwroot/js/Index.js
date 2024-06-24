@@ -319,7 +319,7 @@ function setYTAudioPlayers() {
 }
 
 function songPlayerReady(event, container) {
-    const controls = container.parentNode.querySelector('.controls');
+    const controls = document.querySelector('[data-uniqueId="' + container.id + '"][data-type="controls"]');
     const playPauseBtn = controls.querySelector('[data-type="playPauseBtn"]');
     const playIcon = playPauseBtn.querySelector('[data-type="play"]');
     const pauseIcon = playPauseBtn.querySelector('[data-type="pause"]');
