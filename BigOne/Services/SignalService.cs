@@ -9,7 +9,7 @@ namespace BigOne.Services
         Task SendPaused(string groupName, string username);
         Task SendResume(string groupName, string username);
         Task SendSkip(string groupName, string username, string title, string author);
-        Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp);
+        Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp, string artist, string videoId);
         Task SendStop(string groupName, string username);
         Task SendSoundPlaying(string groupName, string username, string emoji, string name);
         Task SendMoveUpInQueue(string groupName, string username, string position);
@@ -41,7 +41,7 @@ namespace BigOne.Services
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveSkipped", username, title, author);
         }
 
-        public async Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp)
+        public async Task SendQueueUpdated(string groupName, string trackName, string url, string position, string addOrRemove, string username, string timestamp, string artist, string videoId)
         { 
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveQueueUpdated", trackName, url, position, addOrRemove, username, timestamp);
         }

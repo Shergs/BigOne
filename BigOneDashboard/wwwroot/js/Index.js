@@ -71,10 +71,10 @@ document.addEventListener("DOMContentLoaded", function () {
         createToast("Stopped By: ", username);
         stopVideoUpdate();
     });
-    connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp) {
+    connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp, artist, videoId) {
         console.log("AddToQueue");
         createToast(username + " " + addOrRemove + "ed To Queue:" + name + "\nAt position: " + position);
-        addToQueue(name, url);
+        addToQueue(name, artist, videoId);
         addHistoryItem(name, url, timestamp, username);
         setYTAudioPlayers();
     });
@@ -171,7 +171,7 @@ function updateNowPlaying(name, url, artistName) {
     pauseBtn.classList.remove('hidden');
 }
 
-function addToQueue(name, url) {
+function addToQueue(name, artist, videoId) {
     const noResultsQueue = document.getElementById('noQueueResults');
     const queueContent = document.getElementById('queueContent');
     noResultsQueue.classList.add('hidden');
@@ -182,8 +182,11 @@ function addToQueue(name, url) {
     const queueCount = queueContent.children.length; 
 
     templateContent.querySelector("#songName").textContent = name;
-    //templateContent.querySelector("#audioSource").src = url;
-    templateContent.querySelector("#queueItemContainer").attributes["data-queueposition"] = queueCount.toString();
+    const itemContainer = templateContent.querySelector("#queueItemContainer");
+    itemContainer.setAttribute('data-queueposition', queueCount.toString());
+    itemContainer.setAttribute('data-title', name);
+    itemContainer.setAttribute('data-author', artist);
+    itemContainer.setAttribute('data-videoId', videoId)
 
     queueContent.appendChild(templateContent);
 }

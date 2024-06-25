@@ -123,7 +123,9 @@ namespace BigOne.Services
                 {
                     await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);  
                 }
-                await signalService.SendQueueUpdated(serverId, track.Title, track.Uri.ToString(), position.ToString(), "add", username, DateTime.Now.ToString());
+
+                // Get the videoId here somehow
+                await signalService.SendQueueUpdated(serverId, track.Title, track.Uri.ToString(), position.ToString(), "add", username, DateTime.Now.ToString(), track.Author, "");
             }
         }
 
