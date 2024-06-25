@@ -35,21 +35,14 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Now Playing:");
         console.log("Name: " + name);
         console.log("URL: " + url);
-        // Maybe have to create the toast message after doing other stuff, but we'll see.
         createToast(username + " Started Playing: " + name);
-
         updateNowPlaying(name, url, artist);
         addHistoryItem(name, url, timestamp, username);
-        //addToQueue(name, url);
-
         setPlayers();
-        // Remove the toast message after a certain duration (e.g., 5 seconds)
     });
 
     connection.on("ReceivePaused", function (username) {
         console.log("PlayerPaused");
-        // Pause the video
-        // Should pass in the discord username as well.
         createToast("Paused By: " + username);
         pauseVideo();
     });
@@ -74,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
     connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp, artist, videoId) {
         console.log("AddToQueue");
         createToast(username + " " + addOrRemove + "ed To Queue:" + name + "\nAt position: " + position);
-        addToQueue(name, artist, videoId);
+        addToQueue(name, artist, url);
         addHistoryItem(name, url, timestamp, username);
         setYTAudioPlayers();
     });
@@ -156,7 +149,6 @@ function updateNowPlaying(name, url, artistName) {
     const pauseBtn = player.querySelector('#pauseVideo')
 
     const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
-    // Do a post here to get the video src
     getEmbed(apiUrl)
         .then(videoId => {
             changeVideo(videoId);
@@ -164,6 +156,7 @@ function updateNowPlaying(name, url, artistName) {
         .catch(error => {
             console.error('Error setting video src:', error);
         });
+
     title.innerText = name;
     artist.innerText = artistName;
 
@@ -171,7 +164,7 @@ function updateNowPlaying(name, url, artistName) {
     pauseBtn.classList.remove('hidden');
 }
 
-function addToQueue(name, artist, videoId) {
+function addToQueue(name, artist, url) {
     const noResultsQueue = document.getElementById('noQueueResults');
     const queueContent = document.getElementById('queueContent');
     noResultsQueue.classList.add('hidden');
@@ -186,7 +179,16 @@ function addToQueue(name, artist, videoId) {
     itemContainer.setAttribute('data-queueposition', queueCount.toString());
     itemContainer.setAttribute('data-title', name);
     itemContainer.setAttribute('data-author', artist);
-    itemContainer.setAttribute('data-videoId', videoId)
+    const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
+    let newVideoId = '';
+    getEmbed(apiUrl)
+        .then(videoId => {
+            newVideoId = videoId
+        })
+        .catch(error => {
+            console.error('Error setting video src:', error);
+        });
+    itemContainer.setAttribute('data-videoId', newVideoId)
 
     queueContent.appendChild(templateContent);
 }

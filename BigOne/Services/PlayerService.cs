@@ -126,7 +126,20 @@ namespace BigOne.Services
 
                 // Get the videoId here somehow
                 // Use the link for the track and just do a request to youtube api for the video id
-                await signalService.SendQueueUpdated(serverId, track.Title, track.Uri.ToString(), position.ToString(), "add", username, DateTime.Now.ToString(), track.Author, "");
+
+                // Right here 
+
+                await signalService.SendQueueUpdated(
+                    serverId, 
+                    track.Title, 
+                    track.Uri.ToString(), 
+                    position.ToString(), 
+                    "add", 
+                    username, 
+                    DateTime.Now.ToString(), 
+                    track.Author, 
+                    ""
+                    );
             }
         }
 
