@@ -124,11 +124,7 @@ namespace BigOne.Services
                     await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);  
                 }
 
-                // Get the videoId here somehow
-                // Use the link for the track and just do a request to youtube api for the video id
-
-                // Right here 
-
+                // Could get the videoId here instead of on the frontend. I feel like getting it on the frontend makes more sense though.
                 await signalService.SendQueueUpdated(
                     serverId, 
                     track.Title, 
