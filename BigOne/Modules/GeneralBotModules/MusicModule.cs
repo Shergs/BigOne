@@ -225,7 +225,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
         {
             await RespondAsync("Skipped. Stopped playing because the queue is now empty.").ConfigureAwait(false);
         }
-        await _signalService.SendSkip(Context.Guild.Id.ToString(), Context.User.Username);
+        await _signalService.SendSkip(Context.Guild.Id.ToString(), Context.User.Username, player.CurrentTrack?.Title ?? "", player.CurrentTrack?.Author ?? "");
     }
 
     [SlashCommand("pause", description: "Pauses the player.", runMode: RunMode.Async)]

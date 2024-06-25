@@ -237,7 +237,8 @@ namespace BigOne.Services
             {
                 await textChannel.SendMessageAsync(embed: embedService.GetMessageEmbed("Skipped", $"Song has been skipped by: {username}")).ConfigureAwait(false);
             }
-            await signalService.SendSkip(serverId, username);
+
+            await signalService.SendSkip(serverId, username, player.CurrentTrack?.Title ?? "", player.CurrentTrack?.Author ?? "");
         }
 
         public async Task StopAsync(string serverId, string username, string voiceChannelId, string chatChannelId = "", Func<Embed, Task>? followUpAction = null)

@@ -60,10 +60,10 @@ document.addEventListener("DOMContentLoaded", function () {
         resumeVideo();
     });
 
-    connection.on("ReceiveSkipped", function (username) {
+    connection.on("ReceiveSkipped", function (username, title, author) {
         console.log("track skipped");
         createToast("Skipped By: " + username);
-        skipSong();
+        skipSong(title, author);
     });
 
     connection.on("ReceiveStopped", function (username) {
@@ -73,12 +73,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp) {
         console.log("AddToQueue");
-        // Could even make the url clickable. That would be cool.
-        createToast(username + " " + addOrRemove +"ed To Queue:" + name + "\nAt position: " + position);
+        createToast(username + " " + addOrRemove + "ed To Queue:" + name + "\nAt position: " + position);
         addToQueue(name, url);
         addHistoryItem(name, url, timestamp, username);
-
-        setPlayers();
+        setYTAudioPlayers();
     });
 
     connection.on("ReceiveSoundPlaying", function (username, name, emoji) {
@@ -256,33 +254,6 @@ function setPlayers(container) {
                 playBtn.classList.remove('hidden');
                 pauseBtn.classList.add('hidden');
             }
-            // For the song preview (download) implementation
-            //if (audio.paused) {
-            //    if (audio.src === "placeholder-src" || !audio.src) {
-            //        const ytUrl = sound.getAttribute('data-yt-url'); 
-            //        fetch(`/Home/DownloadYtMP3?url=${encodeURIComponent(ytUrl)}`)
-            //            .then(response => response.json())
-            //            .then(data => {
-            //                audio.src = data.audioUrl;
-            //                audio.load();
-            //                audio.play();
-            //                pauseBtn.classList.remove('hidden');
-            //                playBtn.classList.add('hidden');
-            //            })
-            //            .catch(error => {
-            //                console.error('Error loading the audio:', error);
-            //                // Optionally show an error message to the user
-            //            });
-            //    } else {
-            //        audio.play();
-            //        pauseBtn.classList.remove('hidden');
-            //        playBtn.classList.add('hidden');
-            //    }
-            //} else {
-            //    audio.pause();
-            //    playBtn.classList.remove('hidden');
-            //    pauseBtn.classList.add('hidden');
-            //}
         });
         seekSlider.addEventListener("input", function () {
             audio.currentTime = seekSlider.value;
@@ -374,8 +345,6 @@ function songPlayerStateChanged() {
     
 }
 
-// youtube player
-var player; // This will hold the YouTube player object
 function onPlayerError(event) {
     console.error('Player Error:', event.data);
 }
@@ -469,8 +438,9 @@ function skipSong() {
         player.stopVideo();
     } else {
         const queueItem = queue.querySelector('#queueItemContainer');
-        const videoId = queueItem.attributes["data-videoid"];
+        const videoId = queueItem.getAttribute('data-videoid');
         changeVideo(videoId);
+        setNowPlaying(title, author);
         player.playVideo();
         queueItem.remove();
         if (queueCount == 1) {
@@ -478,6 +448,12 @@ function skipSong() {
             noQueueResults.classList.remove('hidden');
         }
     }
+}
+
+function setNowPlaying(title, author) {
+    document.getElementById('nowPlayingTitle').innerText = title;
+    document.getElementById('nowPlayingArtist').innerText = author;
+    updateDurationDisplay();
 }
 
 function stopVideoUpdate() {
@@ -597,12 +573,6 @@ function updateProgressBar() {
     lastKnownTime = currentTime;
 }
 
-//function formatTime(time) {
-//    const minutes = Math.floor(time / 60);
-//    const seconds = Math.floor(time % 60);
-//    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-//}
-
 function updateDurationDisplay() {
     var duration = player.getDuration();
     document.getElementById('nowPlayingDuration').textContent = formatTime(duration);
@@ -614,24 +584,6 @@ function formatTime(time) {
     seconds = seconds < 10 ? "0" + seconds : seconds;
     return minutes + ":" + seconds;
 }
-
-function changeVideo(videoId) {
-    const noResults = document.getElementById('noVideoResults');
-    const videoPlayer = document.getElementById('nowPlayingVideo');
-    //const noResultsQueue = document.getElementById('noQueueResults');
-    //const queueContent = document.getElementById('queueContent');
-
-    noResults.classList.add('hidden');
-    videoPlayer.classList.remove('hidden');
-    //noResultsQueue.classList.add('hidden');
-    //queueContent.classList.remove('hidden');
-
-    player.loadVideoById(videoId);
-
-    //document.getElementById('nowPlayingTitle').textContent = title;
-    //document.getElementById('nowPlayingArtist').textContent = artist;
-}
-
 
 // interactions
 function toggleMute(el) {
@@ -810,23 +762,6 @@ dropdowns.forEach((dropdownContainer) => {
             }
         });
     });
-
-    //dropdownButton.addEventListener('blur', () => {
-    //    setTimeout(() => {
-    //        if (document.activeElement != searchInput && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)
-    //            && !Array.from(document.querySelectorAll('[data-type="selection"]')).includes(document.activeElement)) {
-    //            toggleDropdownList(dropdownMenu);
-    //        }
-    //    }, 0);
-    //});
-    //searchInput.addEventListener('blur', () => {
-    //    setTimeout(() => {
-    //        if (document.activeElement != dropdownButton && !Array.from(document.querySelectorAll("[data-dropdown-element='server']")).includes(document.activeElement)
-    //            && !Array.from(document.querySelectorAll('[data-type="selection"]')).includes(document.activeElement)) {
-    //            toggleDropdown(dropdownMenu);
-    //        }
-    //    }, 0);
-    //});
 });
 
 var documentHidden = false;
