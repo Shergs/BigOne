@@ -381,7 +381,9 @@ function onPlayerStateChange(event) {
             initialPlay = false;
         } else {
             const queuedVideoId = queueContent.children[0].getAttribute('data-videoid');
-            changeVideo(queuedVideoId);
+            const queuedVideoTitle = queueContent.children[0].getAttribute('data-title');
+            const queuedVideoAuthor = queueContent.children[0].getAttribute('data-author');
+            skipSong(queuedVideoTitle, queuedVideoAuthor);
         }
         updateDeleteFromQueue(0);
     }
@@ -431,7 +433,7 @@ function skipClick() {
     botPost(apiUrl);
 }
 
-function skipSong() {
+function skipSong(title, author) {
     const queue = document.getElementById('queueContent');
     const queueCount = queue.children.length;
     if (queueCount == 0) {
