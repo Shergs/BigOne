@@ -64,10 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
         createToast("Stopped By: ", username);
         stopVideoUpdate();
     });
-    connection.on("ReceiveQueueUpdated", function (name, url, position, addOrRemove, username, timestamp, artist, videoId) {
+    connection.on("ReceiveQueueUpdated", async function (name, url, position, addOrRemove, username, timestamp, artist, videoId) {
         console.log("AddToQueue");
         createToast(username + " " + addOrRemove + "ed To Queue:" + name + "\nAt position: " + position);
-        addToQueue(name, artist, url);
+        await addToQueue(name, artist, url);
         addHistoryItem(name, url, timestamp, username);
         setYTAudioPlayers();
     });
@@ -164,7 +164,7 @@ function updateNowPlaying(name, url, artistName) {
     pauseBtn.classList.remove('hidden');
 }
 
-function addToQueue(name, artist, url) {
+async function addToQueue(name, artist, url) {
     const noResultsQueue = document.getElementById('noQueueResults');
     const queueContent = document.getElementById('queueContent');
     noResultsQueue.classList.add('hidden');
@@ -173,25 +173,50 @@ function addToQueue(name, artist, url) {
     console.log('adding to queue');
     const templateContent = document.getElementById('songTemplate').content.cloneNode(true);
     const queueCount = queueContent.children.length; 
+    const queuePosition = queueCount.toString();
+
+    let newVideoId = await getVideoId(url);
 
     templateContent.querySelector("#songName").textContent = name;
+
     const itemContainer = templateContent.querySelector("#queueItemContainer");
-    itemContainer.setAttribute('data-queueposition', queueCount.toString());
+    itemContainer.setAttribute('data-queueposition', queuePosition);
     itemContainer.setAttribute('data-title', name);
     itemContainer.setAttribute('data-author', artist);
-    const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
-    let newVideoId = '';
-    getEmbed(apiUrl)
-        .then(videoId => {
-            newVideoId = videoId
-        })
-        .catch(error => {
-            console.error('Error setting video src:', error);
-        });
-    itemContainer.setAttribute('data-videoId', newVideoId)
+    itemContainer.setAttribute('data-videoId', newVideoId); 
+
+    const controls = itemContainer.querySelector('[data-type="controls"]');
+    controls.setAttribute('data-uniqueId', newVideoId + queuePosition);
+
+    const ytPlayer = itemContainer.querySelector('[data-type="youtube-player"]');
+    ytPlayer.setAttribute('data-videoid', newVideoId);
+    ytPlayer.setAttribute('data-queuePosition', queuePosition);
+    ytPlayer.setAttribute('id', newVideoId + queuePosition);
+
+    const moveUpInQueue = itemContainer.querySelector('[data-type="moveUpInQueue"]');
+    moveUpInQueue.setAttribute('onclick', 'moveUpInQueue(' + queueCount + ');');
+
+    const moveDownInQueue = itemContainer.querySelector('[data-type="moveDownInQueue"]');
+    moveDownInQueue.setAttribute('onclick', 'moveDownInQueue(' + queueCount + ');');
+
+    const deleteFromQueue = itemContainer.querySelector('[data-type="deleteFromQueue"]');
+    deleteFromQueue.setAttribute('onclick', 'deleteFromQueue(' + queueCount + ');');
 
     queueContent.appendChild(templateContent);
 }
+
+async function getVideoId(url) {
+    const apiUrl = '/get-embed?url=' + encodeURIComponent(url);
+    try {
+        let newVideoId = await getEmbed(apiUrl);
+        console.log('Received videoId:', newVideoId);
+        return newVideoId;
+    } catch (error) {
+        console.error('Error setting video src:', error);
+    }
+}
+
+
 function addHistoryItem(name, url, timestamp, username) {
     const noResultsHistory = document.getElementById('noResultsHistory');
     const historyContent = document.getElementById('historyContent');
